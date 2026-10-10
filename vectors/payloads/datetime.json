@@ -222,14 +222,14 @@
     },
     {
       "id": "datetime-ordinal-366-non-leap",
-      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: ordinal day 366 only in a leap year; python-sdk#110 item 3",
       "input": {
         "datatype": "datetime",
         "payload": "2023-366"
       },
       "expect": {
-        "valid": true,
-        "value": "2023-366"
+        "valid": false,
+        "problem": "datetimeRange"
       }
     },
     {
@@ -270,26 +270,26 @@
     },
     {
       "id": "datetime-week-day",
-      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
       "input": {
         "datatype": "datetime",
         "payload": "2024-W53-7"
       },
       "expect": {
-        "valid": true,
-        "value": "2024-W53-7"
+        "valid": false,
+        "problem": "datetimeRange"
       }
     },
     {
       "id": "datetime-week-basic",
-      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
       "input": {
         "datatype": "datetime",
         "payload": "2024W537"
       },
       "expect": {
-        "valid": true,
-        "value": "2024W537"
+        "valid": false,
+        "problem": "datetimeRange"
       }
     },
     {
@@ -758,6 +758,198 @@
       "expect": {
         "valid": false,
         "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-midnight-24-hour-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T24"
+      }
+    },
+    {
+      "id": "datetime-midnight-24-seconds",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T24:00:00"
+      }
+    },
+    {
+      "id": "datetime-midnight-24-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T2400"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T2400"
+      }
+    },
+    {
+      "id": "datetime-midnight-24-zero-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00.000Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T24:00:00.000Z"
+      }
+    },
+    {
+      "id": "datetime-hour-24-minutes",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-01-01T24:30"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-second",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-hour-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24,5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-quad-century",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2000-366"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2000-366"
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-century",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: ordinal day 366 only in a leap year; python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "1900-366"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-53-2020",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2020-W53"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2020-W53"
+      }
+    },
+    {
+      "id": "datetime-week-53-2020-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2020-W53-7"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2020-W53-7"
+      }
+    },
+    {
+      "id": "datetime-week-53-2026",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2026-W53"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2026-W53"
+      }
+    },
+    {
+      "id": "datetime-week-53-2026-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2026W534"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2026W534"
+      }
+    },
+    {
+      "id": "datetime-week-53-2021",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2021-W53"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-53-2024",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W53"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
       }
     }
   ]

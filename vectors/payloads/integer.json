@@ -549,6 +549,32 @@
         "valid": true,
         "value": "5"
       }
+    },
+    {
+      "id": "integer-int64-max-step-overflow",
+      "source": "homie-5:convention.md#integer (convention.md:87-88): 64-bit signed; python-sdk#110 item 2: python-sdk range-checks before step rounding, not after",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807",
+        "format": "0::2"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerOutOf64Bit"
+      }
+    },
+    {
+      "id": "integer-int64-max-step-in-range",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775806",
+        "format": "0::2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "9223372036854775806"
+      }
     }
   ]
 }

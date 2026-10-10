@@ -3,10 +3,17 @@
 # Copyright (c) 2026 Clark Communications Corporation
 """Generate the cross-language test vectors under rust-sdk/vectors/.
 
-The Python SDK (python-sdk/src/ebus_sdk/homie.py) is the oracle: every expect
-value is computed by calling it, except in the spec suites where Python has no
-function (topics, description); those are derived from convention.md and their
+Spec suites (topics, empty-string, effective-state, payloads/*, description)
+express the Homie 5 convention. Where python-sdk has a matching function its
+result is the expect value, except for the cases in CONVENTION_OVERRIDES, where
+python-sdk deviates from the convention (python-sdk#110) and the override's
+expect and source replace it. Suites with no python-sdk function (topics,
+description, effective-state) are derived from convention.md and their
 "source" says so.
+
+python-sdk suites (vectors/python-sdk/) record python-sdk's behavior where the
+convention leaves a choice open; every expect value there is computed by
+calling python-sdk.
 
 Run from the eBus repo root with the SDK on PYTHONPATH:
 
@@ -33,7 +40,6 @@ logging.disable(logging.CRITICAL)
 import ebus_sdk  # noqa: E402
 from ebus_sdk import homie  # noqa: E402
 from ebus_sdk.homie import (  # noqa: E402
-    HOMIE_EFFECTIVE_STATE_TABLE,
     Device,
     DeviceState,
     Node,
@@ -52,6 +58,8 @@ GENERATOR = f"rust-sdk tools/gen_vectors.py from python-sdk {ebus_sdk.__version_
 SCHEMA = "https://ebus.energy/schemas/conformance-vectors.json"
 CONV = "homie-5:convention.md"
 PY = "python-sdk:homie.py"
+ISSUE = "python-sdk#110"
+PYSDK = "python-sdk"  # directory and suite-name prefix of the python-sdk suites
 
 
 # ── helpers ────────────────────────────────────────────────────────────────
@@ -260,13 +268,16 @@ def gen_empty_string() -> list:
     return cases
 
 
-# ── effective-state (spec; from HOMIE_EFFECTIVE_STATE_TABLE) ───────────────
+# ── effective-state (spec, from the convention table) ─────────────────────
 
 
 def gen_effective_state() -> list:
+    # convention.md:262-267: only a root in "lost" overrides the device's own
+    # $state. python-sdk's HOMIE_EFFECTIVE_STATE_TABLE also propagates init,
+    # disconnected and sleeping from the root (python-sdk#110 item 1).
     src = (
-        f"{CONV}#device-hierarchy (convention.md:262-267); {PY} HOMIE_EFFECTIVE_STATE_TABLE, which also propagates "
-        "init, disconnected and sleeping from the root (the convention table names only lost)"
+        f"{CONV}#device-hierarchy (convention.md:262-267), derived from the convention; "
+        f"{ISSUE} item 1: python-sdk also propagates a root's init, disconnected and sleeping"
     )
     states = [s.value for s in DeviceState]
     cases = []
@@ -281,8 +292,7 @@ def gen_effective_state() -> list:
         )
     for root in states:
         for own in states:
-            override = HOMIE_EFFECTIVE_STATE_TABLE[DeviceState(root)]
-            eff = (override if override is not None else DeviceState(own)).value
+            eff = "lost" if root == "lost" else own
             cases.append(
                 {
                     "id": f"effective-root-{root}-own-{own}",
@@ -316,6 +326,8 @@ PAYLOAD_CASES = {
         ("leading-zeros-step-unchanged", "008", "0:10:2"), ("format-unparseable", "5", "a:b"),
         ("format-too-many-parts", "5", "1:2:3:4"), ("step-zero-ignored", "5", "0:10:0"),
         ("step-negative-ignored", "5", "0:10:-2"),
+        ("int64-max-step-overflow", "9223372036854775807", "0::2"),
+        ("int64-max-step-in-range", "9223372036854775806", "0::2"),
     ],
     "float": [
         ("zero", "0", None), ("neg-zero", "-0", None), ("zero-point-zero", "0.0", None), ("neg-zero-float", "-0.0", None),
@@ -396,6 +408,13 @@ PAYLOAD_CASES = {
         ("space-separator", "2024-03-01 12:00", None), ("short-month", "2024-3-1", None),
         ("two-digit-year", "24-03-01", None), ("dangling-fraction", "2024-03-01T12:00:00.", None),
         ("zero-length", "", None), ("fullwidth-digits", "２０２４", None), ("time-only", "T12:00", None),
+        ("midnight-24-hour-only", "2024-03-01T24", None), ("midnight-24-seconds", "2024-03-01T24:00:00", None),
+        ("midnight-24-basic", "2024-03-01T2400", None), ("midnight-24-zero-fraction", "2024-03-01T24:00:00.000Z", None),
+        ("hour-24-minutes", "2024-01-01T24:30", None), ("hour-24-second", "2024-03-01T24:00:01", None),
+        ("hour-24-fraction", "2024-03-01T24:00:00.5", None), ("hour-24-hour-fraction", "2024-03-01T24,5", None),
+        ("ordinal-366-quad-century", "2000-366", None), ("ordinal-366-century", "1900-366", None),
+        ("week-53-2020", "2020-W53", None), ("week-53-2020-day", "2020-W53-7", None), ("week-53-2026", "2026-W53", None),
+        ("week-53-2026-basic", "2026W534", None), ("week-53-2021", "2021-W53", None), ("week-53-2024", "2024-W53", None),
     ],
     "duration": [
         ("zero-seconds", "PT0S", None), ("hours", "PT1H", None), ("minutes", "PT5M", None), ("seconds", "PT1S", None),
@@ -416,29 +435,75 @@ PAYLOAD_CASES = {
         ("unquoted-key", "{bad: 1}", None), ("trailing-comma", "[1,]", None), ("zero-length", "", None),
         ("single-quotes", "['a']", None), ("unicode-escape", '["\\u00e9"]', None), ("astral-raw", '["\U0001f600"]', None),
         ("format-ignored", "[1]", '{"type": "array"}'), ("truncated", '{"a": ', None),
+        ("float-repr-round-trip", "[912068.5437784989]", None), ("float-long-digits", "[2.283038836859574890682e201]", None),
+        ("float-many-digits", "[0.1000000000000000055511151231257827021181583404541015625]", None),
+        ("neg-zero-int", "[-0]", None), ("neg-zero-float", "[-0.0]", None),
+        ("int-u64-max", "[18446744073709551615]", None), ("int-i64-min", "[-9223372036854775808]", None),
+        ("number-overflows-to-infinity", "[1e400]", None), ("lone-surrogate-escape", '["\\ud800"]', None),
     ],
+}
+
+
+# Payload cases where python-sdk's _parse_set_payload deviates from the
+# convention (python-sdk#110). Each entry replaces python-sdk's expect and
+# source. The generator fails if python-sdk comes to agree with an entry or an
+# entry names no case, so the table never goes stale.
+_SRC_INT = f"{CONV}#integer (convention.md:87-88): 64-bit signed; {ISSUE} item 2: python-sdk range-checks before step rounding, not after"
+_SRC_DT24 = (
+    f"{CONV}#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day "
+    f"(minutes, seconds and any fraction zero); {ISSUE} item 3"
+)
+_SRC_DT366 = f"{CONV}#datetime (convention.md:132) defers to ISO 8601-1: ordinal day 366 only in a leap year; {ISSUE} item 3"
+_SRC_DTW53 = (
+    f"{CONV}#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks "
+    f"(1 January a Thursday, or a leap year whose 1 January is a Wednesday); {ISSUE} item 3"
+)
+_SRC_JSON = (
+    f"{CONV}#json (convention.md:149-150): a number beyond the f64 range decodes to an infinity, which has no "
+    f"JSON form, and a lone surrogate is not a Unicode scalar value; {ISSUE} item 4"
+)
+_DT_RANGE = {"valid": False, "problem": "datetimeRange"}
+CONVENTION_OVERRIDES = {
+    "integer-int64-max-step-overflow": ({"valid": False, "problem": "integerOutOf64Bit"}, _SRC_INT),
+    "datetime-hour-24-minutes": (_DT_RANGE, _SRC_DT24),
+    "datetime-hour-24-second": (_DT_RANGE, _SRC_DT24),
+    "datetime-hour-24-fraction": (_DT_RANGE, _SRC_DT24),
+    "datetime-hour-24-hour-fraction": (_DT_RANGE, _SRC_DT24),
+    "datetime-ordinal-366-non-leap": (_DT_RANGE, _SRC_DT366),
+    "datetime-ordinal-366-century": (_DT_RANGE, _SRC_DT366),
+    "datetime-week-day": (_DT_RANGE, _SRC_DTW53),
+    "datetime-week-basic": (_DT_RANGE, _SRC_DTW53),
+    "datetime-week-53-2021": (_DT_RANGE, _SRC_DTW53),
+    "datetime-week-53-2024": (_DT_RANGE, _SRC_DTW53),
+    "json-number-overflows-to-infinity": ({"valid": False, "problem": "jsonInvalid"}, _SRC_JSON),
+    "json-lone-surrogate-escape": ({"valid": False, "problem": "jsonInvalid"}, _SRC_JSON),
 }
 
 
 def gen_payloads() -> dict:
     suites = {}
+    used = set()
     for dt, rows in PAYLOAD_CASES.items():
         cases = []
         for label, text, fmt in rows:
+            case_id = f"{dt}-{label}"
             value, problem = _parse_set_payload(text, dt, fmt, None)
             inp = {"datatype": dt, **payload_field(text)}
             if fmt is not None:
                 inp["format"] = fmt
             expect = {"valid": False, "problem": problem} if problem else {"valid": True, "value": value}
-            cases.append(
-                {
-                    "id": f"{dt}-{label}",
-                    "source": f"{CONV}#{dt} (convention.md:74-151, :383-413); {PY} _parse_set_payload",
-                    "input": inp,
-                    "expect": expect,
-                }
-            )
+            source = f"{CONV}#{dt} (convention.md:74-151, :383-413); {PY} _parse_set_payload"
+            if case_id in CONVENTION_OVERRIDES:
+                used.add(case_id)
+                override, source = CONVENTION_OVERRIDES[case_id]
+                if override == expect:
+                    raise SystemExit(f"{case_id}: python-sdk now agrees with the convention; remove its override")
+                expect = override
+            cases.append({"id": case_id, "source": source, "input": inp, "expect": expect})
         suites[dt] = cases
+    unused = sorted(set(CONVENTION_OVERRIDES) - used)
+    if unused:
+        raise SystemExit(f"CONVENTION_OVERRIDES names no case: {unused}")
     return suites
 
 
@@ -495,6 +560,13 @@ def gen_description() -> list:
         ("version-zero", doc(version=0), True, None, src_dev),
         ("version-2-53-minus-1", doc(version=2**53 - 1), True, None, src_dev),
         ("version-u64-max", doc(version=2**64 - 1), True, None, src_dev),
+        ("version-negative", doc(version=-5), True, None, src_dev),
+        ("version-i64-min", doc(version=-(2**63)), True, None, src_dev),
+        ("formats-legal", doc(nodes={"n": {"properties": {
+            "a": prop(format=":"), "b": prop(format="-5:35:2.5"), "c": prop(datatype="float", format="10.123:15.123"),
+            "d": prop(datatype="float", format="0::1e-400"), "e": prop(datatype="boolean", format="off,on"),
+            "f": prop(datatype="enum", format=" a,a "), "g": prop(datatype="color", format="xyz,rgb,hsv"),
+            "h": prop(datatype="string", format="anything")}}}), True, None, src_fmt),
         ("empty-nodes", doc(nodes={}), True, None, src_dev),
         ("node-no-properties", doc(nodes={"node": {}}), True, None, src_node),
         ("node-empty-properties", doc(nodes={"node": {"properties": {}}}), True, None, src_node),
@@ -535,28 +607,6 @@ def gen_description() -> list:
         ("type-null", doc(type=None), False, "typeType", src_dev),
         ("nodes-array", doc(nodes=[]), False, "nodesNotObject", src_dev),
         ("nodes-null", doc(nodes=None), False, "nodesNotObject", src_dev),
-        ("node-id-upper", doc(nodes={"Node": {}}), False, "invalidNodeId", src_node),
-        ("node-id-underscore", doc(nodes={"my_node": {}}), False, "invalidNodeId", src_node),
-        ("node-id-empty", doc(nodes={"": {}}), False, "invalidNodeId", src_node),
-        ("node-id-dollar", doc(nodes={"$node": {}}), False, "invalidNodeId", src_node),
-        ("node-not-object", doc(nodes={"node": []}), False, "nodeNotObject", src_node),
-        ("node-name-null", doc(nodes={"node": {"name": None}}), False, "nameType", src_node),
-        ("node-type-number", doc(nodes={"node": {"type": 3}}), False, "typeType", src_node),
-        ("properties-array", doc(nodes={"node": {"properties": []}}), False, "propertiesNotObject", src_node),
-        ("property-id-upper", with_prop(prop(), prop_id="Prop"), False, "invalidPropertyId", src_prop),
-        ("property-id-dot", with_prop(prop(), prop_id="a.b"), False, "invalidPropertyId", src_prop),
-        ("property-not-object", with_prop("integer"), False, "propertyNotObject", src_prop),
-        ("datatype-missing", with_prop(prop(datatype=_DROP)), False, "datatypeMissing", src_prop),
-        ("datatype-unknown", with_prop(prop(datatype="number")), False, "datatypeUnknown", src_prop),
-        ("datatype-upper", with_prop(prop(datatype="Integer")), False, "datatypeUnknown", src_prop),
-        ("datatype-null", with_prop(prop(datatype=None)), False, "datatypeUnknown", src_prop),
-        ("settable-string", with_prop(prop(settable="true")), False, "settableType", src_prop),
-        ("retained-number", with_prop(prop(retained=1)), False, "retainedType", src_prop),
-        ("retained-null", with_prop(prop(retained=None)), False, "retainedType", src_prop),
-        ("format-nested-object", with_prop(prop(datatype="json", format={"type": "object"})), False, "formatType", src_fmt),
-        ("unit-number", with_prop(prop(unit=5)), False, "unitType", src_prop),
-        ("enum-format-missing", with_prop(prop(datatype="enum")), False, "formatMissing", src_fmt),
-        ("color-format-missing", with_prop(prop(datatype="color")), False, "formatMissing", src_fmt),
         ("children-not-array", doc(children="a"), False, "childrenNotArray", src_dev),
         ("children-invalid-id", doc(children=["Light1"]), False, "invalidChildId", src_dev),
         ("children-non-string", doc(children=[1]), False, "invalidChildId", src_dev),
@@ -567,6 +617,48 @@ def gen_description() -> list:
         ("extensions-not-array", doc(extensions="org.example.x"), False, "extensionsNotArray", src_dev),
         ("extensions-non-string", doc(extensions=[1]), False, "extensionsNotArray", src_dev),
     ]
+    # Valid documents with nodes or properties left out (convention.md:664-668):
+    # (label, document, [(node, property or None, hint)], source).
+    ignored_rows = [
+        ("node-id-upper", doc(nodes={"Node": {}}), [("Node", None, "invalidNodeId")], src_node),
+        ("node-id-underscore", doc(nodes={"my_node": {}}), [("my_node", None, "invalidNodeId")], src_node),
+        ("node-id-empty", doc(nodes={"": {}}), [("", None, "invalidNodeId")], src_node),
+        ("node-id-dollar", doc(nodes={"$node": {}}), [("$node", None, "invalidNodeId")], src_node),
+        ("node-not-object", doc(nodes={"node": []}), [("node", None, "nodeNotObject")], src_node),
+        ("node-name-null", doc(nodes={"node": {"name": None}}), [("node", None, "nameType")], src_node),
+        ("node-type-number", doc(nodes={"node": {"type": 3}}), [("node", None, "typeType")], src_node),
+        ("properties-array", doc(nodes={"node": {"properties": []}}), [("node", None, "propertiesNotObject")], src_node),
+        ("property-id-upper", with_prop(prop(), prop_id="Prop"), [("node", "Prop", "invalidPropertyId")], src_prop),
+        ("property-id-dot", with_prop(prop(), prop_id="a.b"), [("node", "a.b", "invalidPropertyId")], src_prop),
+        ("property-not-object", with_prop("integer"), [("node", "prop", "propertyNotObject")], src_prop),
+        ("datatype-missing", with_prop(prop(datatype=_DROP)), [("node", "prop", "datatypeMissing")], src_prop),
+        ("datatype-unknown", with_prop(prop(datatype="number")), [("node", "prop", "datatypeUnknown")], src_prop),
+        ("datatype-upper", with_prop(prop(datatype="Integer")), [("node", "prop", "datatypeUnknown")], src_prop),
+        ("datatype-null", with_prop(prop(datatype=None)), [("node", "prop", "datatypeUnknown")], src_prop),
+        ("settable-string", with_prop(prop(settable="true")), [("node", "prop", "settableType")], src_prop),
+        ("retained-number", with_prop(prop(retained=1)), [("node", "prop", "retainedType")], src_prop),
+        ("retained-null", with_prop(prop(retained=None)), [("node", "prop", "retainedType")], src_prop),
+        ("format-nested-object", with_prop(prop(datatype="json", format={"type": "object"})), [("node", "prop", "formatType")], src_fmt),
+        ("unit-number", with_prop(prop(unit=5)), [("node", "prop", "unitType")], src_prop),
+        ("enum-format-missing", with_prop(prop(datatype="enum")), [("node", "prop", "formatMissing")], src_fmt),
+        ("color-format-missing", with_prop(prop(datatype="color")), [("node", "prop", "formatMissing")], src_fmt),
+        ("enum-format-empty", with_prop(prop(datatype="enum", format="")), [("node", "prop", "formatMissing")], src_fmt),
+        ("color-format-empty", with_prop(prop(datatype="color", format="")), [("node", "prop", "formatMissing")], src_fmt),
+        ("enum-format-empty-value", with_prop(prop(datatype="enum", format="a,,a")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("enum-format-duplicate", with_prop(prop(datatype="enum", format="a,b,a")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("color-format-unknown-type", with_prop(prop(datatype="color", format="rgb,cmyk")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("boolean-format-one-entry", with_prop(prop(datatype="boolean", format="on")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("boolean-format-three-entries", with_prop(prop(datatype="boolean", format="a,b,c")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("integer-format-grammar", with_prop(prop(format="abc:1:-3")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("integer-format-one-part", with_prop(prop(format="5")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("integer-format-float-bound", with_prop(prop(format="1.5:2")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("integer-format-zero-step", with_prop(prop(format="0:10:0")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("float-format-grammar", with_prop(prop(datatype="float", format="x:y")), [("node", "prop", "formatIllegal")], src_fmt),
+        ("future-datatype-keeps-rest", doc(nodes={
+            "n": {"properties": {"ok": prop(), "p": prop(datatype="vector")}},
+            "m": {"properties": {"q": prop(datatype="string")}}}), [("n", "p", "datatypeUnknown")], src_fwd),
+        ("bad-node-keeps-rest", doc(nodes={"n": {"properties": {"ok": prop()}}, "Bad": {}}), [("Bad", None, "invalidNodeId")], src_fwd),
+    ]
     cases = []
     for label, document, valid, hint, src in rows:
         text = document if isinstance(document, str) else json.dumps(document, ensure_ascii=False)
@@ -574,13 +666,20 @@ def gen_description() -> list:
         if not valid:
             expect["error"] = hint
         cases.append({"id": f"description-{label}", "source": src, "input": {"payload": text}, "expect": expect})
+    for label, document, ignored, src in ignored_rows:
+        text = json.dumps(document, ensure_ascii=False)
+        expect = {
+            "valid": True,
+            "ignored": [{"node": n, "property": p, "error": hint} for n, p, hint in ignored],
+        }
+        cases.append({"id": f"description-{label}", "source": src, "input": {"payload": text}, "expect": expect})
     return cases
 
 
 _DROP = object()
 
 
-# ── parity: float-format ───────────────────────────────────────────────────
+# ── python-sdk: float-format ───────────────────────────────────────────────────
 
 
 def f64_bits(x: float) -> str:
@@ -642,7 +741,7 @@ def gen_float_format() -> list:
     return cases
 
 
-# ── parity: sanitize-id ────────────────────────────────────────────────────
+# ── python-sdk: sanitize-id ────────────────────────────────────────────────────
 
 
 def gen_sanitize_id() -> list:
@@ -679,7 +778,7 @@ def gen_sanitize_id() -> list:
     return cases
 
 
-# ── parity: set-payload ────────────────────────────────────────────────────
+# ── python-sdk: set-payload ────────────────────────────────────────────────────
 
 
 def gen_set_payload() -> list:
@@ -710,7 +809,6 @@ def gen_set_payload() -> list:
         ("int-leading-zero-changed", "integer", "005", "0:10:2", None),
         ("int-neg-zero-unchanged", "integer", "-0", "0:10:2", None),
         ("int-max", "integer", "9223372036854775807", "::1", 0),
-        ("int-max-step-overflow", "integer", "9223372036854775807", "0::2", None),
         ("int-format-float-bounds", "integer", "5", "0.5:5.5", None),
         ("int-format-exponent-bounds", "integer", "500", "1e2:1e3:1e2", None),
         ("int-huge-step", "integer", "5", "0::1e30", None),
@@ -750,6 +848,15 @@ def gen_set_payload() -> list:
         ("float-format-one-part", "float", "5", "5", None),
         ("float-grammar", "float", "1e+5", None, None),
         ("float-1e999", "float", "1e999", None, None),
+        ("float-long-no-format", "float", "1." + "7" * 4000, None, None),
+        ("float-long-step", "float", "1." + "7" * 4000, "0:1e400:0.001", None),
+        ("float-long-above-max", "float", "1." + "0" * 4000 + "1", "0:1", None),
+        ("float-long-equal-max", "float", "1." + "0" * 4000, "0:1", None),
+        ("float-long-below-min", "float", "-0." + "0" * 4000 + "1", "0:1", None),
+        ("float-long-above-tie", "float", "0.25" + "0" * 4000 + "1", "0:10:0.5", None),
+        ("float-long-below-tie", "float", "0.24" + "9" * 4000, "0:10:0.5", None),
+        ("float-long-negative-below-tie", "float", "-0.25" + "0" * 4000 + "1", "-10:10:0.5", None),
+        ("float-long-current-base", "float", "2.5" + "0" * 4000 + "1", "::1", 0.5),
         ("int-grammar", "integer", "1.0", None, None),
         ("int-out-of-range", "integer", "9223372036854775808", None, None),
         ("boolean", "boolean", "true", None, None),
@@ -778,7 +885,7 @@ def gen_set_payload() -> list:
     return cases
 
 
-# ── parity: json-dumps ─────────────────────────────────────────────────────
+# ── python-sdk: json-dumps ─────────────────────────────────────────────────────
 
 
 def gen_json_dumps() -> list:
@@ -812,6 +919,8 @@ def gen_json_dumps() -> list:
         ("whitespace-input", ' { "b" : [ 1 , 2 ] ,\n "a" : null } '),
         ("exponent-input", "[1e2, 1E-7, 2.50, 0.10]"),
         ("int-vs-float-input", "[1, 1.0, -1, -1.0]"),
+        ("neg-zero-input", "[-0, -0.0, 0e5, -0e-5]"),
+        ("float-round-trip-input", "[912068.5437784989, 2.283038836859574890682e201, 1.7976931348623157e308, 4.9e-324]"),
     ]
     for label, text in raw:
         cases.append(
@@ -825,7 +934,7 @@ def gen_json_dumps() -> list:
     return cases
 
 
-# ── parity: encode-duration ────────────────────────────────────────────────
+# ── python-sdk: encode-duration ────────────────────────────────────────────────
 
 
 def gen_encode_duration() -> list:
@@ -849,7 +958,7 @@ def gen_encode_duration() -> list:
     return cases
 
 
-# ── parity: description-wire ───────────────────────────────────────────────
+# ── python-sdk: description-wire ───────────────────────────────────────────────
 #
 # Each tree is a list of device specs in creation order; a child names its
 # parent by id. Node and property specs are dicts of constructor arguments.
@@ -1003,6 +1112,40 @@ def gen_description_wire() -> list:
     return cases
 
 
+# ── python-sdk: description-roundtrip ──────────────────────────────────────────
+#
+# Python's wire text for every description-wire tree, plus trees whose node,
+# property, extra and child ids are all out of alphabetical order. A parser
+# that reads objects into a sorted map fails these.
+
+ROUNDTRIP_TREES = [
+    ("order-everywhere", [D("dev",
+        N("zeta", P("zeta", "integer"), P("alpha", "float"), P("mid", "string")),
+        N("alpha", P("mid", "boolean"), P("zeta", "enum", format="b,a"), P("alpha", "json")),
+        N("mid", P("alpha", "integer"), P("mid", "integer"), P("zeta", "integer")),
+        type="t", extras={"zeta": 1, "alpha": {"a": 1, "b": [2.5, None]}, "mid": "m"})]),
+    ("order-children", [D("root", N("zeta"), N("alpha")), D("zeta", parent="root"), D("alpha", parent="root"),
+                        D("mid", N("zeta", P("zeta", "integer"), P("alpha", "integer")), parent="root")]),
+]
+
+
+def gen_description_roundtrip() -> list:
+    cases = []
+    for label, spec in TREES + ROUNDTRIP_TREES:
+        for dev, d in build_tree(spec):
+            check_nested_sorted(list((d["extras"] or {}).values()))
+            wire = json.dumps(dev.description())
+            cases.append(
+                {
+                    "id": f"description-roundtrip-{label}-{dev.id()}",
+                    "source": f"{PY} json.dumps(Device.description())",
+                    "input": {"payload": wire},
+                    "expect": {"wire": wire},
+                }
+            )
+    return cases
+
+
 # ── main ───────────────────────────────────────────────────────────────────
 
 
@@ -1013,12 +1156,16 @@ def main() -> None:
     for dt, cases in gen_payloads().items():
         write_suite(f"payloads/{dt}.json", f"payloads/{dt}", cases)
     write_suite("description.json", "description", gen_description())
-    write_suite("parity/float-format.json", "parity/float-format", gen_float_format())
-    write_suite("parity/sanitize-id.json", "parity/sanitize-id", gen_sanitize_id())
-    write_suite("parity/set-payload.json", "parity/set-payload", gen_set_payload())
-    write_suite("parity/json-dumps.json", "parity/json-dumps", gen_json_dumps())
-    write_suite("parity/encode-duration.json", "parity/encode-duration", gen_encode_duration())
-    write_suite("parity/description-wire.json", "parity/description-wire", gen_description_wire())
+    for name, gen in [
+        ("float-format", gen_float_format),
+        ("sanitize-id", gen_sanitize_id),
+        ("set-payload", gen_set_payload),
+        ("json-dumps", gen_json_dumps),
+        ("encode-duration", gen_encode_duration),
+        ("description-wire", gen_description_wire),
+        ("description-roundtrip", gen_description_roundtrip),
+    ]:
+        write_suite(f"{PYSDK}/{name}.json", f"{PYSDK}/{name}", gen())
     for path, n in COUNTS:
         print(f"{n:5d}  vectors/{path}")
 

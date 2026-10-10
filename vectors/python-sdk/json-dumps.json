@@ -1,6 +1,6 @@
 {
   "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
-  "suite": "parity/json-dumps",
+  "suite": "python-sdk/json-dumps",
   "version": "0.1",
   "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
   "cases": [
@@ -302,6 +302,26 @@
       },
       "expect": {
         "text": "[1, 1.0, -1, -1.0]"
+      }
+    },
+    {
+      "id": "json-dumps-neg-zero-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": "[-0, -0.0, 0e5, -0e-5]"
+      },
+      "expect": {
+        "text": "[0, -0.0, 0.0, -0.0]"
+      }
+    },
+    {
+      "id": "json-dumps-float-round-trip-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": "[912068.5437784989, 2.283038836859574890682e201, 1.7976931348623157e308, 4.9e-324]"
+      },
+      "expect": {
+        "text": "[912068.5437784989, 2.2830388368595749e+201, 1.7976931348623157e+308, 5e-324]"
       }
     }
   ]

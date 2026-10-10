@@ -1,0 +1,558 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-sdk/description-roundtrip",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "description-roundtrip-bare-no-type-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1909023855364247, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1909023855364247, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-bare-typed-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2999997065864097, \"type\": \"energy.ebus.device.panel\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2999997065864097, \"type\": \"energy.ebus.device.panel\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 705720245421419, \"type\": \"t\", \"name\": \"Living Room\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 705720245421419, \"type\": \"t\", \"name\": \"Living Room\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-empty-name-defaults-to-id-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 466731644645623, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 466731644645623, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-empty-type-kept-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 240403089343664, \"type\": \"\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 240403089343664, \"type\": \"\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-unicode-name-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 742880693998592, \"type\": \"t\\u00e9\", \"name\": \"Caf\\u00e9 \\u2615 \\ud83d\\ude00 \\u4e2d\\u6587\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 742880693998592, \"type\": \"t\\u00e9\", \"name\": \"Caf\\u00e9 \\u2615 \\ud83d\\ude00 \\u4e2d\\u6587\", \"nodes\": {}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-node-untyped-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-node-typed-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 259480474976112, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"N\\u00f6de\", \"type\": \"org.example.node\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 259480474976112, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"N\\u00f6de\", \"type\": \"org.example.node\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-node-empty-type-kept-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3725966126593516, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"type\": \"\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3725966126593516, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"type\": \"\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-node-empty-name-defaults-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-minimal-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3156078660645223, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"Power \\u00b0\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3156078660645223, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"Power \\u00b0\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-empty-name-defaults-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-format-string-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3740778805830459, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\", \"format\": \"0:100:5\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3740778805830459, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\", \"format\": \"0:100:5\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-format-empty-omitted-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-format-json-schema-dict-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1444759323438410, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"level\\\": {\\\"type\\\": \\\"integer\\\", \\\"minimum\\\": 0, \\\"maximum\\\": 100}}, \\\"required\\\": [\\\"level\\\"]}\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1444759323438410, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"level\\\": {\\\"type\\\": \\\"integer\\\", \\\"minimum\\\": 0, \\\"maximum\\\": 100}}, \\\"required\\\": [\\\"level\\\"]}\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-format-json-schema-string-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1185726012849327, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\":\\\"array\\\"}\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1185726012849327, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\":\\\"array\\\"}\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-settable-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1465724754092977, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1465724754092977, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-not-retained-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2073218796887997, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"string\", \"retained\": false}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2073218796887997, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"string\", \"retained\": false}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-settable-not-retained-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3933092691585795, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"brew\": {\"name\": \"brew\", \"datatype\": \"boolean\", \"settable\": true, \"retained\": false}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3933092691585795, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"brew\": {\"name\": \"brew\", \"datatype\": \"boolean\", \"settable\": true, \"retained\": false}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-unit-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4366185694794201, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4366185694794201, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-unit-degree-c-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1790036054265299, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"t\": {\"name\": \"t\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1790036054265299, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"t\": {\"name\": \"t\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-unit-mired-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4011383035551432, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"ct\": {\"name\": \"ct\", \"datatype\": \"integer\", \"unit\": \"MK\\u207b\\u00b9\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4011383035551432, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"ct\": {\"name\": \"ct\", \"datatype\": \"integer\", \"unit\": \"MK\\u207b\\u00b9\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-unit-empty-omitted-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-prop-every-option-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4207248871274391, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"All\", \"datatype\": \"float\", \"format\": \"0:1:0.1\", \"settable\": true, \"retained\": false, \"unit\": \"%\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4207248871274391, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"All\", \"datatype\": \"float\", \"format\": \"0:1:0.1\", \"settable\": true, \"retained\": false, \"unit\": \"%\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-every-datatype-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2799797067559831, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"i\": {\"name\": \"i\", \"datatype\": \"integer\"}, \"f\": {\"name\": \"f\", \"datatype\": \"float\"}, \"b\": {\"name\": \"b\", \"datatype\": \"boolean\"}, \"s\": {\"name\": \"s\", \"datatype\": \"string\"}, \"e\": {\"name\": \"e\", \"datatype\": \"enum\", \"format\": \"a,b,c\"}, \"c\": {\"name\": \"c\", \"datatype\": \"color\", \"format\": \"rgb,hsv\"}, \"dt\": {\"name\": \"dt\", \"datatype\": \"datetime\"}, \"du\": {\"name\": \"du\", \"datatype\": \"duration\"}, \"j\": {\"name\": \"j\", \"datatype\": \"json\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2799797067559831, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"i\": {\"name\": \"i\", \"datatype\": \"integer\"}, \"f\": {\"name\": \"f\", \"datatype\": \"float\"}, \"b\": {\"name\": \"b\", \"datatype\": \"boolean\"}, \"s\": {\"name\": \"s\", \"datatype\": \"string\"}, \"e\": {\"name\": \"e\", \"datatype\": \"enum\", \"format\": \"a,b,c\"}, \"c\": {\"name\": \"c\", \"datatype\": \"color\", \"format\": \"rgb,hsv\"}, \"dt\": {\"name\": \"dt\", \"datatype\": \"datetime\"}, \"du\": {\"name\": \"du\", \"datatype\": \"duration\"}, \"j\": {\"name\": \"j\", \"datatype\": \"json\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-property-order-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4350072593684037, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4350072593684037, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-multiple-nodes-order-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 689620389774245, \"name\": \"dev\", \"nodes\": {\"z-node\": {\"name\": \"z-node\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}, \"a-node\": {\"name\": \"a-node\", \"properties\": {\"q\": {\"name\": \"q\", \"datatype\": \"float\"}}}, \"m\": {\"name\": \"m\", \"properties\": {\"r\": {\"name\": \"r\", \"datatype\": \"string\"}}}}, \"children\": [], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 689620389774245, \"name\": \"dev\", \"nodes\": {\"z-node\": {\"name\": \"z-node\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}, \"a-node\": {\"name\": \"a-node\", \"properties\": {\"q\": {\"name\": \"q\", \"datatype\": \"float\"}}}, \"m\": {\"name\": \"m\", \"properties\": {\"r\": {\"name\": \"r\", \"datatype\": \"string\"}}}}, \"children\": [], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-extensions-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2384861161266637, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [\"energy.ebus.imported\", \"org.example.feature\"]}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2384861161266637, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [\"energy.ebus.imported\", \"org.example.feature\"]}"
+      }
+    },
+    {
+      "id": "description-roundtrip-extras-scalar-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 714496110177991, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"imported-from\": \"vendor-x\"}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 714496110177991, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"imported-from\": \"vendor-x\"}"
+      }
+    },
+    {
+      "id": "description-roundtrip-extras-nested-and-float-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2647337103880958, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"z-extra\": {\"a\": [1, 2.5], \"b\": {\"c\": null, \"d\": true}}, \"a-extra\": 0.1, \"n\": 1e+16}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2647337103880958, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"z-extra\": {\"a\": [1, 2.5], \"b\": {\"c\": null, \"d\": true}}, \"a-extra\": 0.1, \"n\": 1e+16}"
+      }
+    },
+    {
+      "id": "description-roundtrip-extras-core-key-dropped-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3431881682669072, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"keep\": \"k\"}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3431881682669072, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"keep\": \"k\"}"
+      }
+    },
+    {
+      "id": "description-roundtrip-extras-unicode-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1209220764178055, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"label\": \"\\u00b0C \\ud83d\\ude00\", \"\\u00e9\": 1}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1209220764178055, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"label\": \"\\u00b0C \\ud83d\\ude00\", \"\\u00e9\": 1}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-one-bridge",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1477652449966850, \"type\": \"bridge\", \"name\": \"bridge\", \"nodes\": {}, \"children\": [\"relay\"], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1477652449966850, \"type\": \"bridge\", \"name\": \"bridge\", \"nodes\": {}, \"children\": [\"relay\"], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-one-relay",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1341968275767104, \"type\": \"relay\", \"name\": \"relay\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1341968275767104, \"type\": \"relay\", \"name\": \"relay\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-tree-zwave-bridge",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2127907897624128, \"name\": \"Zwave bridge\", \"nodes\": {}, \"children\": [\"dualrelay\"], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2127907897624128, \"name\": \"Zwave bridge\", \"nodes\": {}, \"children\": [\"dualrelay\"], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-tree-zwave-dualrelay",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 550551548909504, \"name\": \"Zwave relay\", \"nodes\": {}, \"children\": [\"light1\", \"light2\"], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 550551548909504, \"name\": \"Zwave relay\", \"nodes\": {}, \"children\": [\"light1\", \"light2\"], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-tree-zwave-light1",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3188320171093166, \"name\": \"First light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": [\"x.y.z\"]}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3188320171093166, \"name\": \"First light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": [\"x.y.z\"]}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-tree-zwave-light2",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 441073648771121, \"name\": \"Second light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 441073648771121, \"name\": \"Second light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-children-order-root",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2514209743640279, \"name\": \"root\", \"nodes\": {}, \"children\": [\"c-3\", \"c-1\", \"c-2\"], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2514209743640279, \"name\": \"root\", \"nodes\": {}, \"children\": [\"c-3\", \"c-1\", \"c-2\"], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-children-order-c-3",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3545180114001287, \"name\": \"c-3\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3545180114001287, \"name\": \"c-3\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-children-order-c-1",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 4203977339672320, \"name\": \"c-1\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4203977339672320, \"name\": \"c-1\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-children-order-c-2",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 503462664723912, \"name\": \"c-2\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 503462664723912, \"name\": \"c-2\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-with-extras-panel",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3336164530600545, \"type\": \"energy.ebus.device.panel\", \"name\": \"panel\", \"nodes\": {}, \"children\": [\"circuit-1\"], \"extensions\": [], \"vendor\": \"x\"}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3336164530600545, \"type\": \"energy.ebus.device.panel\", \"name\": \"panel\", \"nodes\": {}, \"children\": [\"circuit-1\"], \"extensions\": [], \"vendor\": \"x\"}"
+      }
+    },
+    {
+      "id": "description-roundtrip-child-with-extras-circuit-1",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2061440437905178, \"type\": \"energy.ebus.device.circuit\", \"name\": \"circuit-1\", \"nodes\": {\"power\": {\"name\": \"power\", \"properties\": {\"w\": {\"name\": \"Power\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"root\": \"panel\", \"parent\": \"panel\", \"extensions\": [], \"imported-from\": {\"id\": \"c1\", \"source\": \"span\"}}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2061440437905178, \"type\": \"energy.ebus.device.circuit\", \"name\": \"circuit-1\", \"nodes\": {\"power\": {\"name\": \"power\", \"properties\": {\"w\": {\"name\": \"Power\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"root\": \"panel\", \"parent\": \"panel\", \"extensions\": [], \"imported-from\": {\"id\": \"c1\", \"source\": \"span\"}}"
+      }
+    },
+    {
+      "id": "description-roundtrip-deep-chain-a",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2276249678046153, \"name\": \"a\", \"nodes\": {}, \"children\": [\"b\"], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2276249678046153, \"name\": \"a\", \"nodes\": {}, \"children\": [\"b\"], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-deep-chain-b",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1586246313388064, \"name\": \"b\", \"nodes\": {}, \"children\": [\"c\"], \"root\": \"a\", \"parent\": \"a\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1586246313388064, \"name\": \"b\", \"nodes\": {}, \"children\": [\"c\"], \"root\": \"a\", \"parent\": \"a\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-deep-chain-c",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2960512731190681, \"name\": \"c\", \"nodes\": {}, \"children\": [\"d\"], \"root\": \"a\", \"parent\": \"b\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2960512731190681, \"name\": \"c\", \"nodes\": {}, \"children\": [\"d\"], \"root\": \"a\", \"parent\": \"b\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-deep-chain-d",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1871248224717500, \"name\": \"d\", \"nodes\": {}, \"children\": [], \"root\": \"a\", \"parent\": \"c\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1871248224717500, \"name\": \"d\", \"nodes\": {}, \"children\": [], \"root\": \"a\", \"parent\": \"c\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-full-super-car",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 417805995514652, \"type\": \"org.example.car\", \"name\": \"Supercar\", \"nodes\": {\"engine\": {\"name\": \"Car engine\", \"type\": \"org.example.engine\", \"properties\": {\"temperature\": {\"name\": \"Engine temperature\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}, \"speed\": {\"name\": \"speed\", \"datatype\": \"integer\", \"unit\": \"rpm\"}}}, \"lights\": {\"name\": \"lights\", \"properties\": {\"color\": {\"name\": \"color\", \"datatype\": \"color\", \"format\": \"rgb\", \"settable\": true}, \"on\": {\"name\": \"on\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": [\"org.example.our-feature\"], \"model-year\": 2026}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 417805995514652, \"type\": \"org.example.car\", \"name\": \"Supercar\", \"nodes\": {\"engine\": {\"name\": \"Car engine\", \"type\": \"org.example.engine\", \"properties\": {\"temperature\": {\"name\": \"Engine temperature\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}, \"speed\": {\"name\": \"speed\", \"datatype\": \"integer\", \"unit\": \"rpm\"}}}, \"lights\": {\"name\": \"lights\", \"properties\": {\"color\": {\"name\": \"color\", \"datatype\": \"color\", \"format\": \"rgb\", \"settable\": true}, \"on\": {\"name\": \"on\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": [\"org.example.our-feature\"], \"model-year\": 2026}"
+      }
+    },
+    {
+      "id": "description-roundtrip-order-everywhere-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2847590153930449, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"float\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"string\"}}}, \"alpha\": {\"name\": \"alpha\", \"properties\": {\"mid\": {\"name\": \"mid\", \"datatype\": \"boolean\"}, \"zeta\": {\"name\": \"zeta\", \"datatype\": \"enum\", \"format\": \"b,a\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"json\"}}}, \"mid\": {\"name\": \"mid\", \"properties\": {\"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"integer\"}, \"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": [], \"zeta\": 1, \"alpha\": {\"a\": 1, \"b\": [2.5, null]}, \"mid\": \"m\"}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2847590153930449, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"float\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"string\"}}}, \"alpha\": {\"name\": \"alpha\", \"properties\": {\"mid\": {\"name\": \"mid\", \"datatype\": \"boolean\"}, \"zeta\": {\"name\": \"zeta\", \"datatype\": \"enum\", \"format\": \"b,a\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"json\"}}}, \"mid\": {\"name\": \"mid\", \"properties\": {\"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"integer\"}, \"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": [], \"zeta\": 1, \"alpha\": {\"a\": 1, \"b\": [2.5, null]}, \"mid\": \"m\"}"
+      }
+    },
+    {
+      "id": "description-roundtrip-order-children-root",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 2082327645974548, \"name\": \"root\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {}}, \"alpha\": {\"name\": \"alpha\", \"properties\": {}}}, \"children\": [\"zeta\", \"alpha\", \"mid\"], \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2082327645974548, \"name\": \"root\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {}}, \"alpha\": {\"name\": \"alpha\", \"properties\": {}}}, \"children\": [\"zeta\", \"alpha\", \"mid\"], \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-order-children-zeta",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 504340389629097, \"name\": \"zeta\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 504340389629097, \"name\": \"zeta\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-order-children-alpha",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1058158989916909, \"name\": \"alpha\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1058158989916909, \"name\": \"alpha\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    },
+    {
+      "id": "description-roundtrip-order-children-mid",
+      "source": "python-sdk:homie.py json.dumps(Device.description())",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 3402157720830792, \"name\": \"mid\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}}}}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3402157720830792, \"name\": \"mid\", \"nodes\": {\"zeta\": {\"name\": \"zeta\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}}}}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}"
+      }
+    }
+  ]
+}

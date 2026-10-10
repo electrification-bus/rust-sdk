@@ -14,9 +14,9 @@ use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
 
 use crate::HOMIE_DESCRIPTION_VERSION;
-use crate::datatype::Datatype;
+use crate::datatype::{Datatype, Decimal, is_float_payload, is_integer_payload};
 use crate::id::is_valid_id;
-use crate::pyfmt::{to_json as value_to_json, write_str, write_value};
+use crate::pyfmt::{Ordered, from_json_ordered, to_json as value_to_json, write_str, write_value};
 
 /// The core `$description` fields (convention.md: Device Attributes). An extra
 /// with one of these keys is never written.
@@ -78,8 +78,9 @@ pub struct NodeDescription {
 /// A device's `$description` (convention.md: Device Attributes).
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct DeviceDescription {
-    /// Document version; see [`DeviceDescription::compute_version`].
-    pub version: u64,
+    /// Document version: any JSON integer (convention.md: Device Attributes,
+    /// `version`); see [`DeviceDescription::compute_version`].
+    pub version: i128,
     /// Device type; omitted when `None`.
     pub r#type: Option<String>,
     /// Friendly name; `None` omits it (consumers default it to the device id).
@@ -113,7 +114,7 @@ pub enum DescriptionError {
     HomieInvalid,
     /// `version` is absent.
     VersionMissing,
-    /// `version` is not a non-negative integer that fits in 64 bits.
+    /// `version` is not an integer in the `i64` or `u64` range.
     VersionInvalid,
     /// A `name` is not a string.
     NameInvalid,
@@ -137,8 +138,12 @@ pub enum DescriptionError {
     DatatypeUnknown,
     /// A property's `format` is not a string.
     FormatInvalid,
-    /// An `enum` or `color` property has no `format` (convention.md: Formats).
+    /// An `enum` or `color` property has no or an empty `format`
+    /// (convention.md: Formats).
     FormatMissing,
+    /// A property's `format` breaks its datatype's format rules (convention.md:
+    /// Formats).
+    FormatIllegal,
     /// A property's `settable` is not a boolean.
     SettableInvalid,
     /// A property's `retained` is not a boolean.
@@ -179,6 +184,7 @@ impl DescriptionError {
             DescriptionError::DatatypeUnknown => "datatypeUnknown",
             DescriptionError::FormatInvalid => "formatInvalid",
             DescriptionError::FormatMissing => "formatMissing",
+            DescriptionError::FormatIllegal => "formatIllegal",
             DescriptionError::SettableInvalid => "settableInvalid",
             DescriptionError::RetainedInvalid => "retainedInvalid",
             DescriptionError::UnitInvalid => "unitInvalid",
@@ -440,44 +446,116 @@ impl DeviceDescription {
 
     /// `self` with `version` set to [`compute_version`](Self::compute_version).
     pub fn with_computed_version(mut self) -> Self {
-        self.version = self.compute_version();
+        self.version = i128::from(self.compute_version());
         self
     }
 }
 
-fn opt_str(
-    obj: &Map<String, Value>,
+/// A node or property [`parse_with_ignored`] left out because one of its known
+/// fields holds an illegal value (convention.md: Forward compatibility).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ignored {
+    /// The node's id, as received.
+    pub node: String,
+    /// The property's id, as received; `None` when the whole node was left out.
+    pub property: Option<String>,
+    /// The illegal value found.
+    pub error: DescriptionError,
+}
+
+/// An object's members in document order, keys unique.
+type Fields = Vec<(String, Ordered)>;
+
+/// Object nesting [`parse_with_ignored`] reads in document order: the
+/// document, `nodes`, a node, and its `properties`.
+const ORDERED_LEVELS: usize = 4;
+
+/// The members of `value` if it is an object.
+fn into_fields(value: Ordered) -> Option<Fields> {
+    match value {
+        Ordered::Object(items) => Some(items),
+        Ordered::Value(Value::Object(map)) => Some(
+            map.into_iter()
+                .map(|(k, v)| (k, Ordered::Value(v)))
+                .collect(),
+        ),
+        Ordered::Value(_) => None,
+    }
+}
+
+fn take(obj: &mut Fields, key: &str) -> Option<Ordered> {
+    let i = obj.iter().position(|(k, _)| k == key)?;
+    Some(obj.remove(i).1)
+}
+
+fn take_value(obj: &mut Fields, key: &str) -> Option<Value> {
+    take(obj, key).map(Ordered::into_value)
+}
+
+/// The object under `key`: empty when absent, `err` when not an object.
+fn take_fields(
+    obj: &mut Fields,
+    key: &str,
+    err: DescriptionError,
+) -> Result<Fields, DescriptionError> {
+    match take(obj, key) {
+        None => Ok(Vec::new()),
+        Some(value) => into_fields(value).ok_or(err),
+    }
+}
+
+fn take_str(
+    obj: &mut Fields,
     key: &str,
     err: DescriptionError,
 ) -> Result<Option<String>, DescriptionError> {
-    match obj.get(key) {
+    match take_value(obj, key) {
         None => Ok(None),
-        Some(Value::String(s)) => Ok(Some(s.clone())),
+        Some(Value::String(s)) => Ok(Some(s)),
         Some(_) => Err(err),
     }
 }
 
-fn opt_bool(
-    obj: &Map<String, Value>,
+fn take_bool(
+    obj: &mut Fields,
     key: &str,
     default: bool,
     err: DescriptionError,
 ) -> Result<bool, DescriptionError> {
-    match obj.get(key) {
+    match take_value(obj, key) {
         None => Ok(default),
-        Some(Value::Bool(b)) => Ok(*b),
+        Some(Value::Bool(b)) => Ok(b),
         Some(_) => Err(err),
     }
 }
 
-fn opt_id(
-    obj: &Map<String, Value>,
+fn take_id(
+    obj: &mut Fields,
     key: &str,
     err: DescriptionError,
 ) -> Result<Option<String>, DescriptionError> {
-    match obj.get(key) {
+    match take_value(obj, key) {
         None => Ok(None),
-        Some(Value::String(s)) if is_valid_id(s) => Ok(Some(s.clone())),
+        Some(Value::String(s)) if is_valid_id(&s) => Ok(Some(s)),
+        Some(_) => Err(err),
+    }
+}
+
+fn take_str_array(
+    obj: &mut Fields,
+    key: &str,
+    valid: impl Fn(&str) -> bool,
+    err: DescriptionError,
+) -> Result<Vec<String>, DescriptionError> {
+    match take_value(obj, key) {
+        None => Ok(Vec::new()),
+        Some(Value::Array(items)) => items
+            .into_iter()
+            .map(|v| match v {
+                Value::String(s) if valid(&s) => Ok(s),
+                _ => Err(err),
+            })
+            .collect(),
         Some(_) => Err(err),
     }
 }
@@ -489,129 +567,210 @@ fn is_homie_5(s: &str) -> bool {
         .is_some_and(|minor| !minor.is_empty() && minor.bytes().all(|b| b.is_ascii_digit()))
 }
 
-fn parse_property(value: &Value) -> Result<PropertyDescription, DescriptionError> {
-    let obj = value.as_object().ok_or(DescriptionError::PropertyInvalid)?;
-    let datatype = match obj.get("datatype") {
+/// Comma-separated values, none empty and none repeated (convention.md:
+/// Formats, enum).
+fn is_value_list(format: &str) -> bool {
+    let mut seen = BTreeSet::new();
+    format.split(',').all(|v| !v.is_empty() && seen.insert(v))
+}
+
+/// `[min]:[max][:step]` with min and max in the datatype's payload form and a
+/// step > 0 (convention.md: Formats, integer and float).
+fn is_numeric_format(format: &str, datatype: Datatype) -> bool {
+    let bound_ok = |b: &str| {
+        b.is_empty()
+            || match datatype {
+                Datatype::Integer => is_integer_payload(b) && b.parse::<i64>().is_ok(),
+                _ => is_float_payload(b),
+            }
+    };
+    let mut parts = format.split(':');
+    let (Some(low), Some(high)) = (parts.next(), parts.next()) else {
+        return false;
+    };
+    let step_ok = match parts.next() {
+        None => true,
+        Some(step) => {
+            is_float_payload(step) && Decimal::parse(step).is_some_and(|d| d > Decimal::from_i64(0))
+        }
+    };
+    parts.next().is_none() && bound_ok(low) && bound_ok(high) && step_ok
+}
+
+/// Check `format` against the datatype's rules (convention.md: Formats).
+fn check_format(datatype: Datatype, format: Option<&str>) -> Result<(), DescriptionError> {
+    let format = format.filter(|f| !f.is_empty());
+    let legal = match (datatype, format) {
+        (Datatype::Enum | Datatype::Color, None) => return Err(DescriptionError::FormatMissing),
+        (Datatype::Enum, Some(f)) => is_value_list(f),
+        (Datatype::Color, Some(f)) => f.split(',').all(|t| matches!(t, "rgb" | "hsv" | "xyz")),
+        (Datatype::Boolean, Some(f)) => is_value_list(f) && f.split(',').count() == 2,
+        (Datatype::Integer | Datatype::Float, Some(f)) => is_numeric_format(f, datatype),
+        _ => true,
+    };
+    if legal {
+        Ok(())
+    } else {
+        Err(DescriptionError::FormatIllegal)
+    }
+}
+
+fn parse_property(value: Ordered) -> Result<PropertyDescription, DescriptionError> {
+    let mut obj = into_fields(value).ok_or(DescriptionError::PropertyInvalid)?;
+    let datatype = match take_value(&mut obj, "datatype") {
         None => return Err(DescriptionError::DatatypeMissing),
-        Some(Value::String(s)) => Datatype::parse(s).ok_or(DescriptionError::DatatypeUnknown)?,
+        Some(Value::String(s)) => Datatype::parse(&s).ok_or(DescriptionError::DatatypeUnknown)?,
         Some(_) => return Err(DescriptionError::DatatypeUnknown),
     };
-    let format = opt_str(obj, "format", DescriptionError::FormatInvalid)?;
-    if format.is_none() && matches!(datatype, Datatype::Enum | Datatype::Color) {
-        return Err(DescriptionError::FormatMissing);
-    }
+    let format = take_str(&mut obj, "format", DescriptionError::FormatInvalid)?;
+    check_format(datatype, format.as_deref())?;
     Ok(PropertyDescription {
-        name: opt_str(obj, "name", DescriptionError::NameInvalid)?,
+        name: take_str(&mut obj, "name", DescriptionError::NameInvalid)?,
         datatype,
         format,
-        settable: opt_bool(obj, "settable", false, DescriptionError::SettableInvalid)?,
-        retained: opt_bool(obj, "retained", true, DescriptionError::RetainedInvalid)?,
-        unit: opt_str(obj, "unit", DescriptionError::UnitInvalid)?,
+        settable: take_bool(
+            &mut obj,
+            "settable",
+            false,
+            DescriptionError::SettableInvalid,
+        )?,
+        retained: take_bool(
+            &mut obj,
+            "retained",
+            true,
+            DescriptionError::RetainedInvalid,
+        )?,
+        unit: take_str(&mut obj, "unit", DescriptionError::UnitInvalid)?,
     })
 }
 
-fn parse_node(value: &Value) -> Result<NodeDescription, DescriptionError> {
-    let obj = value.as_object().ok_or(DescriptionError::NodeInvalid)?;
+fn parse_node(
+    id: &str,
+    value: Ordered,
+    ignored: &mut Vec<Ignored>,
+) -> Result<NodeDescription, DescriptionError> {
+    let mut obj = into_fields(value).ok_or(DescriptionError::NodeInvalid)?;
+    let name = take_str(&mut obj, "name", DescriptionError::NameInvalid)?;
+    let r#type = take_str(&mut obj, "type", DescriptionError::TypeInvalid)?;
+    let props = take_fields(&mut obj, "properties", DescriptionError::PropertiesInvalid)?;
     let mut properties = Vec::new();
-    match obj.get("properties") {
-        None => {}
-        Some(Value::Object(props)) => {
-            for (id, prop) in props {
-                if !is_valid_id(id) {
-                    return Err(DescriptionError::PropertyIdInvalid);
-                }
-                properties.push((id.clone(), parse_property(prop)?));
-            }
+    for (prop_id, prop) in props {
+        let parsed = if is_valid_id(&prop_id) {
+            parse_property(prop)
+        } else {
+            Err(DescriptionError::PropertyIdInvalid)
+        };
+        match parsed {
+            Ok(p) => properties.push((prop_id, p)),
+            Err(error) => ignored.push(Ignored {
+                node: id.to_string(),
+                property: Some(prop_id),
+                error,
+            }),
         }
-        Some(_) => return Err(DescriptionError::PropertiesInvalid),
     }
     Ok(NodeDescription {
-        name: opt_str(obj, "name", DescriptionError::NameInvalid)?,
-        r#type: opt_str(obj, "type", DescriptionError::TypeInvalid)?,
+        name,
+        r#type,
         properties,
     })
 }
 
 /// Parse and validate a received `$description` (convention.md: Device
-/// Attributes, Nodes, Properties).
-///
-/// Absent optional fields take their convention defaults. Unknown node and
-/// property fields are ignored; unknown top-level fields are kept in
-/// [`DeviceDescription::extras`]. Nodes, properties and extras come out in
-/// `serde_json::Map` iteration order.
+/// Attributes, Nodes, Properties); see [`parse_with_ignored`].
 pub fn parse(json: &str) -> Result<DeviceDescription, DescriptionError> {
-    let value: Value = serde_json::from_str(json).map_err(|_| DescriptionError::InvalidJson)?;
-    let Value::Object(obj) = value else {
-        return Err(DescriptionError::NotAnObject);
-    };
-    match obj.get("homie") {
+    parse_with_ignored(json).map(|(d, _)| d)
+}
+
+/// Parse and validate a received `$description`, and list the nodes and
+/// properties left out of it.
+///
+/// An illegal value in a device-level field rejects the document. An illegal
+/// value in a node or property (an invalid id, an unknown datatype, an illegal
+/// format, a field of the wrong type) leaves out only that node or property
+/// (convention.md: Forward compatibility). Absent optional fields take their
+/// convention defaults. Unknown node and property fields are ignored; unknown
+/// top-level fields are kept in [`DeviceDescription::extras`]. JSON is read as
+/// [`crate::pyfmt::from_json`] reads it.
+///
+/// Nodes, properties within each node, and extras come out in document order.
+/// A repeated key keeps its last value at the position of its first
+/// occurrence, as Python `json.loads` does, at every level. Objects nested
+/// inside an extra's value come out in `serde_json::Map` iteration order (key
+/// order, as `preserve_order` is off), so [`DeviceDescription::to_json`]
+/// reproduces the received bytes only when those nested keys are sorted.
+pub fn parse_with_ignored(
+    json: &str,
+) -> Result<(DeviceDescription, Vec<Ignored>), DescriptionError> {
+    let value = from_json_ordered(json, ORDERED_LEVELS).ok_or(DescriptionError::InvalidJson)?;
+    let mut obj = into_fields(value).ok_or(DescriptionError::NotAnObject)?;
+    match take_value(&mut obj, "homie") {
         None => return Err(DescriptionError::HomieMissing),
-        Some(Value::String(s)) if is_homie_5(s) => {}
+        Some(Value::String(s)) if is_homie_5(&s) => {}
         Some(_) => return Err(DescriptionError::HomieInvalid),
     }
-    let version = match obj.get("version") {
+    let version = match take_value(&mut obj, "version") {
         None => return Err(DescriptionError::VersionMissing),
-        Some(Value::Number(n)) => n.as_u64().ok_or(DescriptionError::VersionInvalid)?,
+        Some(Value::Number(n)) => n
+            .as_i64()
+            .map(i128::from)
+            .or_else(|| n.as_u64().map(i128::from))
+            .ok_or(DescriptionError::VersionInvalid)?,
         Some(_) => return Err(DescriptionError::VersionInvalid),
     };
-    let mut nodes = Vec::new();
-    match obj.get("nodes") {
-        None => {}
-        Some(Value::Object(map)) => {
-            for (id, node) in map {
-                if !is_valid_id(id) {
-                    return Err(DescriptionError::NodeIdInvalid);
-                }
-                nodes.push((id.clone(), parse_node(node)?));
-            }
-        }
-        Some(_) => return Err(DescriptionError::NodesInvalid),
-    }
-    let children = match obj.get("children") {
-        None => Vec::new(),
-        Some(Value::Array(items)) => items
-            .iter()
-            .map(|v| match v {
-                Value::String(s) if is_valid_id(s) => Ok(s.clone()),
-                _ => Err(DescriptionError::ChildrenInvalid),
-            })
-            .collect::<Result<Vec<_>, _>>()?,
-        Some(_) => return Err(DescriptionError::ChildrenInvalid),
-    };
-    let extensions = match obj.get("extensions") {
-        None => Vec::new(),
-        Some(Value::Array(items)) => items
-            .iter()
-            .map(|v| match v {
-                Value::String(s) => Ok(s.clone()),
-                _ => Err(DescriptionError::ExtensionsInvalid),
-            })
-            .collect::<Result<Vec<_>, _>>()?,
-        Some(_) => return Err(DescriptionError::ExtensionsInvalid),
-    };
-    let root = opt_id(&obj, "root", DescriptionError::RootInvalid)?;
-    let parent = opt_id(&obj, "parent", DescriptionError::ParentInvalid)?;
+    let node_map = take_fields(&mut obj, "nodes", DescriptionError::NodesInvalid)?;
+    let children = take_str_array(
+        &mut obj,
+        "children",
+        is_valid_id,
+        DescriptionError::ChildrenInvalid,
+    )?;
+    let extensions = take_str_array(
+        &mut obj,
+        "extensions",
+        |_| true,
+        DescriptionError::ExtensionsInvalid,
+    )?;
+    let root = take_id(&mut obj, "root", DescriptionError::RootInvalid)?;
+    let parent = take_id(&mut obj, "parent", DescriptionError::ParentInvalid)?;
     if parent.is_some() && root.is_none() {
         return Err(DescriptionError::ParentWithoutRoot);
     }
-    let name = opt_str(&obj, "name", DescriptionError::NameInvalid)?;
-    let r#type = opt_str(&obj, "type", DescriptionError::TypeInvalid)?;
-    let extras = obj
-        .iter()
-        .filter(|(k, _)| !CORE_FIELDS.contains(&k.as_str()))
-        .map(|(k, v)| (k.clone(), v.clone()))
-        .collect();
-    Ok(DeviceDescription {
-        version,
-        r#type,
-        name,
-        nodes,
-        children,
-        root,
-        parent,
-        extensions,
-        extras,
-    })
+    let name = take_str(&mut obj, "name", DescriptionError::NameInvalid)?;
+    let r#type = take_str(&mut obj, "type", DescriptionError::TypeInvalid)?;
+    let mut ignored = Vec::new();
+    let mut nodes = Vec::new();
+    for (id, node) in node_map {
+        let parsed = if is_valid_id(&id) {
+            parse_node(&id, node, &mut ignored)
+        } else {
+            Err(DescriptionError::NodeIdInvalid)
+        };
+        match parsed {
+            Ok(n) => nodes.push((id, n)),
+            Err(error) => ignored.push(Ignored {
+                node: id,
+                property: None,
+                error,
+            }),
+        }
+    }
+    // Every core field has been removed; what is left are the extras.
+    let extras = obj.into_iter().map(|(k, v)| (k, v.into_value())).collect();
+    Ok((
+        DeviceDescription {
+            version,
+            r#type,
+            name,
+            nodes,
+            children,
+            root,
+            parent,
+            extensions,
+            extras,
+        },
+        ignored,
+    ))
 }
 
 #[cfg(test)]
@@ -731,7 +890,7 @@ mod tests {
         }
         expect = (expect << 4) | u64::from(h[6] >> 4);
         assert_eq!(d.compute_version(), expect);
-        assert!(d.version < (1u64 << 53));
+        assert!(d.version < (1i128 << 53));
     }
 
     #[test]
@@ -746,7 +905,7 @@ mod tests {
         assert!(mode.1.settable);
         assert!(!mode.1.retained);
         assert_eq!(mode.1.datatype, Datatype::Enum);
-        assert_eq!(parsed.compute_version(), d.version);
+        assert_eq!(i128::from(parsed.compute_version()), d.version);
     }
 
     #[test]
@@ -772,64 +931,12 @@ mod tests {
             (r#"{"homie":"5.","version":1}"#, E::HomieInvalid),
             (r#"{"homie":5.0,"version":1}"#, E::HomieInvalid),
             (r#"{"homie":"5.0"}"#, E::VersionMissing),
-            (r#"{"homie":"5.0","version":-1}"#, E::VersionInvalid),
             (r#"{"homie":"5.0","version":1.5}"#, E::VersionInvalid),
             (r#"{"homie":"5.0","version":"1"}"#, E::VersionInvalid),
+            (r#"{"homie":"5.0","version":-0.0}"#, E::VersionInvalid),
             (r#"{"homie":"5.0","version":1,"name":null}"#, E::NameInvalid),
             (r#"{"homie":"5.0","version":1,"type":2}"#, E::TypeInvalid),
             (r#"{"homie":"5.0","version":1,"nodes":[]}"#, E::NodesInvalid),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"N":{}}}"#,
-                E::NodeIdInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":1}}"#,
-                E::NodeInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":[]}}}"#,
-                E::PropertiesInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p_":{}}}}}"#,
-                E::PropertyIdInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":[]}}}}"#,
-                E::PropertyInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{}}}}}"#,
-                E::DatatypeMissing,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"number"}}}}}"#,
-                E::DatatypeUnknown,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"json","format":{}}}}}}"#,
-                E::FormatInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"enum"}}}}}"#,
-                E::FormatMissing,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"color"}}}}}"#,
-                E::FormatMissing,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"string","settable":"true"}}}}}"#,
-                E::SettableInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"string","retained":0}}}}}"#,
-                E::RetainedInvalid,
-            ),
-            (
-                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"string","unit":null}}}}}"#,
-                E::UnitInvalid,
-            ),
             (
                 r#"{"homie":"5.0","version":1,"children":["A"]}"#,
                 E::ChildrenInvalid,
@@ -857,10 +964,244 @@ mod tests {
         }
     }
 
+    #[test]
+    fn parse_accepts_any_integer_version() {
+        for (text, want) in [
+            ("-5", -5i128),
+            ("-9223372036854775808", i128::from(i64::MIN)),
+            ("18446744073709551615", i128::from(u64::MAX)),
+            ("-0", 0),
+        ] {
+            let json = alloc::format!(r#"{{"homie":"5.0","version":{text}}}"#);
+            assert_eq!(parse(&json).map(|d| d.version), Ok(want), "{json}");
+        }
+    }
+
+    /// Wraps one property in node `n`, beside a valid property `ok`.
+    fn with_property(prop: &str) -> String {
+        alloc::format!(
+            r#"{{"homie":"5.0","version":1,"nodes":{{"n":{{"properties":{{"ok":{{"datatype":"string"}},"p":{prop}}}}}}}}}"#
+        )
+    }
+
+    #[test]
+    fn illegal_property_is_left_out() {
+        use DescriptionError as E;
+        let cases: &[(&str, E)] = &[
+            ("[]", E::PropertyInvalid),
+            ("{}", E::DatatypeMissing),
+            (r#"{"datatype":"number"}"#, E::DatatypeUnknown),
+            (r#"{"datatype":"vector"}"#, E::DatatypeUnknown),
+            (r#"{"datatype":"json","format":{}}"#, E::FormatInvalid),
+            (r#"{"datatype":"enum"}"#, E::FormatMissing),
+            (r#"{"datatype":"enum","format":""}"#, E::FormatMissing),
+            (r#"{"datatype":"color"}"#, E::FormatMissing),
+            (r#"{"datatype":"color","format":""}"#, E::FormatMissing),
+            (r#"{"datatype":"enum","format":"a,,b"}"#, E::FormatIllegal),
+            (r#"{"datatype":"enum","format":"a,b,a"}"#, E::FormatIllegal),
+            (r#"{"datatype":"enum","format":","}"#, E::FormatIllegal),
+            (
+                r#"{"datatype":"color","format":"rgb,cmyk"}"#,
+                E::FormatIllegal,
+            ),
+            (r#"{"datatype":"color","format":"RGB"}"#, E::FormatIllegal),
+            (r#"{"datatype":"boolean","format":"on"}"#, E::FormatIllegal),
+            (
+                r#"{"datatype":"boolean","format":"a,b,c"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"boolean","format":"on,on"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"abc:1:-3"}"#,
+                E::FormatIllegal,
+            ),
+            (r#"{"datatype":"integer","format":"5"}"#, E::FormatIllegal),
+            (
+                r#"{"datatype":"integer","format":"1.5:2"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"0:10:0"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"0:10:-1"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"0:10:"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"0:1:1:1"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"integer","format":"0:9223372036854775808"}"#,
+                E::FormatIllegal,
+            ),
+            (
+                r#"{"datatype":"float","format":"0:1e999"}"#,
+                E::FormatIllegal,
+            ),
+            (r#"{"datatype":"float","format":"x:y"}"#, E::FormatIllegal),
+            (
+                r#"{"datatype":"string","settable":"true"}"#,
+                E::SettableInvalid,
+            ),
+            (r#"{"datatype":"string","retained":0}"#, E::RetainedInvalid),
+            (r#"{"datatype":"string","unit":null}"#, E::UnitInvalid),
+            (r#"{"datatype":"string","name":1}"#, E::NameInvalid),
+        ];
+        for (prop, want) in cases {
+            let (d, ignored) = parse_with_ignored(&with_property(prop)).unwrap();
+            let ids: Vec<&str> = d.nodes[0]
+                .1
+                .properties
+                .iter()
+                .map(|(id, _)| id.as_str())
+                .collect();
+            assert_eq!(ids, ["ok"], "{prop}");
+            assert_eq!(
+                ignored,
+                [Ignored {
+                    node: "n".to_string(),
+                    property: Some("p".to_string()),
+                    error: *want,
+                }],
+                "{prop}"
+            );
+        }
+    }
+
+    #[test]
+    fn legal_formats_are_kept() {
+        for prop in [
+            r#"{"datatype":"enum","format":" a,a "}"#,
+            r#"{"datatype":"color","format":"xyz,rgb,hsv"}"#,
+            r#"{"datatype":"boolean","format":"off,on"}"#,
+            r#"{"datatype":"boolean","format":""}"#,
+            r#"{"datatype":"integer","format":":"}"#,
+            r#"{"datatype":"integer","format":"-5:35:2.5"}"#,
+            r#"{"datatype":"integer","format":""}"#,
+            r#"{"datatype":"float","format":"10.123:15.123"}"#,
+            r#"{"datatype":"float","format":"0::1e-400"}"#,
+            r#"{"datatype":"float","format":":-1e3"}"#,
+            r#"{"datatype":"string","format":"anything"}"#,
+            r#"{"datatype":"json","format":"not a schema"}"#,
+        ] {
+            let (d, ignored) = parse_with_ignored(&with_property(prop)).unwrap();
+            assert_eq!(ignored, [], "{prop}");
+            assert_eq!(d.nodes[0].1.properties.len(), 2, "{prop}");
+        }
+    }
+
+    #[test]
+    fn illegal_node_is_left_out() {
+        let json = r#"{"homie":"5.0","version":1,"nodes":{
+            "n":{"properties":{"ok":{"datatype":"integer"},"p":{"datatype":"vector"}}},
+            "m":{"properties":{"q":{"datatype":"string"}}},
+            "N":{},
+            "a":1,
+            "b":{"properties":[]},
+            "c":{"name":null},
+            "d":{"type":3},
+            "e":{"properties":{"P":{"datatype":"string"}}}}}"#;
+        let (d, ignored) = parse_with_ignored(json).unwrap();
+        let kept: Vec<(&str, Vec<&str>)> = d
+            .nodes
+            .iter()
+            .map(|(id, n)| {
+                (
+                    id.as_str(),
+                    n.properties.iter().map(|(p, _)| p.as_str()).collect(),
+                )
+            })
+            .collect();
+        assert_eq!(kept, [("n", vec!["ok"]), ("m", vec!["q"]), ("e", vec![])]);
+        use DescriptionError as E;
+        let ignored: Vec<(&str, Option<&str>, E)> = ignored
+            .iter()
+            .map(|i| (i.node.as_str(), i.property.as_deref(), i.error))
+            .collect();
+        assert_eq!(
+            ignored,
+            [
+                ("n", Some("p"), E::DatatypeUnknown),
+                ("N", None, E::NodeIdInvalid),
+                ("a", None, E::NodeInvalid),
+                ("b", None, E::PropertiesInvalid),
+                ("c", None, E::NameInvalid),
+                ("d", None, E::TypeInvalid),
+                ("e", Some("P"), E::PropertyIdInvalid),
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_keeps_document_order() {
+        let json = r#"{"homie": "5.0", "version": 7, "nodes": {"zeta": {"properties": {"zeta": {"datatype": "integer"}, "alpha": {"datatype": "integer"}, "mid": {"datatype": "integer"}}}, "alpha": {"properties": {}}, "mid": {"properties": {}}}, "children": [], "extensions": [], "z-extra": 1, "a-extra": {"a": 1, "b": 2}, "m": 2}"#;
+        let d = parse(json).unwrap();
+        let ids = |items: &[(String, NodeDescription)]| -> Vec<String> {
+            items.iter().map(|(id, _)| id.clone()).collect()
+        };
+        assert_eq!(ids(&d.nodes), ["zeta", "alpha", "mid"]);
+        let props: Vec<&str> = d.nodes[0]
+            .1
+            .properties
+            .iter()
+            .map(|(id, _)| id.as_str())
+            .collect();
+        assert_eq!(props, ["zeta", "alpha", "mid"]);
+        let extras: Vec<&str> = d.extras.iter().map(|(k, _)| k.as_str()).collect();
+        assert_eq!(extras, ["z-extra", "a-extra", "m"]);
+        assert_eq!(d.to_json(), json);
+    }
+
+    /// Python `json.loads` keeps a repeated key's last value at its first
+    /// position, at every level.
+    #[test]
+    fn parse_repeated_key_keeps_last_value() {
+        let json = r#"{"homie":"4.0","version":1,"nodes":{
+            "b":{"properties":{"q":{"datatype":"vector"},"p":{"datatype":"string"},"q":{"datatype":"integer"}}},
+            "a":1,
+            "b":{"name":"B","properties":{"y":{"datatype":"float"},"x":{"datatype":"json"},"y":{"datatype":"string"}}}},
+            "x":1,"w":2,"x":3,"homie":"5.0","nodes":{
+            "b":{"properties":{"y":{"datatype":"float"},"x":{"datatype":"json"},"y":{"datatype":"string"}},"name":"B"},
+            "a":{},"b":{"name":"B","properties":{"y":{"datatype":"float"},"x":{"datatype":"json"},"y":{"datatype":"string"}}}}}"#;
+        let d = parse(json).unwrap();
+        let ids: Vec<&str> = d.nodes.iter().map(|(id, _)| id.as_str()).collect();
+        assert_eq!(ids, ["b", "a"]);
+        let b = &d.nodes[0].1;
+        assert_eq!(b.name.as_deref(), Some("B"));
+        let props: Vec<(&str, Datatype)> = b
+            .properties
+            .iter()
+            .map(|(p, d)| (p.as_str(), d.datatype))
+            .collect();
+        assert_eq!(props, [("y", Datatype::String), ("x", Datatype::Json)]);
+        assert_eq!(d.nodes[1].1, NodeDescription::default());
+        assert_eq!(
+            d.extras,
+            [
+                ("x".to_string(), Value::from(3)),
+                ("w".to_string(), Value::from(2))
+            ]
+        );
+        // A repeated `homie` is judged by its last value.
+        assert_eq!(
+            parse(r#"{"homie":"5.0","version":1,"homie":"4.0"}"#),
+            Err(DescriptionError::HomieInvalid)
+        );
+    }
+
     const PY_ROOT_JSON: &str = r#"{"homie": "5.0", "version": 1696986812873435, "type": "ebus/panel", "name": "Panel 1", "nodes": {"meter": {"name": "Meter", "properties": {"power": {"name": "power", "datatype": "float", "format": "-100:100", "unit": "W"}, "mode": {"name": "Mode \u00b0C", "datatype": "enum", "format": "on,off", "settable": true, "retained": false}, "blank": {"name": "blank", "datatype": "string"}}}}, "children": ["bridge"], "extensions": ["eu.ebus.x:1.0:[5.x]"]}"#;
-    const PY_ROOT_VERSION: u64 = 1696986812873435;
+    const PY_ROOT_VERSION: i128 = 1696986812873435;
     const PY_CHILD_JSON: &str = r#"{"homie": "5.0", "version": 2077292240377668, "type": "ebus/circuit", "name": "Circuit \ud83d\ude00", "nodes": {"relay": {"name": "relay", "type": "switch", "properties": {}}}, "children": [], "root": "panel-1", "parent": "bridge", "extensions": [], "zeta": {"a": [1, 2], "b": 1.5}, "alpha": 1e+16}"#;
-    const PY_CHILD_VERSION: u64 = 2077292240377668;
+    const PY_CHILD_VERSION: i128 = 2077292240377668;
     const PY_EMPTY_JSON: &str = r#"{"homie": "5.0", "version": 596216508486095, "name": "x", "nodes": {}, "children": [], "extensions": []}"#;
-    const PY_EMPTY_VERSION: u64 = 596216508486095;
+    const PY_EMPTY_VERSION: i128 = 596216508486095;
 }

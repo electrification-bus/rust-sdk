@@ -14,7 +14,8 @@ use serde_json::Value;
 fn load(suite: &str) -> Vec<Value> {
     let path = format!("{}/../../vectors/{suite}.json", env!("CARGO_MANIFEST_DIR"));
     let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
-    let doc: Value = serde_json::from_str(&text).unwrap_or_else(|e| panic!("{path}: {e}"));
+    // `from_json` rounds floats correctly, so Python repr text reads back exactly.
+    let doc = pyfmt::from_json(&text).unwrap_or_else(|| panic!("{path}: not JSON"));
     assert_eq!(doc["suite"], suite, "{path}: suite name");
     match doc.get("cases") {
         Some(Value::Array(cases)) => cases.clone(),
@@ -291,13 +292,41 @@ fn payloads_json() {
 #[test]
 fn description_parse() {
     run("description", |input, expect| {
-        let got = description::parse(str_field(input, "payload")?);
+        let got = description::parse_with_ignored(str_field(input, "payload")?);
         let valid = field(expect, "valid")?
             .as_bool()
             .ok_or("valid not a bool")?;
         match (got, valid) {
-            (Ok(_), true) | (Err(_), false) => Ok(()),
-            (Ok(d), false) => Err(format!(
+            (Err(_), false) => Ok(()),
+            (Ok((d, ignored)), true) => {
+                let want = match expect.get("ignored") {
+                    None => Vec::new(),
+                    Some(Value::Array(items)) => items
+                        .iter()
+                        .map(|i| Ok((str_field(i, "node")?.to_string(), opt_str(i, "property")?)))
+                        .collect::<Result<Vec<_>, String>>()?,
+                    Some(other) => return Err(format!("ignored is not an array: {other}")),
+                };
+                let got: Vec<(String, Option<String>)> = ignored
+                    .iter()
+                    .map(|i| (i.node.clone(), i.property.clone()))
+                    .collect();
+                expect_eq(&got, &want)?;
+                // Nothing ignored is left in the description.
+                for (node, prop) in &want {
+                    let kept = d.nodes.iter().find(|(id, _)| id == node);
+                    let present = match (kept, prop) {
+                        (None, _) => false,
+                        (Some(_), None) => true,
+                        (Some((_, n)), Some(p)) => n.properties.iter().any(|(id, _)| id == p),
+                    };
+                    if present {
+                        return Err(format!("ignored {node}/{prop:?} is still present"));
+                    }
+                }
+                Ok(())
+            }
+            (Ok((d, _)), false) => Err(format!(
                 "accepted as {d:?}, want rejection ({})",
                 expect.get("error").unwrap_or(&Value::Null)
             )),
@@ -307,16 +336,16 @@ fn description_parse() {
 }
 
 #[test]
-fn parity_float_format() {
-    run("parity/float-format", |input, expect| {
+fn python_sdk_float_format() {
+    run("python-sdk/float-format", |input, expect| {
         let x = f64_from_bits_hex(str_field(input, "f64_bits")?)?;
         expect_eq(pyfmt::format_float(x), opt_str(expect, "payload")?)
     });
 }
 
 #[test]
-fn parity_sanitize_id() {
-    run("parity/sanitize-id", |input, expect| {
+fn python_sdk_sanitize_id() {
+    run("python-sdk/sanitize-id", |input, expect| {
         expect_eq(
             id::sanitize_id(str_field(input, "value")?),
             str_field(expect, "id")?.to_string(),
@@ -325,8 +354,8 @@ fn parity_sanitize_id() {
 }
 
 #[test]
-fn parity_set_payload() {
-    run("parity/set-payload", |input, expect| {
+fn python_sdk_set_payload() {
+    run("python-sdk/set-payload", |input, expect| {
         let text = payload_text(input)?;
         let format = opt_str(input, "format")?;
         let current = match field(input, "current")? {
@@ -354,10 +383,9 @@ fn parity_set_payload() {
 }
 
 #[test]
-fn parity_json_dumps() {
-    run("parity/json-dumps", |input, expect| {
-        let value: Value = serde_json::from_str(str_field(input, "json")?)
-            .map_err(|e| format!("input JSON: {e}"))?;
+fn python_sdk_json_dumps() {
+    run("python-sdk/json-dumps", |input, expect| {
+        let value = pyfmt::from_json(str_field(input, "json")?).ok_or("input is not JSON")?;
         expect_eq(
             pyfmt::to_json(&value, true),
             str_field(expect, "text")?.to_string(),
@@ -366,8 +394,8 @@ fn parity_json_dumps() {
 }
 
 #[test]
-fn parity_encode_duration() {
-    run("parity/encode-duration", |input, expect| {
+fn python_sdk_encode_duration() {
+    run("python-sdk/encode-duration", |input, expect| {
         let secs = field(input, "total_seconds")?
             .as_u64()
             .ok_or("total_seconds not a u64")?;
@@ -449,8 +477,8 @@ fn build_description(input: &Value) -> Result<DeviceDescription, String> {
 }
 
 #[test]
-fn parity_description_wire() {
-    run("parity/description-wire", |input, expect| {
+fn python_sdk_description_wire() {
+    run("python-sdk/description-wire", |input, expect| {
         let d = build_description(input)?;
         let mut errors = Vec::new();
         let hash = hex_encode(&d.content_hash());
@@ -474,5 +502,18 @@ fn parity_description_wire() {
         } else {
             Err(errors.join("; "))
         }
+    });
+}
+
+#[test]
+fn python_sdk_description_roundtrip() {
+    run("python-sdk/description-roundtrip", |input, expect| {
+        let payload = str_field(input, "payload")?;
+        let (d, ignored) = description::parse_with_ignored(payload)
+            .map_err(|e| format!("rejected: {}", e.as_str()))?;
+        if !ignored.is_empty() {
+            return Err(format!("ignored {ignored:?}"));
+        }
+        expect_eq(d.to_json(), str_field(expect, "wire")?.to_string())
     });
 }

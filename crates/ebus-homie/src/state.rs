@@ -95,13 +95,11 @@ impl FromStr for DeviceState {
 /// Effective state of a device given its root's reported state.
 ///
 /// `root_state` is `None` for a root device or when the root's state is not
-/// known. A root in any state other than `ready` imposes that state on its
-/// tree; otherwise the device's own state stands. This follows the Python SDK's
-/// `HOMIE_EFFECTIVE_STATE_TABLE`, which generalizes convention.md (Device
-/// Hierarchy) where only a `lost` root propagates.
+/// known. A root in `lost` makes its whole tree `lost`; in every other case the
+/// device's own state stands (convention.md: Device hierarchy).
 pub fn effective_state(root_state: Option<DeviceState>, own: DeviceState) -> DeviceState {
     match root_state {
-        Some(root) if root != DeviceState::Ready => root,
+        Some(DeviceState::Lost) => DeviceState::Lost,
         _ => own,
     }
 }
@@ -132,10 +130,10 @@ mod tests {
             assert_eq!(effective_state(None, own), own);
             assert_eq!(effective_state(Some(DeviceState::Ready), own), own);
             for root in DeviceState::ALL {
-                let expected = if root == DeviceState::Ready {
-                    own
+                let expected = if root == DeviceState::Lost {
+                    DeviceState::Lost
                 } else {
-                    root
+                    own
                 };
                 assert_eq!(effective_state(Some(root), own), expected);
             }

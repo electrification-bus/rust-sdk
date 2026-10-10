@@ -291,6 +291,128 @@
         "valid": false,
         "problem": "jsonInvalid"
       }
+    },
+    {
+      "id": "json-float-repr-round-trip",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[912068.5437784989]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          912068.5437784989
+        ]
+      }
+    },
+    {
+      "id": "json-float-long-digits",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[2.283038836859574890682e201]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          2.2830388368595749e+201
+        ]
+      }
+    },
+    {
+      "id": "json-float-many-digits",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[0.1000000000000000055511151231257827021181583404541015625]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          0.1
+        ]
+      }
+    },
+    {
+      "id": "json-neg-zero-int",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[-0]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          0
+        ]
+      }
+    },
+    {
+      "id": "json-neg-zero-float",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[-0.0]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          -0.0
+        ]
+      }
+    },
+    {
+      "id": "json-int-u64-max",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[18446744073709551615]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          18446744073709551615
+        ]
+      }
+    },
+    {
+      "id": "json-int-i64-min",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[-9223372036854775808]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          -9223372036854775808
+        ]
+      }
+    },
+    {
+      "id": "json-number-overflows-to-infinity",
+      "source": "homie-5:convention.md#json (convention.md:149-150): a number beyond the f64 range decodes to an infinity, which has no JSON form, and a lone surrogate is not a Unicode scalar value; python-sdk#110 item 4",
+      "input": {
+        "datatype": "json",
+        "payload": "[1e400]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-lone-surrogate-escape",
+      "source": "homie-5:convention.md#json (convention.md:149-150): a number beyond the f64 range decodes to an infinity, which has no JSON form, and a lone surrogate is not a Unicode scalar value; python-sdk#110 item 4",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"\\ud800\"]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
     }
   ]
 }

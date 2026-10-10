@@ -3,12 +3,15 @@
 //!
 //! [`format_float`] is the Python SDK's float payload form; [`to_json`],
 //! [`write_str`] and [`write_value`] reproduce `json.dumps` with its default
-//! options (`ensure_ascii=True`, separators `", "` and `": "`).
+//! options (`ensure_ascii=True`, separators `", "` and `": "`); [`from_json`]
+//! reads JSON text as `json.loads` does.
 
+use alloc::collections::BTreeMap;
 use alloc::string::String;
+use alloc::vec::Vec;
 use core::fmt::Write as _;
 
-use serde_json::Value;
+use serde_json::{Map, Number, Value};
 
 /// Python `repr(x)` for a finite float; `None` when `x` is NaN or infinite.
 ///
@@ -82,32 +85,51 @@ fn round_tie_to_even(digits: &mut String, exp: i32, x: f64) {
     if last % 2 == 0 || (digits.len() == 1 && last == b'1') {
         return;
     }
-    let mut lowered = String::with_capacity(digits.len());
-    lowered.push_str(digits.get(..digits.len() - 1).unwrap_or(""));
-    lowered.push(char::from(last - 1));
+    let lowered_len = digits.len();
+    // The tie digits: `digits` with the last one lowered, then a `5`.
+    let mut tie = String::with_capacity(lowered_len + 1);
+    tie.push_str(digits.get(..lowered_len - 1).unwrap_or(""));
+    tie.push(char::from(last - 1));
+    tie.push('5');
+    // Prefilter: `x` rounded to one more significant digit than `digits` must
+    // print as the tie digits. Most values fail here, before the exact print.
+    let mut buf = String::new();
+    let _ = write!(buf, "{:.*e}", lowered_len, x.abs());
+    if !same_digits(&buf, exp, &tie) {
+        return;
+    }
     // Every finite f64 has at most 767 significant decimal digits, so this
     // precision prints its exact value.
-    let mut exact = String::new();
-    let _ = write!(exact, "{:.800e}", x.abs());
-    let Some((exact_mantissa, exact_exp)) = exact.split_once('e') else {
+    buf.clear();
+    let _ = write!(buf, "{:.800e}", x.abs());
+    if !same_digits(&buf, exp, &tie) {
         return;
+    }
+    tie.pop();
+    buf.clear();
+    let _ = write!(buf, "{tie}e{}", exp - (tie.len() as i32 - 1));
+    if buf.parse::<f64>().ok() == Some(x.abs()) {
+        *digits = tie;
+    }
+}
+
+/// Whether `sci` (`d[.ddd]eN`, as `{:e}` prints) has exponent `exp` and,
+/// ignoring trailing zeros, significant digits `digits` (which must not end in
+/// `0`).
+fn same_digits(sci: &str, exp: i32, digits: &str) -> bool {
+    let Some((mantissa, exp_text)) = sci.split_once('e') else {
+        return false;
     };
-    if exact_exp.parse::<i32>().ok() != Some(exp) {
-        return;
+    if exp_text.parse::<i32>().ok() != Some(exp) {
+        return false;
     }
-    let exact_digits: String = exact_mantissa.chars().filter(|c| *c != '.').collect();
-    let exact_digits = exact_digits.trim_end_matches('0');
-    let is_tie = exact_digits.len() == lowered.len() + 1
-        && exact_digits.starts_with(lowered.as_str())
-        && exact_digits.ends_with('5');
-    if !is_tie {
-        return;
-    }
-    let mut candidate = String::new();
-    let _ = write!(candidate, "{lowered}e{}", exp - (lowered.len() as i32 - 1));
-    if candidate.parse::<f64>().ok() == Some(x.abs()) {
-        *digits = lowered;
-    }
+    let mut want = digits.bytes();
+    mantissa
+        .trim_end_matches('0')
+        .bytes()
+        .filter(|&b| b != b'.')
+        .all(|b| want.next() == Some(b))
+        && want.next().is_none()
 }
 
 /// Python SDK float payload text: `repr(float(x)).replace("e+", "e")`; `None`
@@ -214,6 +236,326 @@ pub fn write_str(out: &mut String, s: &str) {
     out.push('"');
 }
 
+/// Most arrays and objects [`from_json`] accepts nested inside one another.
+/// Python's limit is its recursion limit (about 1000, less the caller's stack
+/// depth); this one bounds the stack the parse, `Drop` and [`to_json`] use.
+pub const MAX_JSON_DEPTH: usize = 128;
+
+/// Parse JSON text as Python `json.loads` does, or `None` when it is not JSON.
+///
+/// Floats are correctly rounded, so Python's `repr` output parses to the same
+/// f64. A number with no fraction or exponent is an integer `Value` (`-0` is
+/// `0`, as Python makes it). `NaN`, `Infinity` and `-Infinity` are rejected, as
+/// in the Python SDK. Rejected where Python accepts, because a `Value` cannot
+/// hold the result: an integer outside `i64` and `u64`, a float that overflows
+/// to an infinity (`1e400`), a lone surrogate escape (`"\ud800"`), and nesting
+/// deeper than [`MAX_JSON_DEPTH`]. Objects keep `serde_json::Map` order (key
+/// order); a repeated key keeps its last value, as in Python.
+pub fn from_json(text: &str) -> Option<Value> {
+    let mut parser = JsonParser {
+        text,
+        bytes: text.as_bytes(),
+        pos: 0,
+    };
+    parser.skip_ws();
+    let value = parser.value(0)?;
+    parser.skip_ws();
+    (parser.pos == parser.bytes.len()).then_some(value)
+}
+
+/// A JSON value read by [`from_json_ordered`].
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Ordered {
+    /// An object's members in document order.
+    Object(Vec<(String, Ordered)>),
+    /// Any other value, or an object nested too deep to keep its order.
+    Value(Value),
+}
+
+impl Ordered {
+    /// The value with every object as a `serde_json::Map` (key order).
+    pub(crate) fn into_value(self) -> Value {
+        match self {
+            Ordered::Object(items) => Value::Object(
+                items
+                    .into_iter()
+                    .map(|(k, v)| (k, v.into_value()))
+                    .collect(),
+            ),
+            Ordered::Value(v) => v,
+        }
+    }
+}
+
+/// [`from_json`], except that objects nested no deeper than `levels` (the top
+/// level is 1) keep their members in document order. A repeated key keeps its
+/// last value at the position of its first occurrence, as a Python `dict` does.
+pub(crate) fn from_json_ordered(text: &str, levels: usize) -> Option<Ordered> {
+    let mut parser = JsonParser {
+        text,
+        bytes: text.as_bytes(),
+        pos: 0,
+    };
+    parser.skip_ws();
+    let value = parser.ordered(0, levels)?;
+    parser.skip_ws();
+    (parser.pos == parser.bytes.len()).then_some(value)
+}
+
+struct JsonParser<'a> {
+    text: &'a str,
+    bytes: &'a [u8],
+    pos: usize,
+}
+
+impl JsonParser<'_> {
+    fn peek(&self) -> Option<u8> {
+        self.bytes.get(self.pos).copied()
+    }
+
+    /// Python's JSON whitespace: space, tab, newline, carriage return.
+    fn skip_ws(&mut self) {
+        while matches!(self.peek(), Some(b' ' | b'\t' | b'\n' | b'\r')) {
+            self.pos += 1;
+        }
+    }
+
+    fn eat(&mut self, byte: u8) -> Option<()> {
+        (self.peek() == Some(byte)).then(|| self.pos += 1)
+    }
+
+    fn literal(&mut self, word: &str, value: Value) -> Option<Value> {
+        let end = self.pos.checked_add(word.len())?;
+        (self.bytes.get(self.pos..end) == Some(word.as_bytes())).then(|| {
+            self.pos = end;
+            value
+        })
+    }
+
+    fn value(&mut self, depth: usize) -> Option<Value> {
+        match self.peek()? {
+            b'{' => self.object(depth + 1),
+            b'[' => self.array(depth + 1),
+            b'"' => self.string().map(Value::String),
+            b't' => self.literal("true", Value::Bool(true)),
+            b'f' => self.literal("false", Value::Bool(false)),
+            b'n' => self.literal("null", Value::Null),
+            b'-' | b'0'..=b'9' => self.number(),
+            _ => None,
+        }
+    }
+
+    fn array(&mut self, depth: usize) -> Option<Value> {
+        if depth > MAX_JSON_DEPTH {
+            return None;
+        }
+        self.pos += 1;
+        let mut items = Vec::new();
+        self.skip_ws();
+        if self.eat(b']').is_some() {
+            return Some(Value::Array(items));
+        }
+        loop {
+            items.push(self.value(depth)?);
+            self.skip_ws();
+            match self.peek()? {
+                b',' => {
+                    self.pos += 1;
+                    self.skip_ws();
+                }
+                b']' => {
+                    self.pos += 1;
+                    return Some(Value::Array(items));
+                }
+                _ => return None,
+            }
+        }
+    }
+
+    fn object(&mut self, depth: usize) -> Option<Value> {
+        let mut map = Map::new();
+        self.members(depth, |parser, key| {
+            let item = parser.value(depth)?;
+            map.insert(key, item);
+            Some(())
+        })?;
+        Some(Value::Object(map))
+    }
+
+    /// The members of the object at the opening brace, each passed to `member`
+    /// with its key once the parser is at the start of its value.
+    fn members(
+        &mut self,
+        depth: usize,
+        mut member: impl FnMut(&mut Self, String) -> Option<()>,
+    ) -> Option<()> {
+        if depth > MAX_JSON_DEPTH {
+            return None;
+        }
+        self.pos += 1;
+        self.skip_ws();
+        if self.eat(b'}').is_some() {
+            return Some(());
+        }
+        loop {
+            if self.peek()? != b'"' {
+                return None;
+            }
+            let key = self.string()?;
+            self.skip_ws();
+            self.eat(b':')?;
+            self.skip_ws();
+            member(self, key)?;
+            self.skip_ws();
+            match self.peek()? {
+                b',' => {
+                    self.pos += 1;
+                    self.skip_ws();
+                }
+                b'}' => {
+                    self.pos += 1;
+                    return Some(());
+                }
+                _ => return None,
+            }
+        }
+    }
+
+    /// A value whose objects keep document order while they are nested no
+    /// deeper than `levels`.
+    fn ordered(&mut self, depth: usize, levels: usize) -> Option<Ordered> {
+        if self.peek()? != b'{' || depth >= levels {
+            return self.value(depth).map(Ordered::Value);
+        }
+        let depth = depth + 1;
+        let mut items: Vec<(String, Ordered)> = Vec::new();
+        let mut index: BTreeMap<String, usize> = BTreeMap::new();
+        self.members(depth, |parser, key| {
+            let item = parser.ordered(depth, levels)?;
+            match index.get(&key).and_then(|&i| items.get_mut(i)) {
+                Some(slot) => slot.1 = item,
+                None => {
+                    index.insert(key.clone(), items.len());
+                    items.push((key, item));
+                }
+            }
+            Some(())
+        })?;
+        Some(Ordered::Object(items))
+    }
+
+    /// The string starting at the opening quote (Python's strict mode: no raw
+    /// control characters).
+    fn string(&mut self) -> Option<String> {
+        self.pos += 1;
+        let mut out = String::new();
+        loop {
+            let start = self.pos;
+            while matches!(self.peek(), Some(b) if b != b'"' && b != b'\\' && b >= 0x20) {
+                self.pos += 1;
+            }
+            // The run ends at an ASCII byte, so it is a char boundary.
+            out.push_str(self.text.get(start..self.pos)?);
+            match self.peek()? {
+                b'"' => {
+                    self.pos += 1;
+                    return Some(out);
+                }
+                b'\\' => {
+                    self.pos += 1;
+                    let escape = self.peek()?;
+                    self.pos += 1;
+                    out.push(match escape {
+                        b'"' => '"',
+                        b'\\' => '\\',
+                        b'/' => '/',
+                        b'b' => '\u{08}',
+                        b'f' => '\u{0c}',
+                        b'n' => '\n',
+                        b'r' => '\r',
+                        b't' => '\t',
+                        b'u' => self.unicode_escape()?,
+                        _ => return None,
+                    });
+                }
+                _ => return None,
+            }
+        }
+    }
+
+    /// The char of a `\uXXXX` escape (after the `u`), joining a surrogate pair.
+    fn unicode_escape(&mut self) -> Option<char> {
+        let unit = self.hex4()?;
+        match unit {
+            0xd800..=0xdbff => {
+                self.eat(b'\\')?;
+                self.eat(b'u')?;
+                let low = self.hex4()?;
+                if !(0xdc00..=0xdfff).contains(&low) {
+                    return None;
+                }
+                char::from_u32(0x10000 + ((unit - 0xd800) << 10) + (low - 0xdc00))
+            }
+            _ => char::from_u32(unit),
+        }
+    }
+
+    fn hex4(&mut self) -> Option<u32> {
+        let end = self.pos.checked_add(4)?;
+        let digits = self.bytes.get(self.pos..end)?;
+        let mut unit = 0u32;
+        for &b in digits {
+            unit = unit * 16 + char::from(b).to_digit(16)?;
+        }
+        self.pos = end;
+        Some(unit)
+    }
+
+    /// `-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][-+]?[0-9]+)?`, as Python's scanner
+    /// reads it: a float when there is a fraction or exponent, else an integer.
+    fn number(&mut self) -> Option<Value> {
+        let start = self.pos;
+        let negative = self.eat(b'-').is_some();
+        match self.peek()? {
+            b'0' => self.pos += 1,
+            b'1'..=b'9' => self.digits(),
+            _ => return None,
+        }
+        let mut is_float = false;
+        if self.peek() == Some(b'.') && matches!(self.bytes.get(self.pos + 1), Some(b'0'..=b'9')) {
+            self.pos += 1;
+            self.digits();
+            is_float = true;
+        }
+        if matches!(self.peek(), Some(b'e' | b'E')) {
+            let mut after = self.pos + 1;
+            if matches!(self.bytes.get(after), Some(b'+' | b'-')) {
+                after += 1;
+            }
+            if matches!(self.bytes.get(after), Some(b'0'..=b'9')) {
+                self.pos = after;
+                self.digits();
+                is_float = true;
+            }
+        }
+        let text = self.text.get(start..self.pos)?;
+        if is_float {
+            let x: f64 = text.parse().ok()?;
+            Number::from_f64(x).map(Value::Number)
+        } else if negative {
+            text.parse::<i64>().ok().map(Value::from)
+        } else {
+            text.parse::<u64>().ok().map(Value::from)
+        }
+    }
+
+    fn digits(&mut self) {
+        while matches!(self.peek(), Some(b'0'..=b'9')) {
+            self.pos += 1;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -275,5 +617,215 @@ mod tests {
             to_json(&json!({"z": {"y": 1, "x": 2}}), true),
             r#"{"z": {"x": 2, "y": 1}}"#
         );
+    }
+
+    #[test]
+    fn from_json_accepts_what_python_does() {
+        let cases: &[(&str, &str)] = &[
+            (" [1, 2] ", "[1, 2]"),
+            ("\t{\"b\" : 1 ,\n\"a\":2}\r", r#"{"a": 2, "b": 1}"#),
+            (r#"{"a": 1, "a": 2}"#, r#"{"a": 2}"#),
+            (
+                "[-0, 0, -0.0, 1.0, 1E2, 1e-400]",
+                "[0, 0, -0.0, 1.0, 100.0, 0.0]",
+            ),
+            (
+                "[18446744073709551615, -9223372036854775808]",
+                "[18446744073709551615, -9223372036854775808]",
+            ),
+            ("[912068.5437784989]", "[912068.5437784989]"),
+            (
+                "[0.1, 5e-324, 1.7976931348623157e308]",
+                "[0.1, 5e-324, 1.7976931348623157e+308]",
+            ),
+            (
+                r#"["\u00e9\ud83d\ude00\/\b\f\n\r\t\"\\", "\u0000"]"#,
+                r#"["\u00e9\ud83d\ude00/\b\f\n\r\t\"\\", "\u0000"]"#,
+            ),
+            ("[\"caf\u{e9} \u{1F600}\"]", r#"["caf\u00e9 \ud83d\ude00"]"#),
+            ("\"s\"", "\"s\""),
+            ("true", "true"),
+            ("null", "null"),
+        ];
+        for (input, want) in cases {
+            let value = from_json(input).unwrap_or_else(|| panic!("{input}"));
+            assert_eq!(to_json(&value, false), *want, "{input}");
+        }
+    }
+
+    #[test]
+    fn from_json_rejects() {
+        for input in [
+            "",
+            " ",
+            "[",
+            "[1,]",
+            "{\"a\":1,}",
+            "{a: 1}",
+            "['a']",
+            "[01]",
+            "[1.]",
+            "[.5]",
+            "[1e]",
+            "[+1]",
+            "[-]",
+            "NaN",
+            "[Infinity]",
+            "[-Infinity]",
+            "[1] x",
+            "\u{feff}[1]",
+            "[\"\t\"]",
+            "[\"\\x\"]",
+            "[\"\\u12\"]",
+            "[\"\\u12g4\"]",
+            "[\"a]",
+            "[tru]",
+            "[1 2]",
+            "{\"a\" 1}",
+            "[1e400]",
+            "[-1e400]",
+            "[18446744073709551616]",
+            "[-9223372036854775809]",
+            "[\"\\ud800\"]",
+            "[\"\\udc00\"]",
+            "[\"\\ud800\\u0041\"]",
+            "[\u{a0}1]",
+        ] {
+            assert_eq!(from_json(input), None, "{input:?}");
+        }
+    }
+
+    #[test]
+    fn from_json_depth_limit() {
+        let nested = |n: usize| {
+            let mut s = "[".repeat(n);
+            s.push_str(&"]".repeat(n));
+            s
+        };
+        assert!(from_json(&nested(MAX_JSON_DEPTH)).is_some());
+        assert_eq!(from_json(&nested(MAX_JSON_DEPTH + 1)), None);
+        let objects = format!(
+            "{}1{}",
+            "{\"a\":".repeat(MAX_JSON_DEPTH),
+            "}".repeat(MAX_JSON_DEPTH)
+        );
+        assert!(from_json(&objects).is_some());
+        assert_eq!(from_json(&nested(100_000)), None);
+        for levels in [0, 2, MAX_JSON_DEPTH + 5] {
+            assert!(from_json_ordered(&objects, levels).is_some());
+            let deeper = format!("[{objects}]");
+            assert_eq!(from_json_ordered(&deeper, levels), None);
+        }
+    }
+
+    fn keys(o: &Ordered) -> Vec<&str> {
+        match o {
+            Ordered::Object(items) => items.iter().map(|(k, _)| k.as_str()).collect(),
+            Ordered::Value(_) => Vec::new(),
+        }
+    }
+
+    #[test]
+    fn from_json_ordered_keeps_document_order() {
+        let text = r#" {"z": {"y": {"b": 1, "a": 2}, "x": 0}, "a": [{"d": 1, "c": 2}], "m": 1.1} "#;
+        let o = from_json_ordered(text, 2).unwrap();
+        assert_eq!(keys(&o), ["z", "a", "m"]);
+        let Ordered::Object(items) = &o else {
+            panic!("not an object")
+        };
+        assert_eq!(keys(&items[0].1), ["y", "x"]);
+        // Level 3 and objects inside arrays are plain values.
+        let Ordered::Object(inner) = &items[0].1 else {
+            panic!("not an object")
+        };
+        assert_eq!(inner[0].1, Ordered::Value(json!({"a": 2, "b": 1})));
+        assert_eq!(items[2].1, Ordered::Value(json!(1.1)));
+        assert_eq!(o.into_value(), from_json(text).unwrap());
+        assert_eq!(
+            from_json_ordered("[1]", 3),
+            Some(Ordered::Value(json!([1])))
+        );
+        assert_eq!(from_json_ordered("{} x", 3), None);
+        assert_eq!(from_json_ordered(r#"{"a" 1}"#, 3), None);
+    }
+
+    #[test]
+    fn from_json_ordered_repeated_key_keeps_last_value_first_position() {
+        // Python: json.loads('{"b": 1, "a": 2, "b": {"y": 3, "x": 4}}')
+        // == {'b': {'y': 3, 'x': 4}, 'a': 2}
+        let o = from_json_ordered(r#"{"b": 1, "a": 2, "b": {"y": 3, "x": 4}}"#, 2).unwrap();
+        assert_eq!(
+            o,
+            Ordered::Object(vec![
+                (
+                    "b".into(),
+                    Ordered::Object(vec![
+                        ("y".into(), Ordered::Value(json!(3))),
+                        ("x".into(), Ordered::Value(json!(4))),
+                    ])
+                ),
+                ("a".into(), Ordered::Value(json!(2))),
+            ])
+        );
+    }
+
+    /// The tie check without the prefilter (exact print every time).
+    fn reference_tie(digits: &mut String, exp: i32, x: f64) {
+        let Some(last) = digits.bytes().last() else {
+            return;
+        };
+        if last % 2 == 0 || (digits.len() == 1 && last == b'1') {
+            return;
+        }
+        let mut lowered = String::from(&digits[..digits.len() - 1]);
+        lowered.push(char::from(last - 1));
+        let exact = alloc::format!("{:.800e}", x.abs());
+        let (mantissa, exact_exp) = exact.split_once('e').unwrap();
+        if exact_exp.parse::<i32>().ok() != Some(exp) {
+            return;
+        }
+        let exact_digits: String = mantissa.chars().filter(|c| *c != '.').collect();
+        let exact_digits = exact_digits.trim_end_matches('0');
+        if exact_digits.len() == lowered.len() + 1
+            && exact_digits.starts_with(lowered.as_str())
+            && exact_digits.ends_with('5')
+        {
+            let candidate = alloc::format!("{lowered}e{}", exp - (lowered.len() as i32 - 1));
+            if candidate.parse::<f64>().ok() == Some(x.abs()) {
+                *digits = lowered;
+            }
+        }
+    }
+
+    #[test]
+    fn tie_prefilter_matches_exact_check() {
+        let mut state = 0x9e37_79b9_7f4a_7c15_u64;
+        let mut xs: alloc::vec::Vec<f64> = (0..30_000)
+            .map(|_| {
+                state = state
+                    .wrapping_mul(6_364_136_223_846_793_005)
+                    .wrapping_add(1);
+                f64::from_bits(state)
+            })
+            .filter(|x| x.is_finite())
+            .collect();
+        xs.extend((0..30_000).map(|i| f64::from(i) * 0.37 + 0.5));
+        // Exact ties: values with few significant bits.
+        xs.extend((1..5_000).map(|i| f64::from(i) / 8.0 + 2_056_655_888_558_458.0));
+        xs.push(f64::from_bits(0x431d_3a12_0ea6_a5e9));
+        xs.push(f64::from_bits(0xc2d9_4d11_000d_76c8));
+        let mut ties = 0;
+        for x in xs {
+            let sci = alloc::format!("{x:e}");
+            let (mantissa, exp) = sci.split_once('e').unwrap();
+            let exp: i32 = exp.parse().unwrap();
+            let shortest: String = mantissa.chars().filter(char::is_ascii_digit).collect();
+            let (mut got, mut want) = (shortest.clone(), shortest.clone());
+            round_tie_to_even(&mut got, exp, x);
+            reference_tie(&mut want, exp, x);
+            assert_eq!(got, want, "{x:e}");
+            ties += usize::from(got != shortest);
+        }
+        assert!(ties > 0);
     }
 }

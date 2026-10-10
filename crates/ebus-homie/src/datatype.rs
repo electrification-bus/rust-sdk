@@ -1,6 +1,6 @@
 //! Property datatypes and payload grammar (convention.md: Payload).
 //!
-//! The grammar checks need no allocation. [`parse_set_payload`], the exact
+//! The grammar checks need no allocation. `parse_set_payload`, the exact
 //! decimal arithmetic behind step rounding, and the encoders need `alloc`.
 //! Every rule mirrors the Python SDK (`ebus_sdk.homie`), and every [`Problem`]
 //! code is the Python reason string.
@@ -9,6 +9,8 @@ use core::fmt;
 
 #[cfg(feature = "alloc")]
 use alloc::string::{String, ToString};
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 #[cfg(feature = "alloc")]
 use core::cmp::Ordering;
 #[cfg(feature = "alloc")]
@@ -92,7 +94,8 @@ pub enum Problem {
     IntegerNotWhole,
     /// A value of a type `integer` cannot hold.
     IntegerType,
-    /// An integer outside the 64-bit signed range.
+    /// An integer outside the 64-bit signed range; [`parse_set_payload`]
+    /// returns it when step rounding leaves that range (convention.md: Integer).
     IntegerOutOf64Bit,
     /// Step rounding produced a non-whole `integer` (convention.md: Payload).
     IntegerStepNotWhole,
@@ -370,6 +373,8 @@ struct DatetimeFields {
     second: Option<u32>,
     zhour: Option<u32>,
     zminute: Option<u32>,
+    /// The decimal fraction of the time has a nonzero digit.
+    fraction_nonzero: bool,
 }
 
 /// The value of exactly `n` ASCII digits at `s[i..]`.
@@ -411,6 +416,9 @@ fn match_datetime_tail(s: &[u8], mut i: usize, f: &mut DatetimeFields) -> bool {
     if matches!(s.get(i), Some(b'.' | b',')) {
         let n = digit_run(s, i + 1);
         if n > 0 {
+            t.fraction_nonzero = s
+                .get(i + 1..i + 1 + n)
+                .is_some_and(|d| d.iter().any(|&b| b != b'0'));
             i += 1 + n;
         }
     }
@@ -527,6 +535,17 @@ const fn is_leap_year(year: u32) -> bool {
     year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
 }
 
+/// Whether ISO week-numbering year `year` has 53 weeks: its 1 January is a
+/// Thursday, or it is a leap year whose 1 January is a Wednesday.
+const fn has_53_weeks(year: u32) -> bool {
+    // p(y) is the weekday of 31 December of year y (0 = Sunday, 4 = Thursday).
+    const fn p(y: i64) -> i64 {
+        (y + y.div_euclid(4) - y.div_euclid(100) + y.div_euclid(400)).rem_euclid(7)
+    }
+    let y = year as i64;
+    p(y) == 4 || p(y - 1) == 3
+}
+
 const fn days_in_month(year: u32, month: u32) -> u32 {
     match month {
         2 if is_leap_year(year) => 29,
@@ -537,9 +556,18 @@ const fn days_in_month(year: u32, month: u32) -> u32 {
 }
 
 /// Check a `datetime` payload: an ISO 8601 date or date-time in calendar,
-/// ordinal or week form, extended or basic (convention.md: DateTime). Port of
-/// the Python `_check_datetime_payload`, including its calendar check (Python
-/// `datetime.date`, so year `0000` with a month is out of range).
+/// ordinal or week form, extended or basic (convention.md: DateTime). The
+/// grammar and calendar check follow the Python `_check_datetime_payload`
+/// (Python `datetime.date`, so year `0000` with a month is out of range). These
+/// ISO 8601-1 rules, which Python does not apply (python-sdk#110), give
+/// [`Problem::DatetimeRange`]:
+///
+/// - hour `24` only as the end of a day: minutes and seconds absent or `00`,
+///   and every digit of a decimal fraction `0` (`T24`, `T24:00`, `T24:00:00`,
+///   `T24:00:00.000`);
+/// - ordinal day `366` only in a leap year;
+/// - week `53` only in a year with 53 ISO weeks (1 January a Thursday, or a
+///   leap year whose 1 January is a Wednesday).
 pub fn check_datetime(text: &str) -> Result<(), Problem> {
     let f = match_datetime(text).ok_or(Problem::DatetimeGrammar)?;
     let has_day = f.day.is_some() || f.bday.is_some() || f.ordinal.is_some() || f.weekday.is_some();
@@ -570,6 +598,14 @@ pub fn check_datetime(text: &str) -> Result<(), Problem> {
             return Err(Problem::DatetimeRange);
         }
     }
+    let end_of_day =
+        f.minute.unwrap_or(0) == 0 && f.second.unwrap_or(0) == 0 && !f.fraction_nonzero;
+    if (f.hour == Some(24) && !end_of_day)
+        || (f.ordinal == Some(366) && !is_leap_year(f.year))
+        || (f.week == Some(53) && !has_53_weeks(f.year))
+    {
+        return Err(Problem::DatetimeRange);
+    }
     Ok(())
 }
 
@@ -578,7 +614,6 @@ pub fn check_datetime(text: &str) -> Result<(), Problem> {
 /// Largest power-of-ten scale exact step rounding will use for a `$format`
 /// step or bound (and the base taken from the current value). Larger scales
 /// give [`Problem::FormatScale`]; Python has no limit and computes them exactly.
-#[cfg(feature = "alloc")]
 pub const MAX_FORMAT_SCALE: i64 = 20_000;
 
 /// Exponents are clamped to this magnitude when parsed, so `1e999999999999`
@@ -618,6 +653,12 @@ fn digit_count(n: &BigInt) -> i64 {
     }
 }
 
+/// Whether any digit of `int` then `frac` at index `from` or later is nonzero.
+#[cfg(feature = "alloc")]
+fn any_nonzero_from(int: &[u8], frac: &[u8], from: usize) -> bool {
+    int.iter().chain(frac.iter()).skip(from).any(|&b| b != b'0')
+}
+
 #[cfg(feature = "alloc")]
 impl Decimal {
     fn new(mantissa: BigInt, exponent: i64) -> Self {
@@ -643,27 +684,64 @@ impl Decimal {
     /// The exact value of a payload in the `float` grammar (no finiteness
     /// check), as Python `Fraction(text)`; `None` if `text` does not match.
     pub fn parse(text: &str) -> Option<Self> {
+        Decimal::parse_from(text, None)
+    }
+
+    /// [`Decimal::parse`], but digits below `10^lowest` are replaced by a single
+    /// `1` at `10^(lowest - 1)` when any of them is nonzero. The result orders,
+    /// compares and floors the same as the exact value against every number
+    /// that is a multiple of `10^lowest`, and parsing costs no more than the
+    /// digits kept.
+    fn parse_from(text: &str, lowest: Option<i64>) -> Option<Self> {
         let parts = scan_float(text)?;
-        let mut digits = String::with_capacity(parts.int.len() + parts.frac.len());
-        digits.extend(parts.int.iter().map(|&b| char::from(b)));
-        digits.extend(parts.frac.iter().map(|&b| char::from(b)));
-        let magnitude = BigUint::parse_bytes(digits.as_bytes(), 10)?;
         let mut exp = parts.exp.iter().fold(0i64, |acc, &b| {
             (acc * 10 + i64::from(b - b'0')).min(EXPONENT_CLAMP)
         });
         if parts.exp_negative {
             exp = -exp;
         }
-        let frac_len = i64::try_from(parts.frac.len()).ok()?;
+        // Exponent of the last digit; the clamp keeps this far from overflow.
+        let last_exp = exp - i64::try_from(parts.frac.len()).ok()?;
+        let all = parts.int.iter().chain(parts.frac.iter()).copied();
+        let lead = all.clone().take_while(|&b| b == b'0').count();
+        let significant = parts.int.len() + parts.frac.len() - lead;
+        let keep = match lowest {
+            None => significant,
+            Some(lowest) => {
+                // Digit k (from the left, of `significant`) has exponent
+                // last_exp + significant - 1 - k; keep those >= lowest.
+                let top = i128::from(last_exp) + significant as i128 - 1;
+                usize::try_from((top - i128::from(lowest) + 1).max(0))
+                    .unwrap_or(usize::MAX)
+                    .min(significant)
+            }
+        };
+        let mut digits: Vec<u8> = all.skip(lead).take(keep).collect();
+        let dropped = significant - keep;
+        let sticky = any_nonzero_from(parts.int, parts.frac, lead + keep);
+        let mut exponent = last_exp.saturating_add(i64::try_from(dropped).ok()?);
+        if sticky {
+            digits.push(b'1');
+            exponent -= 1;
+        }
+        let zeros = digits.iter().rev().take_while(|&&b| b == b'0').count();
+        digits.truncate(digits.len() - zeros);
+        if digits.is_empty() {
+            return Some(Decimal {
+                mantissa: BigInt::zero(),
+                exponent: 0,
+            });
+        }
+        let magnitude = BigUint::parse_bytes(&digits, 10)?;
         let sign = if parts.negative {
             Sign::Minus
         } else {
             Sign::Plus
         };
-        Some(Decimal::new(
-            BigInt::from_biguint(sign, magnitude),
-            exp - frac_len,
-        ))
+        Some(Decimal {
+            mantissa: BigInt::from_biguint(sign, magnitude),
+            exponent: exponent.saturating_add(i64::try_from(zeros).ok()?),
+        })
     }
 
     /// The exact value of an integer.
@@ -873,29 +951,33 @@ fn round_to_step(x: &Decimal, base: &Decimal, step: &Decimal) -> Result<Decimal,
     Ok(Decimal::new(n * p + b, -scale))
 }
 
-/// Round to the format's step, then check min and max (convention.md:
-/// Payload). The step base is `min`, else `max`, else `current`.
+/// The step base when `format` has a step: `min`, else `max`, else `current`
+/// (convention.md: Payload).
+#[cfg(feature = "alloc")]
+fn step_base(format: &NumericFormat, current: Option<Current>) -> Option<Decimal> {
+    format.step.as_ref()?;
+    format
+        .min
+        .clone()
+        .or_else(|| format.max.clone())
+        .or_else(|| match current {
+            Some(Current::Integer(v)) => Some(Decimal::from_i64(v)),
+            Some(Current::Float(v)) => Decimal::from_f64(v),
+            None => None,
+        })
+}
+
+/// Round to the format's step from `base` (see [`step_base`]), then check min
+/// and max (convention.md: Payload).
 #[cfg(feature = "alloc")]
 fn round_and_range_check(
     number: Decimal,
     format: &NumericFormat,
-    current: Option<Current>,
+    base: Option<&Decimal>,
 ) -> Result<Decimal, Problem> {
     let mut number = number;
-    if let Some(step) = &format.step {
-        let from_current = match current {
-            Some(Current::Integer(v)) => Some(Decimal::from_i64(v)),
-            Some(Current::Float(v)) => Decimal::from_f64(v),
-            None => None,
-        };
-        let base = format
-            .min
-            .clone()
-            .or_else(|| format.max.clone())
-            .or(from_current);
-        if let Some(base) = base {
-            number = round_to_step(&number, &base, step)?;
-        }
+    if let (Some(step), Some(base)) = (&format.step, base) {
+        number = round_to_step(&number, base, step)?;
     }
     if format.min.as_ref().is_some_and(|low| number < *low) {
         return Err(Problem::BelowMin);
@@ -922,11 +1004,11 @@ pub enum SetValue {
     String(String),
 }
 
-/// Parse a `json` payload: an array or object (convention.md: JSON).
-/// `NaN` and `Infinity` are rejected.
+/// Parse a `json` payload: an array or object (convention.md: JSON), read as
+/// [`crate::pyfmt::from_json`] reads it. `NaN` and `Infinity` are rejected.
 #[cfg(feature = "alloc")]
 pub fn decode_json(text: &str) -> Result<Value, Problem> {
-    let value: Value = serde_json::from_str(text).map_err(|_| Problem::JsonInvalid)?;
+    let value = crate::pyfmt::from_json(text).ok_or(Problem::JsonInvalid)?;
     if value.is_array() || value.is_object() {
         Ok(value)
     } else {
@@ -934,10 +1016,12 @@ pub fn decode_json(text: &str) -> Result<Value, Problem> {
     }
 }
 
-/// Validate an inbound `/set` payload for `datatype`. Port of the Python
-/// `_parse_set_payload`, including step rounding with exact rational
-/// arithmetic. A number that rounding changed is returned in its rounded
-/// payload form; otherwise the payload text is returned unchanged.
+/// Validate an inbound `/set` payload for `datatype`, with step rounding in
+/// exact rational arithmetic as the Python `_parse_set_payload` does. A number
+/// that rounding changed is returned in its rounded payload form; otherwise the
+/// payload text is returned unchanged. An `integer` that rounding takes outside
+/// the 64-bit range gives [`Problem::IntegerOutOf64Bit`] (convention.md:
+/// Integer); Python accepts it (python-sdk#110).
 #[cfg(feature = "alloc")]
 pub fn parse_set_payload(
     text: &str,
@@ -954,12 +1038,15 @@ pub fn parse_set_payload(
                 .flatten()
                 .ok_or(Problem::IntegerGrammar)?;
             let number = Decimal::from_i64(value);
-            let rounded =
-                round_and_range_check(number.clone(), &NumericFormat::parse(format), current)?;
+            let format = NumericFormat::parse(format);
+            let base = step_base(&format, current);
+            let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
             let whole = rounded.to_integer().ok_or(Problem::IntegerStepNotWhole)?;
             if rounded == number {
                 unchanged()
             } else {
+                // Rounding can leave the 64-bit range (convention.md: Integer).
+                let whole = i64::try_from(&whole).map_err(|_| Problem::IntegerOutOf64Bit)?;
                 Ok(SetValue::Text(whole.to_string()))
             }
         }
@@ -967,9 +1054,21 @@ pub fn parse_set_payload(
             if !is_float_payload(text) {
                 return Err(Problem::FloatGrammar);
             }
-            let number = Decimal::parse(text).ok_or(Problem::FloatGrammar)?;
-            let rounded =
-                round_and_range_check(number.clone(), &NumericFormat::parse(format), current)?;
+            let format = NumericFormat::parse(format);
+            let base = step_base(&format, current);
+            if format.min.is_none() && format.max.is_none() && base.is_none() {
+                return unchanged();
+            }
+            // Payload digits finer than every operand cannot change the result,
+            // so a long payload costs only the digits that matter.
+            let lowest = [&format.min, &format.max, &format.step, &base]
+                .into_iter()
+                .flatten()
+                .map(|d| d.exponent)
+                .fold(0, i64::min)
+                - 1;
+            let number = Decimal::parse_from(text, Some(lowest)).ok_or(Problem::FloatGrammar)?;
+            let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
             if rounded == number {
                 unchanged()
             } else {
@@ -1202,9 +1301,18 @@ mod tests {
             "2024123",
             "2024-W01",
             "2024W017",
-            "2024-W53-7",
+            "2020-W53",
+            "2020-W53-7",
+            "2026W53",
+            "2015-W53",
             "2024-02-29T23:59:60",
             "2024-02-29T24",
+            "2024-02-29T24:00",
+            "2024-02-29T2400",
+            "2024-02-29T24:00:00",
+            "2024-02-29T24:00:00.000Z",
+            "2024-02-29T24,0",
+            "2000-366",
             "2024-02-29T10:30:00.123Z",
             "2024-02-29T10,5+05:30",
             "20240229T103000-0800",
@@ -1253,6 +1361,17 @@ mod tests {
             "2024-01-01T10:00:61",
             "2024-01-01T10+24",
             "2024-01-01T10+05:60",
+            "2024-01-01T24:30",
+            "2024-01-01T24:00:01",
+            "2024-01-01T24:00:00.001",
+            "2024-01-01T24,5",
+            "2024-01-01T24:00:60",
+            "2023-366",
+            "1900-366",
+            "2021-W53",
+            "2024-W53-7",
+            "2024W537",
+            "2100-W53",
         ] {
             assert_eq!(
                 check_datetime(range),
@@ -1261,6 +1380,20 @@ mod tests {
             );
         }
         assert!(is_leap_year(2000) && !is_leap_year(2100) && is_leap_year(2024));
+        // 53-week years: 2015, 2020 (leap, 1 January a Wednesday), 2026.
+        for (year, long) in [
+            (2015, true),
+            (2019, false),
+            (2020, true),
+            (2021, false),
+            (2024, false),
+            (2025, false),
+            (2026, true),
+            (2032, true),
+            (0, false),
+        ] {
+            assert_eq!(has_53_weeks(year), long, "{year}");
+        }
         assert_eq!(check_datetime("2000-02-29"), Ok(()));
     }
 
@@ -1387,11 +1520,11 @@ mod tests {
                 set("5", i, Some("::2"), Some(Current::Float(0.5))),
                 Err(Problem::IntegerStepNotWhole)
             );
-            // A rounded value beyond 64 bits is still written out (as Python does).
             assert_eq!(
                 set("9223372036854775807", i, Some("0:1e30:1e20"), None),
                 text("0")
             );
+            // A rounded value outside 64 bits is rejected (python-sdk#110).
             assert_eq!(
                 set(
                     "9223372036854775807",
@@ -1399,7 +1532,24 @@ mod tests {
                     Some("::1e19"),
                     Some(Current::Integer(0))
                 ),
-                text("10000000000000000000")
+                Err(Problem::IntegerOutOf64Bit)
+            );
+            assert_eq!(
+                set("9223372036854775807", i, Some("0::2"), None),
+                Err(Problem::IntegerOutOf64Bit)
+            );
+            assert_eq!(
+                set(
+                    "-9223372036854775808",
+                    i,
+                    Some("::3"),
+                    Some(Current::Integer(0))
+                ),
+                Err(Problem::IntegerOutOf64Bit)
+            );
+            assert_eq!(
+                set("9223372036854775806", i, Some("0::2"), None),
+                text("9223372036854775806")
             );
         }
 
@@ -1505,6 +1655,122 @@ mod tests {
                 set("1", f, Some("1e99999999999:"), None),
                 Err(Problem::BelowMin)
             );
+        }
+
+        /// Digits below every format operand collapse to one sticky digit,
+        /// with the same result as exact arithmetic on the whole payload.
+        #[test]
+        fn float_set_long_payloads() {
+            let f = Datatype::Float;
+            let long = |head: &str, fill: &str, n: usize, tail: &str| {
+                let mut s = String::from(head);
+                s.extend(core::iter::repeat_n(fill, n));
+                s.push_str(tail);
+                s
+            };
+            let just_above_one = long("1.", "0", 5000, "1");
+            assert_eq!(set(&just_above_one, f, None, None), text(&just_above_one));
+            assert_eq!(
+                set(&just_above_one, f, Some("0:1"), None),
+                Err(Problem::AboveMax)
+            );
+            let one = long("1.", "0", 5000, "");
+            assert_eq!(set(&one, f, Some("0:1"), None), text(&one));
+            let below_zero = long("-0.", "0", 5000, "1");
+            assert_eq!(
+                set(&below_zero, f, Some("0:1"), None),
+                Err(Problem::BelowMin)
+            );
+            let half = Some("0:10:0.5");
+            assert_eq!(
+                set(&long("0.25", "0", 3000, "1"), f, half, None),
+                text("0.5")
+            );
+            assert_eq!(
+                set(&long("0.25", "0", 3000, ""), f, half, None),
+                text("0.5")
+            );
+            assert_eq!(
+                set(&long("0.24", "9", 3000, ""), f, half, None),
+                text("0.0")
+            );
+            let signed = Some("-10:10:0.5");
+            assert_eq!(
+                set(&long("-0.25", "0", 3000, "1"), f, signed, None),
+                text("-0.5")
+            );
+            assert_eq!(
+                set(&long("-0.25", "0", 3000, ""), f, signed, None),
+                text("0.0")
+            );
+            assert_eq!(
+                set(
+                    &long("1e-", "9", 30, ""),
+                    f,
+                    Some("::1"),
+                    Some(Current::Integer(0))
+                ),
+                text("0.0")
+            );
+            let many = long("1.", "7", 1_000_000, "");
+            assert_eq!(set(&many, f, None, None), text(&many));
+            assert_eq!(set(&many, f, Some("0:1e400:0.001"), None), text("1.778"));
+        }
+
+        /// `$format` scales beyond [`MAX_FORMAT_SCALE`] give `formatScale` where
+        /// Python computes an answer (known divergence).
+        #[test]
+        fn format_scale_limit() {
+            let (i, f) = (Datatype::Integer, Datatype::Float);
+            assert_eq!(
+                set("5", i, Some("1e30000::1"), None),
+                Err(Problem::FormatScale)
+            );
+            assert_eq!(
+                set("5", i, Some("0::1e30000"), None),
+                Err(Problem::FormatScale)
+            );
+            assert_eq!(
+                set("5", f, Some(":1e-30000:1"), None),
+                Err(Problem::FormatScale)
+            );
+            assert_eq!(
+                set("5", i, Some("1e20000::1"), None),
+                Err(Problem::BelowMin)
+            );
+        }
+
+        #[test]
+        fn json_set() {
+            let j = Datatype::Json;
+            let json = |t: &str| set(t, j, None, None);
+            // Correctly rounded floats: Python repr text reads back exactly.
+            assert_eq!(
+                json("[912068.5437784989]"),
+                Ok(SetValue::Json(serde_json::json!([912068.5437784989])))
+            );
+            let Ok(SetValue::Json(v)) = json("[2.283038836859574890682e201]") else {
+                panic!("not json");
+            };
+            // Python: json.dumps(json.loads(...)).
+            assert_eq!(
+                crate::pyfmt::to_json(&v, false),
+                "[2.2830388368595749e+201]"
+            );
+            // `-0` is the integer 0, as in Python.
+            assert_eq!(
+                json("[-0, -0.0]").map(|v| match v {
+                    SetValue::Json(v) => crate::pyfmt::to_json(&v, false),
+                    _ => String::new(),
+                }),
+                Ok(String::from("[0, -0.0]"))
+            );
+            // Python accepts these (python-sdk#110); the convention does not.
+            for t in ["[\"\\ud800\"]", "[\"\\udc00\"]", "[1e400]", "[-1e400]"] {
+                assert_eq!(json(t), Err(Problem::JsonInvalid), "{t}");
+            }
+            assert_eq!(json("[18446744073709551616]"), Err(Problem::JsonInvalid));
+            assert_eq!(json("[-9223372036854775809]"), Err(Problem::JsonInvalid));
         }
 
         #[test]

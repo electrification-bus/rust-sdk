@@ -18,7 +18,7 @@ Pull requests are welcome.
 
 - For small fixes, open a PR directly. For new public API, changes to the transport or backend traits, or changes to Homie/eBus wire behavior, open a Discussion or Issue first.
 - **Spec conformance is the north star.** The [Homie 5 convention](https://homieiot.github.io/) and the [Electrification Bus specification](https://github.com/electrification-bus/specification) define on-the-wire behavior. When the code and the spec disagree, the spec wins.
-- **Wire parity with python-sdk.** Where the spec leaves a choice open (JSON key order, the `$description` `version` value, number formatting), match python-sdk byte for byte.
+- **Follow python-sdk where the spec leaves a choice open.** For JSON key order, `json.dumps` formatting, number formatting and the `$description` `version` value, prefer python-sdk's choice unless matching it is costly. Where python-sdk deviates from the spec ([python-sdk#110](https://github.com/electrification-bus/python-sdk/issues/110)), follow the spec.
 - **Update `.ebus-spec.json` on every spec sync**: bump `synced_commit`, `synced_date` and `framework`, and edit `supports` to match the framework features the code implements (see the specification's `conventions/spec-provenance.md`).
 - **The core crates (`ebus-homie`, `ebus-mqtt`, `ebus-discovery`) must build without `std`.** Gate allocation behind the `alloc` feature and anything else from `std` behind `std`. They perform no I/O and depend on no async runtime.
 - **Run the checks CI runs:** `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo test --workspace`.

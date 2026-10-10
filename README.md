@@ -1,6 +1,10 @@
 # rust-sdk
 
-Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS discovery. It targets Linux single-board computers first and microcontrollers later, and publishes the same bytes on the wire as [python-sdk](https://github.com/electrification-bus/python-sdk).
+[![CI](https://github.com/electrification-bus/rust-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/electrification-bus/rust-sdk/actions/workflows/ci.yml)
+[![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)](#rust-version)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS discovery. It targets Linux single-board computers first and microcontrollers later, and follows the Homie 5 convention and the eBus specification. Where the spec leaves a choice open, it follows [python-sdk](https://github.com/electrification-bus/python-sdk).
 
 **Status:** pre-alpha. The crates below are placeholders; nothing is published to crates.io yet.
 

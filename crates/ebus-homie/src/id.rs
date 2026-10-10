@@ -75,7 +75,7 @@ mod tests {
     /// Expected outputs produced by Python 3.10 `sanitize_homie_id`.
     #[cfg(feature = "alloc")]
     #[test]
-    fn sanitize_python_parity() {
+    fn sanitize_matches_python() {
         let cases: &[(&str, &str)] = &[
             ("", ""),
             ("ABC_def", "abc-def"),

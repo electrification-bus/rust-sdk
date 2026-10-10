@@ -75,6 +75,36 @@
       }
     },
     {
+      "id": "description-version-negative",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": -5}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-version-i64-min",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": -9223372036854775808}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-formats-legal",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"n\": {\"properties\": {\"a\": {\"datatype\": \"integer\", \"format\": \":\"}, \"b\": {\"datatype\": \"integer\", \"format\": \"-5:35:2.5\"}, \"c\": {\"datatype\": \"float\", \"format\": \"10.123:15.123\"}, \"d\": {\"datatype\": \"float\", \"format\": \"0::1e-400\"}, \"e\": {\"datatype\": \"boolean\", \"format\": \"off,on\"}, \"f\": {\"datatype\": \"enum\", \"format\": \" a,a \"}, \"g\": {\"datatype\": \"color\", \"format\": \"xyz,rgb,hsv\"}, \"h\": {\"datatype\": \"string\", \"format\": \"anything\"}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
       "id": "description-empty-nodes",
       "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
       "input": {
@@ -458,248 +488,6 @@
       }
     },
     {
-      "id": "description-node-id-upper",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"Node\": {}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidNodeId"
-      }
-    },
-    {
-      "id": "description-node-id-underscore",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"my_node\": {}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidNodeId"
-      }
-    },
-    {
-      "id": "description-node-id-empty",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"\": {}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidNodeId"
-      }
-    },
-    {
-      "id": "description-node-id-dollar",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"$node\": {}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidNodeId"
-      }
-    },
-    {
-      "id": "description-node-not-object",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": []}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "nodeNotObject"
-      }
-    },
-    {
-      "id": "description-node-name-null",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"name\": null}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "nameType"
-      }
-    },
-    {
-      "id": "description-node-type-number",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"type\": 3}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "typeType"
-      }
-    },
-    {
-      "id": "description-properties-array",
-      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": []}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "propertiesNotObject"
-      }
-    },
-    {
-      "id": "description-property-id-upper",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"Prop\": {\"datatype\": \"integer\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidPropertyId"
-      }
-    },
-    {
-      "id": "description-property-id-dot",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"a.b\": {\"datatype\": \"integer\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "invalidPropertyId"
-      }
-    },
-    {
-      "id": "description-property-not-object",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": \"integer\"}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "propertyNotObject"
-      }
-    },
-    {
-      "id": "description-datatype-missing",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "datatypeMissing"
-      }
-    },
-    {
-      "id": "description-datatype-unknown",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"number\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "datatypeUnknown"
-      }
-    },
-    {
-      "id": "description-datatype-upper",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"Integer\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "datatypeUnknown"
-      }
-    },
-    {
-      "id": "description-datatype-null",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": null}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "datatypeUnknown"
-      }
-    },
-    {
-      "id": "description-settable-string",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"settable\": \"true\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "settableType"
-      }
-    },
-    {
-      "id": "description-retained-number",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": 1}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "retainedType"
-      }
-    },
-    {
-      "id": "description-retained-null",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": null}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "retainedType"
-      }
-    },
-    {
-      "id": "description-format-nested-object",
-      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"json\", \"format\": {\"type\": \"object\"}}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "formatType"
-      }
-    },
-    {
-      "id": "description-unit-number",
-      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"unit\": 5}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "unitType"
-      }
-    },
-    {
-      "id": "description-enum-format-missing",
-      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "formatMissing"
-      }
-    },
-    {
-      "id": "description-color-format-missing",
-      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
-      "input": {
-        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"color\"}}}}}"
-      },
-      "expect": {
-        "valid": false,
-        "error": "formatMissing"
-      }
-    },
-    {
       "id": "description-children-not-array",
       "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
       "input": {
@@ -796,6 +584,618 @@
       "expect": {
         "valid": false,
         "error": "extensionsNotArray"
+      }
+    },
+    {
+      "id": "description-node-id-upper",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"Node\": {}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "Node",
+            "property": null,
+            "error": "invalidNodeId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-id-underscore",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"my_node\": {}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "my_node",
+            "property": null,
+            "error": "invalidNodeId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-id-empty",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"\": {}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "",
+            "property": null,
+            "error": "invalidNodeId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-id-dollar",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"$node\": {}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "$node",
+            "property": null,
+            "error": "invalidNodeId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-not-object",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": []}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": null,
+            "error": "nodeNotObject"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-name-null",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"name\": null}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": null,
+            "error": "nameType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-node-type-number",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"type\": 3}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": null,
+            "error": "typeType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-properties-array",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": []}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": null,
+            "error": "propertiesNotObject"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-property-id-upper",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"Prop\": {\"datatype\": \"integer\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "Prop",
+            "error": "invalidPropertyId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-property-id-dot",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"a.b\": {\"datatype\": \"integer\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "a.b",
+            "error": "invalidPropertyId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-property-not-object",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": \"integer\"}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "propertyNotObject"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-datatype-missing",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "datatypeMissing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-datatype-unknown",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"number\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "datatypeUnknown"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-datatype-upper",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"Integer\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "datatypeUnknown"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-datatype-null",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": null}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "datatypeUnknown"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-settable-string",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"settable\": \"true\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "settableType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-retained-number",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": 1}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "retainedType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-retained-null",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": null}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "retainedType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-format-nested-object",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"json\", \"format\": {\"type\": \"object\"}}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-unit-number",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"unit\": 5}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "unitType"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-enum-format-missing",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatMissing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-color-format-missing",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"color\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatMissing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-enum-format-empty",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\", \"format\": \"\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatMissing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-color-format-empty",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"color\", \"format\": \"\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatMissing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-enum-format-empty-value",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\", \"format\": \"a,,a\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-enum-format-duplicate",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\", \"format\": \"a,b,a\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-color-format-unknown-type",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"color\", \"format\": \"rgb,cmyk\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-boolean-format-one-entry",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"boolean\", \"format\": \"on\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-boolean-format-three-entries",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"boolean\", \"format\": \"a,b,c\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-integer-format-grammar",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"format\": \"abc:1:-3\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-integer-format-one-part",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"format\": \"5\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-integer-format-float-bound",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"format\": \"1.5:2\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-integer-format-zero-step",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"format\": \"0:10:0\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-float-format-grammar",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"float\", \"format\": \"x:y\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "node",
+            "property": "prop",
+            "error": "formatIllegal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-future-datatype-keeps-rest",
+      "source": "homie-5:convention.md#forward-compatibility (convention.md:659-668), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"n\": {\"properties\": {\"ok\": {\"datatype\": \"integer\"}, \"p\": {\"datatype\": \"vector\"}}}, \"m\": {\"properties\": {\"q\": {\"datatype\": \"string\"}}}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "n",
+            "property": "p",
+            "error": "datatypeUnknown"
+          }
+        ]
+      }
+    },
+    {
+      "id": "description-bad-node-keeps-rest",
+      "source": "homie-5:convention.md#forward-compatibility (convention.md:659-668), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"n\": {\"properties\": {\"ok\": {\"datatype\": \"integer\"}}}, \"Bad\": {}}}"
+      },
+      "expect": {
+        "valid": true,
+        "ignored": [
+          {
+            "node": "Bad",
+            "property": null,
+            "error": "invalidNodeId"
+          }
+        ]
       }
     }
   ]

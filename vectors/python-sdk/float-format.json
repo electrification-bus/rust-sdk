@@ -1,6 +1,6 @@
 {
   "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
-  "suite": "parity/float-format",
+  "suite": "python-sdk/float-format",
   "version": "0.1",
   "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
   "cases": [
