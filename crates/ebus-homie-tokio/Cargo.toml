@@ -1,0 +1,16 @@
+[package]
+name = "ebus-homie-tokio"
+description = "Tokio runtime for eBus Homie 5 devices and controllers."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+ebus-homie = { workspace = true, features = ["std"] }
+ebus-mqtt = { workspace = true, features = ["std"] }
+
+[lints]
+workspace = true

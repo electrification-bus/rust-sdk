@@ -1,0 +1,20 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/electrification-bus/rust-sdk"
+authors = ["Clark Communications Corporation"]
+
+[workspace.dependencies]
+ebus-homie = { path = "crates/ebus-homie", version = "0.1.0", default-features = false }
+ebus-mqtt = { path = "crates/ebus-mqtt", version = "0.1.0", default-features = false }
+ebus-discovery = { path = "crates/ebus-discovery", version = "0.1.0", default-features = false }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"

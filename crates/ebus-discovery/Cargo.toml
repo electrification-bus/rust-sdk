@@ -1,0 +1,17 @@
+[package]
+name = "ebus-discovery"
+description = "eBus DNS-SD contract: service types, TXT records and broker selection, with pluggable mDNS backends."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[features]
+default = ["std"]
+std = ["alloc"]
+alloc = []
+
+[lints]
+workspace = true

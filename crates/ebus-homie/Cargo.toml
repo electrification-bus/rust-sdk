@@ -1,0 +1,17 @@
+[package]
+name = "ebus-homie"
+description = "Homie 5 protocol core for eBus: identifiers, topics, datatypes, descriptions and the device and controller state machines, with no I/O."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[features]
+default = ["std"]
+std = ["alloc"]
+alloc = []
+
+[lints]
+workspace = true

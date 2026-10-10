@@ -1,0 +1,24 @@
+# Cargo build output
+target/
+
+# macOS Finder metadata
+.DS_Store
+
+# Personal LLM coding-assistant configs; see CONTRIBUTING.md.
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.claude/
+.cursor/
+.codex/
+.agents/
+.codeium/
+.windsurf/
+.aider*
+.continuerules
+.beads/
+
+# Editor state
+.vscode/
+.idea/
