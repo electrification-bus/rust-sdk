@@ -8,10 +8,13 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
+#[cfg(feature = "alloc")]
+pub mod controller;
 pub mod datatype;
 #[cfg(feature = "alloc")]
 pub mod description;
 pub mod id;
+mod log;
 pub mod payload;
 #[cfg(feature = "alloc")]
 pub mod pyfmt;

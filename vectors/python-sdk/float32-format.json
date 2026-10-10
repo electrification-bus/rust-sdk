@@ -1,0 +1,4782 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-sdk/float32-format",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "float32-format-00000000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000000",
+        "repr_hint": "0.0"
+      },
+      "expect": {
+        "payload": "0.0"
+      }
+    },
+    {
+      "id": "float32-format-80000000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "80000000",
+        "repr_hint": "-0.0"
+      },
+      "expect": {
+        "payload": "-0.0"
+      }
+    },
+    {
+      "id": "float32-format-3f800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3f800000",
+        "repr_hint": "1.0"
+      },
+      "expect": {
+        "payload": "1.0"
+      }
+    },
+    {
+      "id": "float32-format-bf800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "bf800000",
+        "repr_hint": "-1.0"
+      },
+      "expect": {
+        "payload": "-1.0"
+      }
+    },
+    {
+      "id": "float32-format-41ab3333",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "41ab3333",
+        "repr_hint": "21.4"
+      },
+      "expect": {
+        "payload": "21.4"
+      }
+    },
+    {
+      "id": "float32-format-c1ab3333",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c1ab3333",
+        "repr_hint": "-21.4"
+      },
+      "expect": {
+        "payload": "-21.4"
+      }
+    },
+    {
+      "id": "float32-format-42200000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "42200000",
+        "repr_hint": "40.0"
+      },
+      "expect": {
+        "payload": "40.0"
+      }
+    },
+    {
+      "id": "float32-format-3dcccccd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3dcccccd",
+        "repr_hint": "0.1"
+      },
+      "expect": {
+        "payload": "0.1"
+      }
+    },
+    {
+      "id": "float32-format-3e4ccccd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3e4ccccd",
+        "repr_hint": "0.2"
+      },
+      "expect": {
+        "payload": "0.2"
+      }
+    },
+    {
+      "id": "float32-format-3e99999a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3e99999a",
+        "repr_hint": "0.3"
+      },
+      "expect": {
+        "payload": "0.3"
+      }
+    },
+    {
+      "id": "float32-format-3eaaaaab",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3eaaaaab",
+        "repr_hint": "0.33333334"
+      },
+      "expect": {
+        "payload": "0.33333334"
+      }
+    },
+    {
+      "id": "float32-format-3f000000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3f000000",
+        "repr_hint": "0.5"
+      },
+      "expect": {
+        "payload": "0.5"
+      }
+    },
+    {
+      "id": "float32-format-40200000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "40200000",
+        "repr_hint": "2.5"
+      },
+      "expect": {
+        "payload": "2.5"
+      }
+    },
+    {
+      "id": "float32-format-42c80000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "42c80000",
+        "repr_hint": "100.0"
+      },
+      "expect": {
+        "payload": "100.0"
+      }
+    },
+    {
+      "id": "float32-format-449a5000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "449a5000",
+        "repr_hint": "1234.5"
+      },
+      "expect": {
+        "payload": "1234.5"
+      }
+    },
+    {
+      "id": "float32-format-4ceb79a3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4ceb79a3",
+        "repr_hint": "123456790.0"
+      },
+      "expect": {
+        "payload": "123456790.0"
+      }
+    },
+    {
+      "id": "float32-format-4b800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4b800000",
+        "repr_hint": "16777216.0"
+      },
+      "expect": {
+        "payload": "16777216.0"
+      }
+    },
+    {
+      "id": "float32-format-4f000000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4f000000",
+        "repr_hint": "2147483600.0"
+      },
+      "expect": {
+        "payload": "2147483600.0"
+      }
+    },
+    {
+      "id": "float32-format-5f000000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5f000000",
+        "repr_hint": "9.223372e+18"
+      },
+      "expect": {
+        "payload": "9.223372e18"
+      }
+    },
+    {
+      "id": "float32-format-38d1b717",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "38d1b717",
+        "repr_hint": "1e-04"
+      },
+      "expect": {
+        "payload": "0.0001"
+      }
+    },
+    {
+      "id": "float32-format-38d1b1b9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "38d1b1b9",
+        "repr_hint": "9.999e-05"
+      },
+      "expect": {
+        "payload": "9.999e-05"
+      }
+    },
+    {
+      "id": "float32-format-3727c5ac",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3727c5ac",
+        "repr_hint": "1e-05"
+      },
+      "expect": {
+        "payload": "1e-05"
+      }
+    },
+    {
+      "id": "float32-format-377ba882",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "377ba882",
+        "repr_hint": "1.5e-05"
+      },
+      "expect": {
+        "payload": "1.5e-05"
+      }
+    },
+    {
+      "id": "float32-format-3901725b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3901725b",
+        "repr_hint": "0.00012345"
+      },
+      "expect": {
+        "payload": "0.00012345"
+      }
+    },
+    {
+      "id": "float32-format-58635fa9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "58635fa9",
+        "repr_hint": "1000000000000000.0"
+      },
+      "expect": {
+        "payload": "1000000000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-5a0e1bca",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5a0e1bca",
+        "repr_hint": "1e+16"
+      },
+      "expect": {
+        "payload": "1e16"
+      }
+    },
+    {
+      "id": "float32-format-5a5529af",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5a5529af",
+        "repr_hint": "1.5e+16"
+      },
+      "expect": {
+        "payload": "1.5e16"
+      }
+    },
+    {
+      "id": "float32-format-006ce3ee",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "006ce3ee",
+        "repr_hint": "1e-38"
+      },
+      "expect": {
+        "payload": "1e-38"
+      }
+    },
+    {
+      "id": "float32-format-7e967699",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7e967699",
+        "repr_hint": "1e+38"
+      },
+      "expect": {
+        "payload": "1e38"
+      }
+    },
+    {
+      "id": "float32-format-7f7fffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7f7fffff",
+        "repr_hint": "3.4028235e+38"
+      },
+      "expect": {
+        "payload": "3.4028235e38"
+      }
+    },
+    {
+      "id": "float32-format-ff7fffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "ff7fffff",
+        "repr_hint": "-3.4028235e+38"
+      },
+      "expect": {
+        "payload": "-3.4028235e38"
+      }
+    },
+    {
+      "id": "float32-format-00800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00800000",
+        "repr_hint": "1.1754944e-38"
+      },
+      "expect": {
+        "payload": "1.1754944e-38"
+      }
+    },
+    {
+      "id": "float32-format-80800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "80800000",
+        "repr_hint": "-1.1754944e-38"
+      },
+      "expect": {
+        "payload": "-1.1754944e-38"
+      }
+    },
+    {
+      "id": "float32-format-00000001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000001",
+        "repr_hint": "1e-45"
+      },
+      "expect": {
+        "payload": "1e-45"
+      }
+    },
+    {
+      "id": "float32-format-00000002",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000002",
+        "repr_hint": "3e-45"
+      },
+      "expect": {
+        "payload": "3e-45"
+      }
+    },
+    {
+      "id": "float32-format-000116c2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000116c2",
+        "repr_hint": "1e-40"
+      },
+      "expect": {
+        "payload": "1e-40"
+      }
+    },
+    {
+      "id": "float32-format-4a000001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4a000001",
+        "repr_hint": "2097152.2"
+      },
+      "expect": {
+        "payload": "2097152.2"
+      }
+    },
+    {
+      "id": "float32-format-4a000007",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4a000007",
+        "repr_hint": "2097153.8"
+      },
+      "expect": {
+        "payload": "2097153.8"
+      }
+    },
+    {
+      "id": "float32-format-40490fd0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "40490fd0",
+        "repr_hint": "3.14159"
+      },
+      "expect": {
+        "payload": "3.14159"
+      }
+    },
+    {
+      "id": "float32-format-402df854",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "402df854",
+        "repr_hint": "2.7182817"
+      },
+      "expect": {
+        "payload": "2.7182817"
+      }
+    },
+    {
+      "id": "float32-format-66ff0c2e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "66ff0c2e",
+        "repr_hint": "6.0221406e+23"
+      },
+      "expect": {
+        "payload": "6.0221406e23"
+      }
+    },
+    {
+      "id": "float32-format-4d8ef3c2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4d8ef3c2",
+        "repr_hint": "299792450.0"
+      },
+      "expect": {
+        "payload": "299792450.0"
+      }
+    },
+    {
+      "id": "float32-format-477fff00",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "477fff00",
+        "repr_hint": "65535.0"
+      },
+      "expect": {
+        "payload": "65535.0"
+      }
+    },
+    {
+      "id": "float32-format-4f800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4f800000",
+        "repr_hint": "4294967300.0"
+      },
+      "expect": {
+        "payload": "4294967300.0"
+      }
+    },
+    {
+      "id": "float32-format-42c7fae1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "42c7fae1",
+        "repr_hint": "99.99"
+      },
+      "expect": {
+        "payload": "99.99"
+      }
+    },
+    {
+      "id": "float32-format-3a83126f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3a83126f",
+        "repr_hint": "0.001"
+      },
+      "expect": {
+        "payload": "0.001"
+      }
+    },
+    {
+      "id": "float32-format-ba83126f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "ba83126f",
+        "repr_hint": "-0.001"
+      },
+      "expect": {
+        "payload": "-0.001"
+      }
+    },
+    {
+      "id": "float32-format-41480000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "41480000",
+        "repr_hint": "12.5"
+      },
+      "expect": {
+        "payload": "12.5"
+      }
+    },
+    {
+      "id": "float32-format-7f800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7f800000",
+        "repr_hint": "inf"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float32-format-ff800000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "ff800000",
+        "repr_hint": "-inf"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float32-format-7fc00000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7fc00000",
+        "repr_hint": "nan"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float32-format-00000003",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000003",
+        "repr_hint": "4e-45"
+      },
+      "expect": {
+        "payload": "4e-45"
+      }
+    },
+    {
+      "id": "float32-format-007fffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "007fffff",
+        "repr_hint": "1.1754942e-38"
+      },
+      "expect": {
+        "payload": "1.1754942e-38"
+      }
+    },
+    {
+      "id": "float32-format-00400000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00400000",
+        "repr_hint": "5.877472e-39"
+      },
+      "expect": {
+        "payload": "5.877472e-39"
+      }
+    },
+    {
+      "id": "float32-format-80000001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "80000001",
+        "repr_hint": "-1e-45"
+      },
+      "expect": {
+        "payload": "-1e-45"
+      }
+    },
+    {
+      "id": "float32-format-7f7ffffe",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7f7ffffe",
+        "repr_hint": "3.4028233e+38"
+      },
+      "expect": {
+        "payload": "3.4028233e38"
+      }
+    },
+    {
+      "id": "float32-format-00000007",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000007",
+        "repr_hint": "1e-44"
+      },
+      "expect": {
+        "payload": "1e-44"
+      }
+    },
+    {
+      "id": "float32-format-00000008",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000008",
+        "repr_hint": "1.1e-44"
+      },
+      "expect": {
+        "payload": "1.1e-44"
+      }
+    },
+    {
+      "id": "float32-format-00000006",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000006",
+        "repr_hint": "8e-45"
+      },
+      "expect": {
+        "payload": "8e-45"
+      }
+    },
+    {
+      "id": "float32-format-00000047",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000047",
+        "repr_hint": "1e-43"
+      },
+      "expect": {
+        "payload": "1e-43"
+      }
+    },
+    {
+      "id": "float32-format-00000048",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000048",
+        "repr_hint": "1.01e-43"
+      },
+      "expect": {
+        "payload": "1.01e-43"
+      }
+    },
+    {
+      "id": "float32-format-00000046",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00000046",
+        "repr_hint": "9.8e-44"
+      },
+      "expect": {
+        "payload": "9.8e-44"
+      }
+    },
+    {
+      "id": "float32-format-000002ca",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000002ca",
+        "repr_hint": "1e-42"
+      },
+      "expect": {
+        "payload": "1e-42"
+      }
+    },
+    {
+      "id": "float32-format-000002cb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000002cb",
+        "repr_hint": "1.002e-42"
+      },
+      "expect": {
+        "payload": "1.002e-42"
+      }
+    },
+    {
+      "id": "float32-format-000002c9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000002c9",
+        "repr_hint": "9.99e-43"
+      },
+      "expect": {
+        "payload": "9.99e-43"
+      }
+    },
+    {
+      "id": "float32-format-00001be0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00001be0",
+        "repr_hint": "1e-41"
+      },
+      "expect": {
+        "payload": "1e-41"
+      }
+    },
+    {
+      "id": "float32-format-00001be1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00001be1",
+        "repr_hint": "1.0001e-41"
+      },
+      "expect": {
+        "payload": "1.0001e-41"
+      }
+    },
+    {
+      "id": "float32-format-00001bdf",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "00001bdf",
+        "repr_hint": "9.998e-42"
+      },
+      "expect": {
+        "payload": "9.998e-42"
+      }
+    },
+    {
+      "id": "float32-format-000116c3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000116c3",
+        "repr_hint": "1.00001e-40"
+      },
+      "expect": {
+        "payload": "1.00001e-40"
+      }
+    },
+    {
+      "id": "float32-format-000116c1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000116c1",
+        "repr_hint": "9.9998e-41"
+      },
+      "expect": {
+        "payload": "9.9998e-41"
+      }
+    },
+    {
+      "id": "float32-format-000ae398",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000ae398",
+        "repr_hint": "1e-39"
+      },
+      "expect": {
+        "payload": "1e-39"
+      }
+    },
+    {
+      "id": "float32-format-000ae399",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000ae399",
+        "repr_hint": "1.000002e-39"
+      },
+      "expect": {
+        "payload": "1.000002e-39"
+      }
+    },
+    {
+      "id": "float32-format-000ae397",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "000ae397",
+        "repr_hint": "9.99999e-40"
+      },
+      "expect": {
+        "payload": "9.99999e-40"
+      }
+    },
+    {
+      "id": "float32-format-006ce3ef",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "006ce3ef",
+        "repr_hint": "1.0000001e-38"
+      },
+      "expect": {
+        "payload": "1.0000001e-38"
+      }
+    },
+    {
+      "id": "float32-format-006ce3ed",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "006ce3ed",
+        "repr_hint": "9.999998e-39"
+      },
+      "expect": {
+        "payload": "9.999998e-39"
+      }
+    },
+    {
+      "id": "float32-format-02081cea",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "02081cea",
+        "repr_hint": "1e-37"
+      },
+      "expect": {
+        "payload": "1e-37"
+      }
+    },
+    {
+      "id": "float32-format-02081ceb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "02081ceb",
+        "repr_hint": "1.0000001e-37"
+      },
+      "expect": {
+        "payload": "1.0000001e-37"
+      }
+    },
+    {
+      "id": "float32-format-02081ce9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "02081ce9",
+        "repr_hint": "9.999999e-38"
+      },
+      "expect": {
+        "payload": "9.999999e-38"
+      }
+    },
+    {
+      "id": "float32-format-03aa2425",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "03aa2425",
+        "repr_hint": "1e-36"
+      },
+      "expect": {
+        "payload": "1e-36"
+      }
+    },
+    {
+      "id": "float32-format-03aa2426",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "03aa2426",
+        "repr_hint": "1.0000001e-36"
+      },
+      "expect": {
+        "payload": "1.0000001e-36"
+      }
+    },
+    {
+      "id": "float32-format-03aa2424",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "03aa2424",
+        "repr_hint": "9.9999995e-37"
+      },
+      "expect": {
+        "payload": "9.9999995e-37"
+      }
+    },
+    {
+      "id": "float32-format-0554ad2e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0554ad2e",
+        "repr_hint": "1e-35"
+      },
+      "expect": {
+        "payload": "1e-35"
+      }
+    },
+    {
+      "id": "float32-format-0554ad2f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0554ad2f",
+        "repr_hint": "1.0000001e-35"
+      },
+      "expect": {
+        "payload": "1.0000001e-35"
+      }
+    },
+    {
+      "id": "float32-format-0554ad2d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0554ad2d",
+        "repr_hint": "9.9999995e-36"
+      },
+      "expect": {
+        "payload": "9.9999995e-36"
+      }
+    },
+    {
+      "id": "float32-format-0704ec3d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0704ec3d",
+        "repr_hint": "1e-34"
+      },
+      "expect": {
+        "payload": "1e-34"
+      }
+    },
+    {
+      "id": "float32-format-0704ec3e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0704ec3e",
+        "repr_hint": "1.0000002e-34"
+      },
+      "expect": {
+        "payload": "1.0000002e-34"
+      }
+    },
+    {
+      "id": "float32-format-0704ec3c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0704ec3c",
+        "repr_hint": "9.999999e-35"
+      },
+      "expect": {
+        "payload": "9.999999e-35"
+      }
+    },
+    {
+      "id": "float32-format-08a6274c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "08a6274c",
+        "repr_hint": "1e-33"
+      },
+      "expect": {
+        "payload": "1e-33"
+      }
+    },
+    {
+      "id": "float32-format-08a6274d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "08a6274d",
+        "repr_hint": "1.0000001e-33"
+      },
+      "expect": {
+        "payload": "1.0000001e-33"
+      }
+    },
+    {
+      "id": "float32-format-08a6274b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "08a6274b",
+        "repr_hint": "9.999999e-34"
+      },
+      "expect": {
+        "payload": "9.999999e-34"
+      }
+    },
+    {
+      "id": "float32-format-0a4fb11f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0a4fb11f",
+        "repr_hint": "1e-32"
+      },
+      "expect": {
+        "payload": "1e-32"
+      }
+    },
+    {
+      "id": "float32-format-0a4fb120",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0a4fb120",
+        "repr_hint": "1.0000001e-32"
+      },
+      "expect": {
+        "payload": "1.0000001e-32"
+      }
+    },
+    {
+      "id": "float32-format-0a4fb11e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0a4fb11e",
+        "repr_hint": "9.9999995e-33"
+      },
+      "expect": {
+        "payload": "9.9999995e-33"
+      }
+    },
+    {
+      "id": "float32-format-0c01ceb3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0c01ceb3",
+        "repr_hint": "1e-31"
+      },
+      "expect": {
+        "payload": "1e-31"
+      }
+    },
+    {
+      "id": "float32-format-0c01ceb4",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0c01ceb4",
+        "repr_hint": "1.0000001e-31"
+      },
+      "expect": {
+        "payload": "1.0000001e-31"
+      }
+    },
+    {
+      "id": "float32-format-0c01ceb2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0c01ceb2",
+        "repr_hint": "9.999999e-32"
+      },
+      "expect": {
+        "payload": "9.999999e-32"
+      }
+    },
+    {
+      "id": "float32-format-0da24260",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0da24260",
+        "repr_hint": "1e-30"
+      },
+      "expect": {
+        "payload": "1e-30"
+      }
+    },
+    {
+      "id": "float32-format-0da24261",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0da24261",
+        "repr_hint": "1.0000001e-30"
+      },
+      "expect": {
+        "payload": "1.0000001e-30"
+      }
+    },
+    {
+      "id": "float32-format-0da2425f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0da2425f",
+        "repr_hint": "9.999999e-31"
+      },
+      "expect": {
+        "payload": "9.999999e-31"
+      }
+    },
+    {
+      "id": "float32-format-0f4ad2f8",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0f4ad2f8",
+        "repr_hint": "1e-29"
+      },
+      "expect": {
+        "payload": "1e-29"
+      }
+    },
+    {
+      "id": "float32-format-0f4ad2f9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0f4ad2f9",
+        "repr_hint": "1.0000001e-29"
+      },
+      "expect": {
+        "payload": "1.0000001e-29"
+      }
+    },
+    {
+      "id": "float32-format-0f4ad2f7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "0f4ad2f7",
+        "repr_hint": "9.999999e-30"
+      },
+      "expect": {
+        "payload": "9.999999e-30"
+      }
+    },
+    {
+      "id": "float32-format-10fd87b6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "10fd87b6",
+        "repr_hint": "1e-28"
+      },
+      "expect": {
+        "payload": "1e-28"
+      }
+    },
+    {
+      "id": "float32-format-10fd87b7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "10fd87b7",
+        "repr_hint": "1.00000006e-28"
+      },
+      "expect": {
+        "payload": "1.00000006e-28"
+      }
+    },
+    {
+      "id": "float32-format-10fd87b5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "10fd87b5",
+        "repr_hint": "9.9999994e-29"
+      },
+      "expect": {
+        "payload": "9.9999994e-29"
+      }
+    },
+    {
+      "id": "float32-format-129e74d2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "129e74d2",
+        "repr_hint": "1e-27"
+      },
+      "expect": {
+        "payload": "1e-27"
+      }
+    },
+    {
+      "id": "float32-format-129e74d3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "129e74d3",
+        "repr_hint": "1.0000001e-27"
+      },
+      "expect": {
+        "payload": "1.0000001e-27"
+      }
+    },
+    {
+      "id": "float32-format-129e74d1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "129e74d1",
+        "repr_hint": "9.999999e-28"
+      },
+      "expect": {
+        "payload": "9.999999e-28"
+      }
+    },
+    {
+      "id": "float32-format-14461206",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "14461206",
+        "repr_hint": "1e-26"
+      },
+      "expect": {
+        "payload": "1e-26"
+      }
+    },
+    {
+      "id": "float32-format-14461207",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "14461207",
+        "repr_hint": "1.0000001e-26"
+      },
+      "expect": {
+        "payload": "1.0000001e-26"
+      }
+    },
+    {
+      "id": "float32-format-14461205",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "14461205",
+        "repr_hint": "9.999999e-27"
+      },
+      "expect": {
+        "payload": "9.999999e-27"
+      }
+    },
+    {
+      "id": "float32-format-15f79688",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "15f79688",
+        "repr_hint": "1e-25"
+      },
+      "expect": {
+        "payload": "1e-25"
+      }
+    },
+    {
+      "id": "float32-format-15f79689",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "15f79689",
+        "repr_hint": "1.0000001e-25"
+      },
+      "expect": {
+        "payload": "1.0000001e-25"
+      }
+    },
+    {
+      "id": "float32-format-15f79687",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "15f79687",
+        "repr_hint": "9.9999996e-26"
+      },
+      "expect": {
+        "payload": "9.9999996e-26"
+      }
+    },
+    {
+      "id": "float32-format-179abe15",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "179abe15",
+        "repr_hint": "1e-24"
+      },
+      "expect": {
+        "payload": "1e-24"
+      }
+    },
+    {
+      "id": "float32-format-179abe16",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "179abe16",
+        "repr_hint": "1.0000001e-24"
+      },
+      "expect": {
+        "payload": "1.0000001e-24"
+      }
+    },
+    {
+      "id": "float32-format-179abe14",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "179abe14",
+        "repr_hint": "9.999999e-25"
+      },
+      "expect": {
+        "payload": "9.999999e-25"
+      }
+    },
+    {
+      "id": "float32-format-19416d9a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "19416d9a",
+        "repr_hint": "1e-23"
+      },
+      "expect": {
+        "payload": "1e-23"
+      }
+    },
+    {
+      "id": "float32-format-19416d9b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "19416d9b",
+        "repr_hint": "1.0000001e-23"
+      },
+      "expect": {
+        "payload": "1.0000001e-23"
+      }
+    },
+    {
+      "id": "float32-format-19416d99",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "19416d99",
+        "repr_hint": "9.999999e-24"
+      },
+      "expect": {
+        "payload": "9.999999e-24"
+      }
+    },
+    {
+      "id": "float32-format-1af1c901",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1af1c901",
+        "repr_hint": "1e-22"
+      },
+      "expect": {
+        "payload": "1e-22"
+      }
+    },
+    {
+      "id": "float32-format-1af1c902",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1af1c902",
+        "repr_hint": "1.0000001e-22"
+      },
+      "expect": {
+        "payload": "1.0000001e-22"
+      }
+    },
+    {
+      "id": "float32-format-1af1c900",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1af1c900",
+        "repr_hint": "9.9999997e-23"
+      },
+      "expect": {
+        "payload": "9.9999997e-23"
+      }
+    },
+    {
+      "id": "float32-format-1c971da0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1c971da0",
+        "repr_hint": "1e-21"
+      },
+      "expect": {
+        "payload": "1e-21"
+      }
+    },
+    {
+      "id": "float32-format-1c971da1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1c971da1",
+        "repr_hint": "1.0000001e-21"
+      },
+      "expect": {
+        "payload": "1.0000001e-21"
+      }
+    },
+    {
+      "id": "float32-format-1c971d9f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1c971d9f",
+        "repr_hint": "9.999999e-22"
+      },
+      "expect": {
+        "payload": "9.999999e-22"
+      }
+    },
+    {
+      "id": "float32-format-1e3ce508",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1e3ce508",
+        "repr_hint": "1e-20"
+      },
+      "expect": {
+        "payload": "1e-20"
+      }
+    },
+    {
+      "id": "float32-format-1e3ce509",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1e3ce509",
+        "repr_hint": "1.00000005e-20"
+      },
+      "expect": {
+        "payload": "1.00000005e-20"
+      }
+    },
+    {
+      "id": "float32-format-1e3ce507",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1e3ce507",
+        "repr_hint": "9.999999e-21"
+      },
+      "expect": {
+        "payload": "9.999999e-21"
+      }
+    },
+    {
+      "id": "float32-format-1fec1e4a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1fec1e4a",
+        "repr_hint": "1e-19"
+      },
+      "expect": {
+        "payload": "1e-19"
+      }
+    },
+    {
+      "id": "float32-format-1fec1e4b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1fec1e4b",
+        "repr_hint": "1.00000003e-19"
+      },
+      "expect": {
+        "payload": "1.00000003e-19"
+      }
+    },
+    {
+      "id": "float32-format-1fec1e49",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1fec1e49",
+        "repr_hint": "9.999999e-20"
+      },
+      "expect": {
+        "payload": "9.999999e-20"
+      }
+    },
+    {
+      "id": "float32-format-219392ef",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "219392ef",
+        "repr_hint": "1e-18"
+      },
+      "expect": {
+        "payload": "1e-18"
+      }
+    },
+    {
+      "id": "float32-format-219392f0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "219392f0",
+        "repr_hint": "1.0000001e-18"
+      },
+      "expect": {
+        "payload": "1.0000001e-18"
+      }
+    },
+    {
+      "id": "float32-format-219392ee",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "219392ee",
+        "repr_hint": "9.999999e-19"
+      },
+      "expect": {
+        "payload": "9.999999e-19"
+      }
+    },
+    {
+      "id": "float32-format-233877aa",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "233877aa",
+        "repr_hint": "1e-17"
+      },
+      "expect": {
+        "payload": "1e-17"
+      }
+    },
+    {
+      "id": "float32-format-233877ab",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "233877ab",
+        "repr_hint": "1.0000001e-17"
+      },
+      "expect": {
+        "payload": "1.0000001e-17"
+      }
+    },
+    {
+      "id": "float32-format-233877a9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "233877a9",
+        "repr_hint": "9.999999e-18"
+      },
+      "expect": {
+        "payload": "9.999999e-18"
+      }
+    },
+    {
+      "id": "float32-format-24e69595",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "24e69595",
+        "repr_hint": "1e-16"
+      },
+      "expect": {
+        "payload": "1e-16"
+      }
+    },
+    {
+      "id": "float32-format-24e69596",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "24e69596",
+        "repr_hint": "1.0000001e-16"
+      },
+      "expect": {
+        "payload": "1.0000001e-16"
+      }
+    },
+    {
+      "id": "float32-format-24e69594",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "24e69594",
+        "repr_hint": "9.9999995e-17"
+      },
+      "expect": {
+        "payload": "9.9999995e-17"
+      }
+    },
+    {
+      "id": "float32-format-26901d7d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "26901d7d",
+        "repr_hint": "1e-15"
+      },
+      "expect": {
+        "payload": "1e-15"
+      }
+    },
+    {
+      "id": "float32-format-26901d7e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "26901d7e",
+        "repr_hint": "1.0000001e-15"
+      },
+      "expect": {
+        "payload": "1.0000001e-15"
+      }
+    },
+    {
+      "id": "float32-format-26901d7c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "26901d7c",
+        "repr_hint": "9.999999e-16"
+      },
+      "expect": {
+        "payload": "9.999999e-16"
+      }
+    },
+    {
+      "id": "float32-format-283424dc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "283424dc",
+        "repr_hint": "1e-14"
+      },
+      "expect": {
+        "payload": "1e-14"
+      }
+    },
+    {
+      "id": "float32-format-283424dd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "283424dd",
+        "repr_hint": "1.0000001e-14"
+      },
+      "expect": {
+        "payload": "1.0000001e-14"
+      }
+    },
+    {
+      "id": "float32-format-283424db",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "283424db",
+        "repr_hint": "9.999999e-15"
+      },
+      "expect": {
+        "payload": "9.999999e-15"
+      }
+    },
+    {
+      "id": "float32-format-29e12e13",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "29e12e13",
+        "repr_hint": "1e-13"
+      },
+      "expect": {
+        "payload": "1e-13"
+      }
+    },
+    {
+      "id": "float32-format-29e12e14",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "29e12e14",
+        "repr_hint": "1.00000005e-13"
+      },
+      "expect": {
+        "payload": "1.00000005e-13"
+      }
+    },
+    {
+      "id": "float32-format-29e12e12",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "29e12e12",
+        "repr_hint": "9.999999e-14"
+      },
+      "expect": {
+        "payload": "9.999999e-14"
+      }
+    },
+    {
+      "id": "float32-format-2b8cbccc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2b8cbccc",
+        "repr_hint": "1e-12"
+      },
+      "expect": {
+        "payload": "1e-12"
+      }
+    },
+    {
+      "id": "float32-format-2b8cbccd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2b8cbccd",
+        "repr_hint": "1.0000001e-12"
+      },
+      "expect": {
+        "payload": "1.0000001e-12"
+      }
+    },
+    {
+      "id": "float32-format-2b8cbccb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2b8cbccb",
+        "repr_hint": "9.999999e-13"
+      },
+      "expect": {
+        "payload": "9.999999e-13"
+      }
+    },
+    {
+      "id": "float32-format-2d2febff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2d2febff",
+        "repr_hint": "1e-11"
+      },
+      "expect": {
+        "payload": "1e-11"
+      }
+    },
+    {
+      "id": "float32-format-2d2fec00",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2d2fec00",
+        "repr_hint": "1.0000001e-11"
+      },
+      "expect": {
+        "payload": "1.0000001e-11"
+      }
+    },
+    {
+      "id": "float32-format-2d2febfe",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2d2febfe",
+        "repr_hint": "9.999999e-12"
+      },
+      "expect": {
+        "payload": "9.999999e-12"
+      }
+    },
+    {
+      "id": "float32-format-2edbe6ff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2edbe6ff",
+        "repr_hint": "1e-10"
+      },
+      "expect": {
+        "payload": "1e-10"
+      }
+    },
+    {
+      "id": "float32-format-2edbe700",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2edbe700",
+        "repr_hint": "1.0000001e-10"
+      },
+      "expect": {
+        "payload": "1.0000001e-10"
+      }
+    },
+    {
+      "id": "float32-format-2edbe6fe",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2edbe6fe",
+        "repr_hint": "9.9999994e-11"
+      },
+      "expect": {
+        "payload": "9.9999994e-11"
+      }
+    },
+    {
+      "id": "float32-format-3089705f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3089705f",
+        "repr_hint": "1e-09"
+      },
+      "expect": {
+        "payload": "1e-09"
+      }
+    },
+    {
+      "id": "float32-format-30897060",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "30897060",
+        "repr_hint": "1.0000001e-09"
+      },
+      "expect": {
+        "payload": "1.0000001e-09"
+      }
+    },
+    {
+      "id": "float32-format-3089705e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3089705e",
+        "repr_hint": "9.999999e-10"
+      },
+      "expect": {
+        "payload": "9.999999e-10"
+      }
+    },
+    {
+      "id": "float32-format-322bcc77",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "322bcc77",
+        "repr_hint": "1e-08"
+      },
+      "expect": {
+        "payload": "1e-08"
+      }
+    },
+    {
+      "id": "float32-format-322bcc78",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "322bcc78",
+        "repr_hint": "1.0000001e-08"
+      },
+      "expect": {
+        "payload": "1.0000001e-08"
+      }
+    },
+    {
+      "id": "float32-format-322bcc76",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "322bcc76",
+        "repr_hint": "9.999999e-09"
+      },
+      "expect": {
+        "payload": "9.999999e-09"
+      }
+    },
+    {
+      "id": "float32-format-33d6bf95",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "33d6bf95",
+        "repr_hint": "1e-07"
+      },
+      "expect": {
+        "payload": "1e-07"
+      }
+    },
+    {
+      "id": "float32-format-33d6bf96",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "33d6bf96",
+        "repr_hint": "1.0000001e-07"
+      },
+      "expect": {
+        "payload": "1.0000001e-07"
+      }
+    },
+    {
+      "id": "float32-format-33d6bf94",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "33d6bf94",
+        "repr_hint": "9.9999994e-08"
+      },
+      "expect": {
+        "payload": "9.9999994e-08"
+      }
+    },
+    {
+      "id": "float32-format-358637bd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "358637bd",
+        "repr_hint": "1e-06"
+      },
+      "expect": {
+        "payload": "1e-06"
+      }
+    },
+    {
+      "id": "float32-format-358637be",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "358637be",
+        "repr_hint": "1.0000001e-06"
+      },
+      "expect": {
+        "payload": "1.0000001e-06"
+      }
+    },
+    {
+      "id": "float32-format-358637bc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "358637bc",
+        "repr_hint": "9.999999e-07"
+      },
+      "expect": {
+        "payload": "9.999999e-07"
+      }
+    },
+    {
+      "id": "float32-format-3727c5ad",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3727c5ad",
+        "repr_hint": "1.0000001e-05"
+      },
+      "expect": {
+        "payload": "1.0000001e-05"
+      }
+    },
+    {
+      "id": "float32-format-3727c5ab",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3727c5ab",
+        "repr_hint": "9.999999e-06"
+      },
+      "expect": {
+        "payload": "9.999999e-06"
+      }
+    },
+    {
+      "id": "float32-format-38d1b718",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "38d1b718",
+        "repr_hint": "0.000100000005"
+      },
+      "expect": {
+        "payload": "0.000100000005"
+      }
+    },
+    {
+      "id": "float32-format-38d1b716",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "38d1b716",
+        "repr_hint": "9.999999e-05"
+      },
+      "expect": {
+        "payload": "9.999999e-05"
+      }
+    },
+    {
+      "id": "float32-format-3a831270",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3a831270",
+        "repr_hint": "0.0010000002"
+      },
+      "expect": {
+        "payload": "0.0010000002"
+      }
+    },
+    {
+      "id": "float32-format-3a83126e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3a83126e",
+        "repr_hint": "0.0009999999"
+      },
+      "expect": {
+        "payload": "0.0009999999"
+      }
+    },
+    {
+      "id": "float32-format-3c23d70a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3c23d70a",
+        "repr_hint": "0.01"
+      },
+      "expect": {
+        "payload": "0.01"
+      }
+    },
+    {
+      "id": "float32-format-3c23d70b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3c23d70b",
+        "repr_hint": "0.010000001"
+      },
+      "expect": {
+        "payload": "0.010000001"
+      }
+    },
+    {
+      "id": "float32-format-3c23d709",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3c23d709",
+        "repr_hint": "0.009999999"
+      },
+      "expect": {
+        "payload": "0.009999999"
+      }
+    },
+    {
+      "id": "float32-format-3dccccce",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3dccccce",
+        "repr_hint": "0.10000001"
+      },
+      "expect": {
+        "payload": "0.10000001"
+      }
+    },
+    {
+      "id": "float32-format-3dcccccc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3dcccccc",
+        "repr_hint": "0.099999994"
+      },
+      "expect": {
+        "payload": "0.099999994"
+      }
+    },
+    {
+      "id": "float32-format-3f800001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3f800001",
+        "repr_hint": "1.0000001"
+      },
+      "expect": {
+        "payload": "1.0000001"
+      }
+    },
+    {
+      "id": "float32-format-3f7fffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3f7fffff",
+        "repr_hint": "0.99999994"
+      },
+      "expect": {
+        "payload": "0.99999994"
+      }
+    },
+    {
+      "id": "float32-format-41200000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "41200000",
+        "repr_hint": "10.0"
+      },
+      "expect": {
+        "payload": "10.0"
+      }
+    },
+    {
+      "id": "float32-format-41200001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "41200001",
+        "repr_hint": "10.000001"
+      },
+      "expect": {
+        "payload": "10.000001"
+      }
+    },
+    {
+      "id": "float32-format-411fffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "411fffff",
+        "repr_hint": "9.999999"
+      },
+      "expect": {
+        "payload": "9.999999"
+      }
+    },
+    {
+      "id": "float32-format-42c80001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "42c80001",
+        "repr_hint": "100.00001"
+      },
+      "expect": {
+        "payload": "100.00001"
+      }
+    },
+    {
+      "id": "float32-format-42c7ffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "42c7ffff",
+        "repr_hint": "99.99999"
+      },
+      "expect": {
+        "payload": "99.99999"
+      }
+    },
+    {
+      "id": "float32-format-447a0000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "447a0000",
+        "repr_hint": "1000.0"
+      },
+      "expect": {
+        "payload": "1000.0"
+      }
+    },
+    {
+      "id": "float32-format-447a0001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "447a0001",
+        "repr_hint": "1000.00006"
+      },
+      "expect": {
+        "payload": "1000.00006"
+      }
+    },
+    {
+      "id": "float32-format-4479ffff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4479ffff",
+        "repr_hint": "999.99994"
+      },
+      "expect": {
+        "payload": "999.99994"
+      }
+    },
+    {
+      "id": "float32-format-461c4000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "461c4000",
+        "repr_hint": "10000.0"
+      },
+      "expect": {
+        "payload": "10000.0"
+      }
+    },
+    {
+      "id": "float32-format-461c4001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "461c4001",
+        "repr_hint": "10000.001"
+      },
+      "expect": {
+        "payload": "10000.001"
+      }
+    },
+    {
+      "id": "float32-format-461c3fff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "461c3fff",
+        "repr_hint": "9999.999"
+      },
+      "expect": {
+        "payload": "9999.999"
+      }
+    },
+    {
+      "id": "float32-format-47c35000",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "47c35000",
+        "repr_hint": "100000.0"
+      },
+      "expect": {
+        "payload": "100000.0"
+      }
+    },
+    {
+      "id": "float32-format-47c35001",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "47c35001",
+        "repr_hint": "100000.01"
+      },
+      "expect": {
+        "payload": "100000.01"
+      }
+    },
+    {
+      "id": "float32-format-47c34fff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "47c34fff",
+        "repr_hint": "99999.99"
+      },
+      "expect": {
+        "payload": "99999.99"
+      }
+    },
+    {
+      "id": "float32-format-49742400",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "49742400",
+        "repr_hint": "1000000.0"
+      },
+      "expect": {
+        "payload": "1000000.0"
+      }
+    },
+    {
+      "id": "float32-format-49742401",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "49742401",
+        "repr_hint": "1000000.06"
+      },
+      "expect": {
+        "payload": "1000000.06"
+      }
+    },
+    {
+      "id": "float32-format-497423ff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "497423ff",
+        "repr_hint": "999999.94"
+      },
+      "expect": {
+        "payload": "999999.94"
+      }
+    },
+    {
+      "id": "float32-format-4b189680",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4b189680",
+        "repr_hint": "10000000.0"
+      },
+      "expect": {
+        "payload": "10000000.0"
+      }
+    },
+    {
+      "id": "float32-format-4b189681",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4b189681",
+        "repr_hint": "10000001.0"
+      },
+      "expect": {
+        "payload": "10000001.0"
+      }
+    },
+    {
+      "id": "float32-format-4b18967f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4b18967f",
+        "repr_hint": "9999999.0"
+      },
+      "expect": {
+        "payload": "9999999.0"
+      }
+    },
+    {
+      "id": "float32-format-4cbebc20",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4cbebc20",
+        "repr_hint": "100000000.0"
+      },
+      "expect": {
+        "payload": "100000000.0"
+      }
+    },
+    {
+      "id": "float32-format-4cbebc21",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4cbebc21",
+        "repr_hint": "100000010.0"
+      },
+      "expect": {
+        "payload": "100000010.0"
+      }
+    },
+    {
+      "id": "float32-format-4cbebc1f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4cbebc1f",
+        "repr_hint": "99999990.0"
+      },
+      "expect": {
+        "payload": "99999990.0"
+      }
+    },
+    {
+      "id": "float32-format-4e6e6b28",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4e6e6b28",
+        "repr_hint": "1000000000.0"
+      },
+      "expect": {
+        "payload": "1000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-4e6e6b29",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4e6e6b29",
+        "repr_hint": "1000000060.0"
+      },
+      "expect": {
+        "payload": "1000000060.0"
+      }
+    },
+    {
+      "id": "float32-format-4e6e6b27",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4e6e6b27",
+        "repr_hint": "999999940.0"
+      },
+      "expect": {
+        "payload": "999999940.0"
+      }
+    },
+    {
+      "id": "float32-format-501502f9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "501502f9",
+        "repr_hint": "10000000000.0"
+      },
+      "expect": {
+        "payload": "10000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-501502fa",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "501502fa",
+        "repr_hint": "10000001000.0"
+      },
+      "expect": {
+        "payload": "10000001000.0"
+      }
+    },
+    {
+      "id": "float32-format-501502f8",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "501502f8",
+        "repr_hint": "9999999000.0"
+      },
+      "expect": {
+        "payload": "9999999000.0"
+      }
+    },
+    {
+      "id": "float32-format-51ba43b7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "51ba43b7",
+        "repr_hint": "100000000000.0"
+      },
+      "expect": {
+        "payload": "100000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-51ba43b8",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "51ba43b8",
+        "repr_hint": "100000010000.0"
+      },
+      "expect": {
+        "payload": "100000010000.0"
+      }
+    },
+    {
+      "id": "float32-format-51ba43b6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "51ba43b6",
+        "repr_hint": "99999990000.0"
+      },
+      "expect": {
+        "payload": "99999990000.0"
+      }
+    },
+    {
+      "id": "float32-format-5368d4a5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5368d4a5",
+        "repr_hint": "1000000000000.0"
+      },
+      "expect": {
+        "payload": "1000000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-5368d4a6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5368d4a6",
+        "repr_hint": "1000000060000.0"
+      },
+      "expect": {
+        "payload": "1000000060000.0"
+      }
+    },
+    {
+      "id": "float32-format-5368d4a4",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5368d4a4",
+        "repr_hint": "999999900000.0"
+      },
+      "expect": {
+        "payload": "999999900000.0"
+      }
+    },
+    {
+      "id": "float32-format-551184e7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "551184e7",
+        "repr_hint": "10000000000000.0"
+      },
+      "expect": {
+        "payload": "10000000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-551184e8",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "551184e8",
+        "repr_hint": "10000001000000.0"
+      },
+      "expect": {
+        "payload": "10000001000000.0"
+      }
+    },
+    {
+      "id": "float32-format-551184e6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "551184e6",
+        "repr_hint": "9999999000000.0"
+      },
+      "expect": {
+        "payload": "9999999000000.0"
+      }
+    },
+    {
+      "id": "float32-format-56b5e621",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "56b5e621",
+        "repr_hint": "100000000000000.0"
+      },
+      "expect": {
+        "payload": "100000000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-56b5e622",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "56b5e622",
+        "repr_hint": "100000010000000.0"
+      },
+      "expect": {
+        "payload": "100000010000000.0"
+      }
+    },
+    {
+      "id": "float32-format-56b5e620",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "56b5e620",
+        "repr_hint": "99999990000000.0"
+      },
+      "expect": {
+        "payload": "99999990000000.0"
+      }
+    },
+    {
+      "id": "float32-format-58635faa",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "58635faa",
+        "repr_hint": "1000000050000000.0"
+      },
+      "expect": {
+        "payload": "1000000050000000.0"
+      }
+    },
+    {
+      "id": "float32-format-58635fa8",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "58635fa8",
+        "repr_hint": "999999900000000.0"
+      },
+      "expect": {
+        "payload": "999999900000000.0"
+      }
+    },
+    {
+      "id": "float32-format-5a0e1bcb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5a0e1bcb",
+        "repr_hint": "1.0000001e+16"
+      },
+      "expect": {
+        "payload": "1.0000001e16"
+      }
+    },
+    {
+      "id": "float32-format-5a0e1bc9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5a0e1bc9",
+        "repr_hint": "9999999000000000.0"
+      },
+      "expect": {
+        "payload": "9999999000000000.0"
+      }
+    },
+    {
+      "id": "float32-format-5bb1a2bc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5bb1a2bc",
+        "repr_hint": "1e+17"
+      },
+      "expect": {
+        "payload": "1e17"
+      }
+    },
+    {
+      "id": "float32-format-5bb1a2bd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5bb1a2bd",
+        "repr_hint": "1.0000001e+17"
+      },
+      "expect": {
+        "payload": "1.0000001e17"
+      }
+    },
+    {
+      "id": "float32-format-5bb1a2bb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5bb1a2bb",
+        "repr_hint": "9.999999e+16"
+      },
+      "expect": {
+        "payload": "9.999999e16"
+      }
+    },
+    {
+      "id": "float32-format-5d5e0b6b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5d5e0b6b",
+        "repr_hint": "1e+18"
+      },
+      "expect": {
+        "payload": "1e18"
+      }
+    },
+    {
+      "id": "float32-format-5d5e0b6c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5d5e0b6c",
+        "repr_hint": "1.00000005e+18"
+      },
+      "expect": {
+        "payload": "1.00000005e18"
+      }
+    },
+    {
+      "id": "float32-format-5d5e0b6a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5d5e0b6a",
+        "repr_hint": "9.999999e+17"
+      },
+      "expect": {
+        "payload": "9.999999e17"
+      }
+    },
+    {
+      "id": "float32-format-5f0ac723",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5f0ac723",
+        "repr_hint": "1e+19"
+      },
+      "expect": {
+        "payload": "1e19"
+      }
+    },
+    {
+      "id": "float32-format-5f0ac724",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5f0ac724",
+        "repr_hint": "1.0000001e+19"
+      },
+      "expect": {
+        "payload": "1.0000001e19"
+      }
+    },
+    {
+      "id": "float32-format-5f0ac722",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5f0ac722",
+        "repr_hint": "9.999999e+18"
+      },
+      "expect": {
+        "payload": "9.999999e18"
+      }
+    },
+    {
+      "id": "float32-format-60ad78ec",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "60ad78ec",
+        "repr_hint": "1e+20"
+      },
+      "expect": {
+        "payload": "1e20"
+      }
+    },
+    {
+      "id": "float32-format-60ad78ed",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "60ad78ed",
+        "repr_hint": "1.0000001e+20"
+      },
+      "expect": {
+        "payload": "1.0000001e20"
+      }
+    },
+    {
+      "id": "float32-format-60ad78eb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "60ad78eb",
+        "repr_hint": "9.999999e+19"
+      },
+      "expect": {
+        "payload": "9.999999e19"
+      }
+    },
+    {
+      "id": "float32-format-6258d727",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6258d727",
+        "repr_hint": "1e+21"
+      },
+      "expect": {
+        "payload": "1e21"
+      }
+    },
+    {
+      "id": "float32-format-6258d728",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6258d728",
+        "repr_hint": "1.0000001e+21"
+      },
+      "expect": {
+        "payload": "1.0000001e21"
+      }
+    },
+    {
+      "id": "float32-format-6258d726",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6258d726",
+        "repr_hint": "9.9999995e+20"
+      },
+      "expect": {
+        "payload": "9.9999995e20"
+      }
+    },
+    {
+      "id": "float32-format-64078678",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "64078678",
+        "repr_hint": "1e+22"
+      },
+      "expect": {
+        "payload": "1e22"
+      }
+    },
+    {
+      "id": "float32-format-64078679",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "64078679",
+        "repr_hint": "1.0000001e+22"
+      },
+      "expect": {
+        "payload": "1.0000001e22"
+      }
+    },
+    {
+      "id": "float32-format-64078677",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "64078677",
+        "repr_hint": "9.999999e+21"
+      },
+      "expect": {
+        "payload": "9.999999e21"
+      }
+    },
+    {
+      "id": "float32-format-65a96816",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "65a96816",
+        "repr_hint": "1e+23"
+      },
+      "expect": {
+        "payload": "1e23"
+      }
+    },
+    {
+      "id": "float32-format-65a96817",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "65a96817",
+        "repr_hint": "1.0000001e+23"
+      },
+      "expect": {
+        "payload": "1.0000001e23"
+      }
+    },
+    {
+      "id": "float32-format-65a96815",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "65a96815",
+        "repr_hint": "9.999999e+22"
+      },
+      "expect": {
+        "payload": "9.999999e22"
+      }
+    },
+    {
+      "id": "float32-format-6753c21c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6753c21c",
+        "repr_hint": "1e+24"
+      },
+      "expect": {
+        "payload": "1e24"
+      }
+    },
+    {
+      "id": "float32-format-6753c21d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6753c21d",
+        "repr_hint": "1.0000001e+24"
+      },
+      "expect": {
+        "payload": "1.0000001e24"
+      }
+    },
+    {
+      "id": "float32-format-6753c21b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6753c21b",
+        "repr_hint": "9.9999994e+23"
+      },
+      "expect": {
+        "payload": "9.9999994e23"
+      }
+    },
+    {
+      "id": "float32-format-69045951",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "69045951",
+        "repr_hint": "1e+25"
+      },
+      "expect": {
+        "payload": "1e25"
+      }
+    },
+    {
+      "id": "float32-format-69045952",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "69045952",
+        "repr_hint": "1.0000001e+25"
+      },
+      "expect": {
+        "payload": "1.0000001e25"
+      }
+    },
+    {
+      "id": "float32-format-69045950",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "69045950",
+        "repr_hint": "9.999998e+24"
+      },
+      "expect": {
+        "payload": "9.999998e24"
+      }
+    },
+    {
+      "id": "float32-format-6aa56fa6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6aa56fa6",
+        "repr_hint": "1e+26"
+      },
+      "expect": {
+        "payload": "1e26"
+      }
+    },
+    {
+      "id": "float32-format-6aa56fa7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6aa56fa7",
+        "repr_hint": "1.0000001e+26"
+      },
+      "expect": {
+        "payload": "1.0000001e26"
+      }
+    },
+    {
+      "id": "float32-format-6aa56fa5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6aa56fa5",
+        "repr_hint": "9.999999e+25"
+      },
+      "expect": {
+        "payload": "9.999999e25"
+      }
+    },
+    {
+      "id": "float32-format-6c4ecb8f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6c4ecb8f",
+        "repr_hint": "1e+27"
+      },
+      "expect": {
+        "payload": "1e27"
+      }
+    },
+    {
+      "id": "float32-format-6c4ecb90",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6c4ecb90",
+        "repr_hint": "1.00000006e+27"
+      },
+      "expect": {
+        "payload": "1.00000006e27"
+      }
+    },
+    {
+      "id": "float32-format-6c4ecb8e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6c4ecb8e",
+        "repr_hint": "9.999999e+26"
+      },
+      "expect": {
+        "payload": "9.999999e26"
+      }
+    },
+    {
+      "id": "float32-format-6e013f39",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6e013f39",
+        "repr_hint": "1e+28"
+      },
+      "expect": {
+        "payload": "1e28"
+      }
+    },
+    {
+      "id": "float32-format-6e013f3a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6e013f3a",
+        "repr_hint": "1.0000001e+28"
+      },
+      "expect": {
+        "payload": "1.0000001e28"
+      }
+    },
+    {
+      "id": "float32-format-6e013f38",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6e013f38",
+        "repr_hint": "9.999998e+27"
+      },
+      "expect": {
+        "payload": "9.999998e27"
+      }
+    },
+    {
+      "id": "float32-format-6fa18f08",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6fa18f08",
+        "repr_hint": "1e+29"
+      },
+      "expect": {
+        "payload": "1e29"
+      }
+    },
+    {
+      "id": "float32-format-6fa18f09",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6fa18f09",
+        "repr_hint": "1.0000001e+29"
+      },
+      "expect": {
+        "payload": "1.0000001e29"
+      }
+    },
+    {
+      "id": "float32-format-6fa18f07",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6fa18f07",
+        "repr_hint": "9.999999e+28"
+      },
+      "expect": {
+        "payload": "9.999999e28"
+      }
+    },
+    {
+      "id": "float32-format-7149f2ca",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7149f2ca",
+        "repr_hint": "1e+30"
+      },
+      "expect": {
+        "payload": "1e30"
+      }
+    },
+    {
+      "id": "float32-format-7149f2cb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7149f2cb",
+        "repr_hint": "1.0000001e+30"
+      },
+      "expect": {
+        "payload": "1.0000001e30"
+      }
+    },
+    {
+      "id": "float32-format-7149f2c9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7149f2c9",
+        "repr_hint": "9.9999994e+29"
+      },
+      "expect": {
+        "payload": "9.9999994e29"
+      }
+    },
+    {
+      "id": "float32-format-72fc6f7c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "72fc6f7c",
+        "repr_hint": "1e+31"
+      },
+      "expect": {
+        "payload": "1e31"
+      }
+    },
+    {
+      "id": "float32-format-72fc6f7d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "72fc6f7d",
+        "repr_hint": "1.00000005e+31"
+      },
+      "expect": {
+        "payload": "1.00000005e31"
+      }
+    },
+    {
+      "id": "float32-format-72fc6f7b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "72fc6f7b",
+        "repr_hint": "9.999999e+30"
+      },
+      "expect": {
+        "payload": "9.999999e30"
+      }
+    },
+    {
+      "id": "float32-format-749dc5ae",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "749dc5ae",
+        "repr_hint": "1e+32"
+      },
+      "expect": {
+        "payload": "1e32"
+      }
+    },
+    {
+      "id": "float32-format-749dc5af",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "749dc5af",
+        "repr_hint": "1.0000001e+32"
+      },
+      "expect": {
+        "payload": "1.0000001e32"
+      }
+    },
+    {
+      "id": "float32-format-749dc5ad",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "749dc5ad",
+        "repr_hint": "9.999999e+31"
+      },
+      "expect": {
+        "payload": "9.999999e31"
+      }
+    },
+    {
+      "id": "float32-format-76453719",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "76453719",
+        "repr_hint": "1e+33"
+      },
+      "expect": {
+        "payload": "1e33"
+      }
+    },
+    {
+      "id": "float32-format-7645371a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7645371a",
+        "repr_hint": "1.0000001e+33"
+      },
+      "expect": {
+        "payload": "1.0000001e33"
+      }
+    },
+    {
+      "id": "float32-format-76453718",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "76453718",
+        "repr_hint": "9.999999e+32"
+      },
+      "expect": {
+        "payload": "9.999999e32"
+      }
+    },
+    {
+      "id": "float32-format-77f684df",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "77f684df",
+        "repr_hint": "1e+34"
+      },
+      "expect": {
+        "payload": "1e34"
+      }
+    },
+    {
+      "id": "float32-format-77f684e0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "77f684e0",
+        "repr_hint": "1.00000004e+34"
+      },
+      "expect": {
+        "payload": "1.00000004e34"
+      }
+    },
+    {
+      "id": "float32-format-77f684de",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "77f684de",
+        "repr_hint": "9.999999e+33"
+      },
+      "expect": {
+        "payload": "9.999999e33"
+      }
+    },
+    {
+      "id": "float32-format-799a130c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "799a130c",
+        "repr_hint": "1e+35"
+      },
+      "expect": {
+        "payload": "1e35"
+      }
+    },
+    {
+      "id": "float32-format-799a130d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "799a130d",
+        "repr_hint": "1.0000001e+35"
+      },
+      "expect": {
+        "payload": "1.0000001e35"
+      }
+    },
+    {
+      "id": "float32-format-799a130b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "799a130b",
+        "repr_hint": "9.999999e+34"
+      },
+      "expect": {
+        "payload": "9.999999e34"
+      }
+    },
+    {
+      "id": "float32-format-7b4097ce",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7b4097ce",
+        "repr_hint": "1e+36"
+      },
+      "expect": {
+        "payload": "1e36"
+      }
+    },
+    {
+      "id": "float32-format-7b4097cf",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7b4097cf",
+        "repr_hint": "1.00000004e+36"
+      },
+      "expect": {
+        "payload": "1.00000004e36"
+      }
+    },
+    {
+      "id": "float32-format-7b4097cd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7b4097cd",
+        "repr_hint": "9.999999e+35"
+      },
+      "expect": {
+        "payload": "9.999999e35"
+      }
+    },
+    {
+      "id": "float32-format-7cf0bdc2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7cf0bdc2",
+        "repr_hint": "1e+37"
+      },
+      "expect": {
+        "payload": "1e37"
+      }
+    },
+    {
+      "id": "float32-format-7cf0bdc3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7cf0bdc3",
+        "repr_hint": "1.00000006e+37"
+      },
+      "expect": {
+        "payload": "1.00000006e37"
+      }
+    },
+    {
+      "id": "float32-format-7cf0bdc1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7cf0bdc1",
+        "repr_hint": "9.999999e+36"
+      },
+      "expect": {
+        "payload": "9.999999e36"
+      }
+    },
+    {
+      "id": "float32-format-7e96769a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7e96769a",
+        "repr_hint": "1.0000001e+38"
+      },
+      "expect": {
+        "payload": "1.0000001e38"
+      }
+    },
+    {
+      "id": "float32-format-7e967698",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7e967698",
+        "repr_hint": "9.999999e+37"
+      },
+      "expect": {
+        "payload": "9.999999e37"
+      }
+    },
+    {
+      "id": "float32-format-c67ea36f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c67ea36f",
+        "repr_hint": "-16296.858"
+      },
+      "expect": {
+        "payload": "-16296.858"
+      }
+    },
+    {
+      "id": "float32-format-c604b180",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c604b180",
+        "repr_hint": "-8492.375"
+      },
+      "expect": {
+        "payload": "-8492.375"
+      }
+    },
+    {
+      "id": "float32-format-c8d7e2ae",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8d7e2ae",
+        "repr_hint": "-442133.44"
+      },
+      "expect": {
+        "payload": "-442133.44"
+      }
+    },
+    {
+      "id": "float32-format-c9609b5e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c9609b5e",
+        "repr_hint": "-919989.9"
+      },
+      "expect": {
+        "payload": "-919989.9"
+      }
+    },
+    {
+      "id": "float32-format-c71cbe9f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c71cbe9f",
+        "repr_hint": "-40126.62"
+      },
+      "expect": {
+        "payload": "-40126.62"
+      }
+    },
+    {
+      "id": "float32-format-48b8fc0d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48b8fc0d",
+        "repr_hint": "378848.4"
+      },
+      "expect": {
+        "payload": "378848.4"
+      }
+    },
+    {
+      "id": "float32-format-48c8950f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48c8950f",
+        "repr_hint": "410792.47"
+      },
+      "expect": {
+        "payload": "410792.47"
+      }
+    },
+    {
+      "id": "float32-format-48ffa0aa",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48ffa0aa",
+        "repr_hint": "523525.3"
+      },
+      "expect": {
+        "payload": "523525.3"
+      }
+    },
+    {
+      "id": "float32-format-c89716ca",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c89716ca",
+        "repr_hint": "-309430.3"
+      },
+      "expect": {
+        "payload": "-309430.3"
+      }
+    },
+    {
+      "id": "float32-format-495b2157",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "495b2157",
+        "repr_hint": "897557.44"
+      },
+      "expect": {
+        "payload": "897557.44"
+      }
+    },
+    {
+      "id": "float32-format-484cd056",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "484cd056",
+        "repr_hint": "209729.34"
+      },
+      "expect": {
+        "payload": "209729.34"
+      }
+    },
+    {
+      "id": "float32-format-492f7972",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "492f7972",
+        "repr_hint": "718743.1"
+      },
+      "expect": {
+        "payload": "718743.1"
+      }
+    },
+    {
+      "id": "float32-format-c75a2bbb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c75a2bbb",
+        "repr_hint": "-55851.73"
+      },
+      "expect": {
+        "payload": "-55851.73"
+      }
+    },
+    {
+      "id": "float32-format-c96749e5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c96749e5",
+        "repr_hint": "-947358.3"
+      },
+      "expect": {
+        "payload": "-947358.3"
+      }
+    },
+    {
+      "id": "float32-format-c903bcd4",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c903bcd4",
+        "repr_hint": "-539597.25"
+      },
+      "expect": {
+        "payload": "-539597.25"
+      }
+    },
+    {
+      "id": "float32-format-493e40a4",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "493e40a4",
+        "repr_hint": "779274.25"
+      },
+      "expect": {
+        "payload": "779274.25"
+      }
+    },
+    {
+      "id": "float32-format-c8fbe426",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8fbe426",
+        "repr_hint": "-515873.2"
+      },
+      "expect": {
+        "payload": "-515873.2"
+      }
+    },
+    {
+      "id": "float32-format-c914f0f7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c914f0f7",
+        "repr_hint": "-610063.44"
+      },
+      "expect": {
+        "payload": "-610063.44"
+      }
+    },
+    {
+      "id": "float32-format-4941a865",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4941a865",
+        "repr_hint": "793222.3"
+      },
+      "expect": {
+        "payload": "793222.3"
+      }
+    },
+    {
+      "id": "float32-format-48cf326f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48cf326f",
+        "repr_hint": "424339.47"
+      },
+      "expect": {
+        "payload": "424339.47"
+      }
+    },
+    {
+      "id": "float32-format-4856cf24",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4856cf24",
+        "repr_hint": "219964.56"
+      },
+      "expect": {
+        "payload": "219964.56"
+      }
+    },
+    {
+      "id": "float32-format-c96c3e6e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c96c3e6e",
+        "repr_hint": "-967654.9"
+      },
+      "expect": {
+        "payload": "-967654.9"
+      }
+    },
+    {
+      "id": "float32-format-c8ecd75c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8ecd75c",
+        "repr_hint": "-485050.88"
+      },
+      "expect": {
+        "payload": "-485050.88"
+      }
+    },
+    {
+      "id": "float32-format-c8206565",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8206565",
+        "repr_hint": "-164245.58"
+      },
+      "expect": {
+        "payload": "-164245.58"
+      }
+    },
+    {
+      "id": "float32-format-c892110a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c892110a",
+        "repr_hint": "-299144.3"
+      },
+      "expect": {
+        "payload": "-299144.3"
+      }
+    },
+    {
+      "id": "float32-format-48e3dc87",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48e3dc87",
+        "repr_hint": "466660.22"
+      },
+      "expect": {
+        "payload": "466660.22"
+      }
+    },
+    {
+      "id": "float32-format-c8befcba",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8befcba",
+        "repr_hint": "-391141.8"
+      },
+      "expect": {
+        "payload": "-391141.8"
+      }
+    },
+    {
+      "id": "float32-format-492aa56b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "492aa56b",
+        "repr_hint": "698966.7"
+      },
+      "expect": {
+        "payload": "698966.7"
+      }
+    },
+    {
+      "id": "float32-format-468c9fb0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "468c9fb0",
+        "repr_hint": "17999.844"
+      },
+      "expect": {
+        "payload": "17999.844"
+      }
+    },
+    {
+      "id": "float32-format-48b7be07",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48b7be07",
+        "repr_hint": "376304.22"
+      },
+      "expect": {
+        "payload": "376304.22"
+      }
+    },
+    {
+      "id": "float32-format-48b8caff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "48b8caff",
+        "repr_hint": "378455.97"
+      },
+      "expect": {
+        "payload": "378455.97"
+      }
+    },
+    {
+      "id": "float32-format-c952a54e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c952a54e",
+        "repr_hint": "-862804.9"
+      },
+      "expect": {
+        "payload": "-862804.9"
+      }
+    },
+    {
+      "id": "float32-format-4934cdab",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4934cdab",
+        "repr_hint": "740570.7"
+      },
+      "expect": {
+        "payload": "740570.7"
+      }
+    },
+    {
+      "id": "float32-format-c89a4974",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c89a4974",
+        "repr_hint": "-315979.62"
+      },
+      "expect": {
+        "payload": "-315979.62"
+      }
+    },
+    {
+      "id": "float32-format-c883b617",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c883b617",
+        "repr_hint": "-269744.72"
+      },
+      "expect": {
+        "payload": "-269744.72"
+      }
+    },
+    {
+      "id": "float32-format-c8af82b5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8af82b5",
+        "repr_hint": "-359445.66"
+      },
+      "expect": {
+        "payload": "-359445.66"
+      }
+    },
+    {
+      "id": "float32-format-4936e1b9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4936e1b9",
+        "repr_hint": "749083.56"
+      },
+      "expect": {
+        "payload": "749083.56"
+      }
+    },
+    {
+      "id": "float32-format-491671e3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "491671e3",
+        "repr_hint": "616222.2"
+      },
+      "expect": {
+        "payload": "616222.2"
+      }
+    },
+    {
+      "id": "float32-format-c9094bb2",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c9094bb2",
+        "repr_hint": "-562363.1"
+      },
+      "expect": {
+        "payload": "-562363.1"
+      }
+    },
+    {
+      "id": "float32-format-c93acede",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c93acede",
+        "repr_hint": "-765165.9"
+      },
+      "expect": {
+        "payload": "-765165.9"
+      }
+    },
+    {
+      "id": "float32-format-c903c13c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c903c13c",
+        "repr_hint": "-539667.75"
+      },
+      "expect": {
+        "payload": "-539667.75"
+      }
+    },
+    {
+      "id": "float32-format-486c0919",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "486c0919",
+        "repr_hint": "241700.39"
+      },
+      "expect": {
+        "payload": "241700.39"
+      }
+    },
+    {
+      "id": "float32-format-c8f95e2c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8f95e2c",
+        "repr_hint": "-510705.38"
+      },
+      "expect": {
+        "payload": "-510705.38"
+      }
+    },
+    {
+      "id": "float32-format-4934c82d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4934c82d",
+        "repr_hint": "740482.8"
+      },
+      "expect": {
+        "payload": "740482.8"
+      }
+    },
+    {
+      "id": "float32-format-c91c9cf7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c91c9cf7",
+        "repr_hint": "-641487.44"
+      },
+      "expect": {
+        "payload": "-641487.44"
+      }
+    },
+    {
+      "id": "float32-format-492f53bc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "492f53bc",
+        "repr_hint": "718139.75"
+      },
+      "expect": {
+        "payload": "718139.75"
+      }
+    },
+    {
+      "id": "float32-format-c8c15d9b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8c15d9b",
+        "repr_hint": "-396012.84"
+      },
+      "expect": {
+        "payload": "-396012.84"
+      }
+    },
+    {
+      "id": "float32-format-c8d2d29b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c8d2d29b",
+        "repr_hint": "-431764.84"
+      },
+      "expect": {
+        "payload": "-431764.84"
+      }
+    },
+    {
+      "id": "float32-format-47ea85fb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "47ea85fb",
+        "repr_hint": "120075.96"
+      },
+      "expect": {
+        "payload": "120075.96"
+      }
+    },
+    {
+      "id": "float32-format-49133d9d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "49133d9d",
+        "repr_hint": "603097.8"
+      },
+      "expect": {
+        "payload": "603097.8"
+      }
+    },
+    {
+      "id": "float32-format-c90a819d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c90a819d",
+        "repr_hint": "-567321.8"
+      },
+      "expect": {
+        "payload": "-567321.8"
+      }
+    },
+    {
+      "id": "float32-format-c845fa42",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c845fa42",
+        "repr_hint": "-202729.03"
+      },
+      "expect": {
+        "payload": "-202729.03"
+      }
+    },
+    {
+      "id": "float32-format-c88218e1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c88218e1",
+        "repr_hint": "-266439.03"
+      },
+      "expect": {
+        "payload": "-266439.03"
+      }
+    },
+    {
+      "id": "float32-format-4832224a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4832224a",
+        "repr_hint": "182409.16"
+      },
+      "expect": {
+        "payload": "182409.16"
+      }
+    },
+    {
+      "id": "float32-format-4945d2bd",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4945d2bd",
+        "repr_hint": "810283.8"
+      },
+      "expect": {
+        "payload": "810283.8"
+      }
+    },
+    {
+      "id": "float32-format-c942964c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c942964c",
+        "repr_hint": "-797028.75"
+      },
+      "expect": {
+        "payload": "-797028.75"
+      }
+    },
+    {
+      "id": "float32-format-4869f33f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4869f33f",
+        "repr_hint": "239564.98"
+      },
+      "expect": {
+        "payload": "239564.98"
+      }
+    },
+    {
+      "id": "float32-format-c72cbe94",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c72cbe94",
+        "repr_hint": "-44222.58"
+      },
+      "expect": {
+        "payload": "-44222.58"
+      }
+    },
+    {
+      "id": "float32-format-c90e15be",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c90e15be",
+        "repr_hint": "-581979.9"
+      },
+      "expect": {
+        "payload": "-581979.9"
+      }
+    },
+    {
+      "id": "float32-format-4953bdda",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4953bdda",
+        "repr_hint": "867293.6"
+      },
+      "expect": {
+        "payload": "867293.6"
+      }
+    },
+    {
+      "id": "float32-format-9d3f6bef",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9d3f6bef",
+        "repr_hint": "-2.533444e-21"
+      },
+      "expect": {
+        "payload": "-2.533444e-21"
+      }
+    },
+    {
+      "id": "float32-format-5071b149",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5071b149",
+        "repr_hint": "16219710000.0"
+      },
+      "expect": {
+        "payload": "16219710000.0"
+      }
+    },
+    {
+      "id": "float32-format-857da3bf",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "857da3bf",
+        "repr_hint": "-1.1926078e-35"
+      },
+      "expect": {
+        "payload": "-1.1926078e-35"
+      }
+    },
+    {
+      "id": "float32-format-83d4f988",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "83d4f988",
+        "repr_hint": "-1.251753e-36"
+      },
+      "expect": {
+        "payload": "-1.251753e-36"
+      }
+    },
+    {
+      "id": "float32-format-ee0a9b36",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "ee0a9b36",
+        "repr_hint": "-1.0724142e+28"
+      },
+      "expect": {
+        "payload": "-1.0724142e28"
+      }
+    },
+    {
+      "id": "float32-format-a2373dc7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "a2373dc7",
+        "repr_hint": "-2.483383e-18"
+      },
+      "expect": {
+        "payload": "-2.483383e-18"
+      }
+    },
+    {
+      "id": "float32-format-bcfe62ab",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "bcfe62ab",
+        "repr_hint": "-0.031052908"
+      },
+      "expect": {
+        "payload": "-0.031052908"
+      }
+    },
+    {
+      "id": "float32-format-c3323cfc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c3323cfc",
+        "repr_hint": "-178.23822"
+      },
+      "expect": {
+        "payload": "-178.23822"
+      }
+    },
+    {
+      "id": "float32-format-b8b24ba5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "b8b24ba5",
+        "repr_hint": "-8.501791e-05"
+      },
+      "expect": {
+        "payload": "-8.501791e-05"
+      }
+    },
+    {
+      "id": "float32-format-8facb448",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "8facb448",
+        "repr_hint": "-1.7029951e-29"
+      },
+      "expect": {
+        "payload": "-1.7029951e-29"
+      }
+    },
+    {
+      "id": "float32-format-4542ec05",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4542ec05",
+        "repr_hint": "3118.7512"
+      },
+      "expect": {
+        "payload": "3118.7512"
+      }
+    },
+    {
+      "id": "float32-format-b0b0b009",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "b0b0b009",
+        "repr_hint": "-1.2855718e-09"
+      },
+      "expect": {
+        "payload": "-1.2855718e-09"
+      }
+    },
+    {
+      "id": "float32-format-f9c02fb9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "f9c02fb9",
+        "repr_hint": "-1.2473612e+35"
+      },
+      "expect": {
+        "payload": "-1.2473612e35"
+      }
+    },
+    {
+      "id": "float32-format-2e4a48ad",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2e4a48ad",
+        "repr_hint": "4.599403e-11"
+      },
+      "expect": {
+        "payload": "4.599403e-11"
+      }
+    },
+    {
+      "id": "float32-format-9a6ac529",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9a6ac529",
+        "repr_hint": "-4.854933e-23"
+      },
+      "expect": {
+        "payload": "-4.854933e-23"
+      }
+    },
+    {
+      "id": "float32-format-74b50f0c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "74b50f0c",
+        "repr_hint": "1.1475963e+32"
+      },
+      "expect": {
+        "payload": "1.1475963e32"
+      }
+    },
+    {
+      "id": "float32-format-1845f640",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1845f640",
+        "repr_hint": "2.5585978e-24"
+      },
+      "expect": {
+        "payload": "2.5585978e-24"
+      }
+    },
+    {
+      "id": "float32-format-ea655492",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "ea655492",
+        "repr_hint": "-6.9310846e+25"
+      },
+      "expect": {
+        "payload": "-6.9310846e25"
+      }
+    },
+    {
+      "id": "float32-format-bd934804",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "bd934804",
+        "repr_hint": "-0.0719147"
+      },
+      "expect": {
+        "payload": "-0.0719147"
+      }
+    },
+    {
+      "id": "float32-format-d667fe11",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "d667fe11",
+        "repr_hint": "-63769600000000.0"
+      },
+      "expect": {
+        "payload": "-63769600000000.0"
+      }
+    },
+    {
+      "id": "float32-format-9b496043",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9b496043",
+        "repr_hint": "-1.6657434e-22"
+      },
+      "expect": {
+        "payload": "-1.6657434e-22"
+      }
+    },
+    {
+      "id": "float32-format-684d6099",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "684d6099",
+        "repr_hint": "3.8794682e+24"
+      },
+      "expect": {
+        "payload": "3.8794682e24"
+      }
+    },
+    {
+      "id": "float32-format-9ddfc989",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9ddfc989",
+        "repr_hint": "-5.923599e-21"
+      },
+      "expect": {
+        "payload": "-5.923599e-21"
+      }
+    },
+    {
+      "id": "float32-format-569559b7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "569559b7",
+        "repr_hint": "82106280000000.0"
+      },
+      "expect": {
+        "payload": "82106280000000.0"
+      }
+    },
+    {
+      "id": "float32-format-e961174e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "e961174e",
+        "repr_hint": "-1.7007398e+25"
+      },
+      "expect": {
+        "payload": "-1.7007398e25"
+      }
+    },
+    {
+      "id": "float32-format-9de5bf24",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9de5bf24",
+        "repr_hint": "-6.081343e-21"
+      },
+      "expect": {
+        "payload": "-6.081343e-21"
+      }
+    },
+    {
+      "id": "float32-format-c4398c16",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c4398c16",
+        "repr_hint": "-742.18884"
+      },
+      "expect": {
+        "payload": "-742.18884"
+      }
+    },
+    {
+      "id": "float32-format-323c7f7d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "323c7f7d",
+        "repr_hint": "1.0972028e-08"
+      },
+      "expect": {
+        "payload": "1.0972028e-08"
+      }
+    },
+    {
+      "id": "float32-format-8875579c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "8875579c",
+        "repr_hint": "-7.382999e-34"
+      },
+      "expect": {
+        "payload": "-7.382999e-34"
+      }
+    },
+    {
+      "id": "float32-format-dc618ee3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "dc618ee3",
+        "repr_hint": "-2.539559e+17"
+      },
+      "expect": {
+        "payload": "-2.539559e17"
+      }
+    },
+    {
+      "id": "float32-format-a637a616",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "a637a616",
+        "repr_hint": "-6.371597e-16"
+      },
+      "expect": {
+        "payload": "-6.371597e-16"
+      }
+    },
+    {
+      "id": "float32-format-dc1ffd9f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "dc1ffd9f",
+        "repr_hint": "-1.8013352e+17"
+      },
+      "expect": {
+        "payload": "-1.8013352e17"
+      }
+    },
+    {
+      "id": "float32-format-01f454be",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "01f454be",
+        "repr_hint": "8.9753043e-38"
+      },
+      "expect": {
+        "payload": "8.9753043e-38"
+      }
+    },
+    {
+      "id": "float32-format-6262410c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "6262410c",
+        "repr_hint": "1.0434128e+21"
+      },
+      "expect": {
+        "payload": "1.0434128e21"
+      }
+    },
+    {
+      "id": "float32-format-dabae87f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "dabae87f",
+        "repr_hint": "-2.6304989e+16"
+      },
+      "expect": {
+        "payload": "-2.6304989e16"
+      }
+    },
+    {
+      "id": "float32-format-7dd0b5a4",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7dd0b5a4",
+        "repr_hint": "3.467782e+37"
+      },
+      "expect": {
+        "payload": "3.467782e37"
+      }
+    },
+    {
+      "id": "float32-format-1e8d7fff",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1e8d7fff",
+        "repr_hint": "1.4981894e-20"
+      },
+      "expect": {
+        "payload": "1.4981894e-20"
+      }
+    },
+    {
+      "id": "float32-format-55e5cd7b",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "55e5cd7b",
+        "repr_hint": "31583837000000.0"
+      },
+      "expect": {
+        "payload": "31583837000000.0"
+      }
+    },
+    {
+      "id": "float32-format-dbaa7a8f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "dbaa7a8f",
+        "repr_hint": "-9.5971e+16"
+      },
+      "expect": {
+        "payload": "-9.5971e16"
+      }
+    },
+    {
+      "id": "float32-format-271b656d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "271b656d",
+        "repr_hint": "2.1565554e-15"
+      },
+      "expect": {
+        "payload": "2.1565554e-15"
+      }
+    },
+    {
+      "id": "float32-format-d3ac8244",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "d3ac8244",
+        "repr_hint": "-1481839700000.0"
+      },
+      "expect": {
+        "payload": "-1481839700000.0"
+      }
+    },
+    {
+      "id": "float32-format-54ac9bcc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "54ac9bcc",
+        "repr_hint": "5930785700000.0"
+      },
+      "expect": {
+        "payload": "5930785700000.0"
+      }
+    },
+    {
+      "id": "float32-format-7382c268",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7382c268",
+        "repr_hint": "2.0719654e+31"
+      },
+      "expect": {
+        "payload": "2.0719654e31"
+      }
+    },
+    {
+      "id": "float32-format-c2c46f5a",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c2c46f5a",
+        "repr_hint": "-98.21748"
+      },
+      "expect": {
+        "payload": "-98.21748"
+      }
+    },
+    {
+      "id": "float32-format-5ee528d7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5ee528d7",
+        "repr_hint": "8.256342e+18"
+      },
+      "expect": {
+        "payload": "8.256342e18"
+      }
+    },
+    {
+      "id": "float32-format-02d4533c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "02d4533c",
+        "repr_hint": "3.1198374e-37"
+      },
+      "expect": {
+        "payload": "3.1198374e-37"
+      }
+    },
+    {
+      "id": "float32-format-f9de5542",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "f9de5542",
+        "repr_hint": "-1.4430239e+35"
+      },
+      "expect": {
+        "payload": "-1.4430239e35"
+      }
+    },
+    {
+      "id": "float32-format-66cb14e5",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "66cb14e5",
+        "repr_hint": "4.795129e+23"
+      },
+      "expect": {
+        "payload": "4.795129e23"
+      }
+    },
+    {
+      "id": "float32-format-be101a98",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "be101a98",
+        "repr_hint": "-0.14072645"
+      },
+      "expect": {
+        "payload": "-0.14072645"
+      }
+    },
+    {
+      "id": "float32-format-31bf0f3f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "31bf0f3f",
+        "repr_hint": "5.560565e-09"
+      },
+      "expect": {
+        "payload": "5.560565e-09"
+      }
+    },
+    {
+      "id": "float32-format-7148abb9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "7148abb9",
+        "repr_hint": "9.936736e+29"
+      },
+      "expect": {
+        "payload": "9.936736e29"
+      }
+    },
+    {
+      "id": "float32-format-4cc7cf11",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4cc7cf11",
+        "repr_hint": "104757384.0"
+      },
+      "expect": {
+        "payload": "104757384.0"
+      }
+    },
+    {
+      "id": "float32-format-4f911c0f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4f911c0f",
+        "repr_hint": "4869070300.0"
+      },
+      "expect": {
+        "payload": "4869070300.0"
+      }
+    },
+    {
+      "id": "float32-format-c03584a9",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c03584a9",
+        "repr_hint": "-2.836222"
+      },
+      "expect": {
+        "payload": "-2.836222"
+      }
+    },
+    {
+      "id": "float32-format-83a87d2e",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "83a87d2e",
+        "repr_hint": "-9.902892e-37"
+      },
+      "expect": {
+        "payload": "-9.902892e-37"
+      }
+    },
+    {
+      "id": "float32-format-03f577eb",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "03f577eb",
+        "repr_hint": "1.4427338e-36"
+      },
+      "expect": {
+        "payload": "1.4427338e-36"
+      }
+    },
+    {
+      "id": "float32-format-8a9f465c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "8a9f465c",
+        "repr_hint": "-1.533761e-32"
+      },
+      "expect": {
+        "payload": "-1.533761e-32"
+      }
+    },
+    {
+      "id": "float32-format-9830d454",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "9830d454",
+        "repr_hint": "-2.2854665e-24"
+      },
+      "expect": {
+        "payload": "-2.2854665e-24"
+      }
+    },
+    {
+      "id": "float32-format-c9ed53b7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "c9ed53b7",
+        "repr_hint": "-1944182.9"
+      },
+      "expect": {
+        "payload": "-1944182.9"
+      }
+    },
+    {
+      "id": "float32-format-084ac916",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "084ac916",
+        "repr_hint": "6.102354e-34"
+      },
+      "expect": {
+        "payload": "6.102354e-34"
+      }
+    },
+    {
+      "id": "float32-format-4c2d7f5f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4c2d7f5f",
+        "repr_hint": "45481340.0"
+      },
+      "expect": {
+        "payload": "45481340.0"
+      }
+    },
+    {
+      "id": "float32-format-5307e9a3",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5307e9a3",
+        "repr_hint": "583740360000.0"
+      },
+      "expect": {
+        "payload": "583740360000.0"
+      }
+    },
+    {
+      "id": "float32-format-331a35c0",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "331a35c0",
+        "repr_hint": "3.5904804e-08"
+      },
+      "expect": {
+        "payload": "3.5904804e-08"
+      }
+    },
+    {
+      "id": "float32-format-51be971c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "51be971c",
+        "repr_hint": "102322370000.0"
+      },
+      "expect": {
+        "payload": "102322370000.0"
+      }
+    },
+    {
+      "id": "float32-format-3ee11f72",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3ee11f72",
+        "repr_hint": "0.43969303"
+      },
+      "expect": {
+        "payload": "0.43969303"
+      }
+    },
+    {
+      "id": "float32-format-22dab6ea",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "22dab6ea",
+        "repr_hint": "5.9282686e-18"
+      },
+      "expect": {
+        "payload": "5.9282686e-18"
+      }
+    },
+    {
+      "id": "float32-format-5eb63793",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5eb63793",
+        "repr_hint": "6.5650624e+18"
+      },
+      "expect": {
+        "payload": "6.5650624e18"
+      }
+    },
+    {
+      "id": "float32-format-339c6325",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "339c6325",
+        "repr_hint": "7.2823504e-08"
+      },
+      "expect": {
+        "payload": "7.2823504e-08"
+      }
+    },
+    {
+      "id": "float32-format-3cfe69a1",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3cfe69a1",
+        "repr_hint": "0.031056227"
+      },
+      "expect": {
+        "payload": "0.031056227"
+      }
+    },
+    {
+      "id": "float32-format-38cf2bdf",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "38cf2bdf",
+        "repr_hint": "9.878701e-05"
+      },
+      "expect": {
+        "payload": "9.878701e-05"
+      }
+    },
+    {
+      "id": "float32-format-3146fb56",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3146fb56",
+        "repr_hint": "2.895566e-09"
+      },
+      "expect": {
+        "payload": "2.895566e-09"
+      }
+    },
+    {
+      "id": "float32-format-51754ea6",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "51754ea6",
+        "repr_hint": "65849156000.0"
+      },
+      "expect": {
+        "payload": "65849156000.0"
+      }
+    },
+    {
+      "id": "float32-format-1fcefd10",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "1fcefd10",
+        "repr_hint": "8.766305e-20"
+      },
+      "expect": {
+        "payload": "8.766305e-20"
+      }
+    },
+    {
+      "id": "float32-format-3dc870c7",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "3dc870c7",
+        "repr_hint": "0.097871356"
+      },
+      "expect": {
+        "payload": "0.097871356"
+      }
+    },
+    {
+      "id": "float32-format-4051759f",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4051759f",
+        "repr_hint": "3.272804"
+      },
+      "expect": {
+        "payload": "3.272804"
+      }
+    },
+    {
+      "id": "float32-format-58589796",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "58589796",
+        "repr_hint": "952582300000000.0"
+      },
+      "expect": {
+        "payload": "952582300000000.0"
+      }
+    },
+    {
+      "id": "float32-format-5afb4316",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "5afb4316",
+        "repr_hint": "3.536199e+16"
+      },
+      "expect": {
+        "payload": "3.536199e16"
+      }
+    },
+    {
+      "id": "float32-format-4909e82d",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "4909e82d",
+        "repr_hint": "564866.8"
+      },
+      "expect": {
+        "payload": "564866.8"
+      }
+    },
+    {
+      "id": "float32-format-2b764cdc",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "2b764cdc",
+        "repr_hint": "8.750342e-13"
+      },
+      "expect": {
+        "payload": "8.750342e-13"
+      }
+    },
+    {
+      "id": "float32-format-45b4b13c",
+      "source": "numpy 2.2.6 shortest float32 digits, laid out by python-sdk:homie.py _format_float",
+      "input": {
+        "f32_bits": "45b4b13c",
+        "repr_hint": "5782.1543"
+      },
+      "expect": {
+        "payload": "5782.1543"
+      }
+    }
+  ]
+}

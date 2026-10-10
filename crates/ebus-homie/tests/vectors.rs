@@ -289,6 +289,31 @@ fn payloads_json() {
     payload_suite("payloads/json");
 }
 
+/// A received value: decode the wire payload as a controller does, then check
+/// it against a property of the case's datatype and format.
+#[test]
+fn check_value() {
+    run("check-value", |input, expect| {
+        let bytes = payload_bytes(input)?;
+        let text = match payload::classify(&bytes) {
+            Ok(payload::Received::Text(text)) => text,
+            other => return Err(format!("payload is not a value: {other:?}")),
+        };
+        let mut property = PropertyDescription::new(datatype_of(input)?);
+        property.format = opt_str(input, "format")?;
+        let got = datatype::check_value(text, &property);
+        let valid = field(expect, "valid")?
+            .as_bool()
+            .ok_or("valid not a bool")?;
+        match (got, valid) {
+            (Ok(()), true) => Ok(()),
+            (Ok(()), false) => Err(format!("accepted, want {}", str_field(expect, "problem")?)),
+            (Err(p), true) => Err(format!("rejected with {}, want accepted", p.as_str())),
+            (Err(p), false) => expect_eq(p.as_str(), str_field(expect, "problem")?),
+        }
+    });
+}
+
 #[test]
 fn description_parse() {
     run("description", |input, expect| {
@@ -340,6 +365,17 @@ fn python_sdk_float_format() {
     run("python-sdk/float-format", |input, expect| {
         let x = f64_from_bits_hex(str_field(input, "f64_bits")?)?;
         expect_eq(pyfmt::format_float(x), opt_str(expect, "payload")?)
+    });
+}
+
+#[test]
+fn python_sdk_float32_format() {
+    run("python-sdk/float32-format", |input, expect| {
+        let hex = str_field(input, "f32_bits")?;
+        let x = u32::from_str_radix(hex, 16)
+            .map(f32::from_bits)
+            .map_err(|e| format!("f32 bits {hex:?}: {e}"))?;
+        expect_eq(pyfmt::format_float32(x), opt_str(expect, "payload")?)
     });
 }
 

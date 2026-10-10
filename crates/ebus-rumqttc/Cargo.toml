@@ -1,0 +1,28 @@
+[package]
+name = "ebus-rumqttc"
+description = "Bundled rumqttc 0.25 connection for the eBus Homie 5 controller on tokio."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+# MQTT over TLS through rustls.
+rustls = ["rumqttc/use-rustls"]
+# MQTT over TLS through the platform's TLS library.
+native-tls = ["rumqttc/use-native-tls"]
+
+[dependencies]
+ebus-homie-tokio = { path = "../ebus-homie-tokio", version = "0.1.0" }
+log = { version = "0.4", default-features = false }
+rumqttc = { version = "0.25", default-features = false }
+tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros"] }
+
+[dev-dependencies]
+tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt", "rt-multi-thread", "signal", "net", "io-util"] }
+
+[lints]
+workspace = true

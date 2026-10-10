@@ -1,0 +1,3694 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "check-value",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "integer-zero",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-neg-zero",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-positive",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "42"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-negative",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-42"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-leading-zeros",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "007"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-neg-leading-zeros",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-007"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-lone-minus",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-nul",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-plus-sign",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "+1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-leading-space",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": " 1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-trailing-space",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1 "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-trailing-newline",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1\n"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-decimal",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1.0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-exponent",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1e3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-int64-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-int64-max-plus-1",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775808"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-int64-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-9223372036854775808"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-int64-min-minus-1",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-9223372036854775809"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-huge",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "10000000000000000000000000000000000000000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-hex",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "0x1F"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-underscore",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1_000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-double-minus",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "--1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-fullwidth-digits",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "１２"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-arabic-indic-digit",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "٣"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-nan",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "nan"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-inf",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "inf"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-range-in",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "10",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-range-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "0",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-range-above",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-range-below",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-1",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "integer-open-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1000000",
+        "format": "0:"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-open-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-1000000",
+        "format": ":10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-rounds-up",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-from-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": ":10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-exact",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "4",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-above-after-round",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-step-not-whole",
+      "source": "homie-5:convention.md#payload (convention.md:399): step rounding is the device's job, so a received value is not rounded; python-sdk:homie.py _parse_set_payload rounds first and gives {\"valid\": false, \"problem\": \"integerStepNotWhole\"}",
+      "input": {
+        "datatype": "integer",
+        "payload": "3",
+        "format": "0:10:2.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-whole-from-fraction",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "4",
+        "format": "0:10:2.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-leading-zeros-step-changes",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "007",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-leading-zeros-step-unchanged",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "008",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-format-unparseable",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "a:b"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-format-too-many-parts",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "1:2:3:4"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-zero-ignored",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-step-negative-ignored",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:-2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-int64-max-step-overflow",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807",
+        "format": "0::2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-int64-max-step-in-range",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775806",
+        "format": "0::2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-off-step",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-above-max-step-rounds-in",
+      "source": "homie-5:convention.md#payload (convention.md:399): step rounding is the device's job, so a received value is not rounded; python-sdk:homie.py _parse_set_payload rounds first and gives {\"valid\": true}",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "1:10:3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-below-min-step-rounds-in",
+      "source": "homie-5:convention.md#payload (convention.md:399): step rounding is the device's job, so a received value is not rounded; python-sdk:homie.py _parse_set_payload rounds first and gives {\"valid\": true}",
+      "input": {
+        "datatype": "integer",
+        "payload": "0",
+        "format": "1:10:3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "integer-float-bound-below",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "1",
+        "format": "1.5:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "integer-float-bound-in",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "2",
+        "format": "1.5:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "integer-exponent-bound-above",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "101",
+        "format": "0:1e2"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-int64-min-open-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "integer",
+        "payload": "-9223372036854775808",
+        "format": ":0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-neg-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-zero-point-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0.0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-neg-zero-float",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.0"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-integer",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-negative",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-1"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-decimal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-leading-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": ".5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-trailing-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "5."
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-neg-leading-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-exponent",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-exponent-upper",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1E5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-exponent-negative",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-exponent-plus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e+5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-leading-zeros",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "00012.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-lone-minus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-nul",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-plus-sign",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "+1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-leading-space",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": " 1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-trailing-space",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1 "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-two-dots",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1.2.3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-lone-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "."
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-no-digits",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-only",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "e5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-fraction",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e5.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-dot-exponent",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": ".e5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-inf",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "inf"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-infinity",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "Infinity"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-nan",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "nan"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-nan-upper",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "NaN"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-max",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1.7976931348623157e308"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-above-max-overflows",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e309"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-1e999",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e999"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-neg-1e999",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-1e999"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-underflow-to-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-400"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-min-subnormal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "4.9e-324"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-hex",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0x10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-underscore",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1_000.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-comma-decimal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1,5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-double-minus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "--1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-fullwidth-digit",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "１"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-range-in",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "5.5",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-range-above",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "10.0001",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-range-below",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.1",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "float-range-max-inclusive",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "10",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-float-bounds",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "10.2",
+        "format": "10.123:15.123"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-step-half",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-step-half-tie-up",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "2.25",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-step-exact-unchanged",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "2.5",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-step-tenth",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0.35",
+        "format": "0:1:0.1"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-step-result-needs-reformat",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0.29",
+        "format": "0:1:0.1"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-off-step",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-above-max-step-rounds-in",
+      "source": "homie-5:convention.md#payload (convention.md:399): step rounding is the device's job, so a received value is not rounded; python-sdk:homie.py _parse_set_payload rounds first and gives {\"valid\": true}",
+      "input": {
+        "datatype": "float",
+        "payload": "10.2",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-below-min-step-rounds-in",
+      "source": "homie-5:convention.md#payload (convention.md:399): step rounding is the device's job, so a received value is not rounded; python-sdk:homie.py _parse_set_payload rounds first and gives {\"valid\": true}",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.1",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "float-just-above-max",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "10.000000000000000000000000000001",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-just-below-max",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "9.999999999999999999999999999999",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-same-f64-as-max-above",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "10.0000000000000000001",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-exponent-bound-in",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e2",
+        "format": "0:1e2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-exponent-bound-above",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "100.0000001",
+        "format": "0:1e2"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-neg-zero-at-min",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-0",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-underflow-in-range",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-400",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "float-max-f64-below-open-min",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "float",
+        "payload": "-1.7976931348623157e308",
+        "format": "0:"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "boolean-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "boolean-false",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "false"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "boolean-upper-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "TRUE"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-title-false",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "False"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-one",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-zero",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-trailing-space",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-nul",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-yes",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "yes"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-format-label-not-payload",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "on",
+        "format": "off,on"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-format-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true",
+        "format": "off,on"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-text",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "hello"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-nul-is-empty",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-two-nul",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload_hex": "0000"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-space",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": " "
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-unicode",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "°C"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-astral",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "😀"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-json-looking",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "null"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-newline",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "a\nb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "string-format-ignored",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "string",
+        "payload": "x",
+        "format": "a,b"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-in-format",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "on",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-second",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "off",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-case",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "On",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-leading-space",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": " on",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-nul",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload_hex": "00",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-whole-format",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "on,off",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-space-significant-match",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": " b",
+        "format": "a, b"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-space-significant-miss",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "b",
+        "format": "a, b"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-no-format-any",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "anything"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-no-format-nul",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-empty-format-any",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "x",
+        "format": ""
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "enum-unicode",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "enum",
+        "payload": "été",
+        "format": "été,hiver"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,255,255,255",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-zero",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-float",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,100.5,0.25,1e2",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-leading-dot",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,.5,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-trailing-dot",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,5.,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-neg-zero",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,-0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-rgb-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,256,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-negative",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,-1,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-1e999",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1e999,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-two",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-four",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2,3,4",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-trailing-comma",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2,3,",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-space",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb, 1,2,3",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-rgb-nan",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,nan,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-rgb-plus",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,+1,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-upper-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "RGB,1,2,3",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-unknown-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "cmyk,1,2,3,4"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-nul",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload_hex": "00",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-type-only",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-hsv",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,360,100,100",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-hsv-example",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,300,50,75",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-hsv-h-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,361,0,0",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-hsv-s-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,101,0",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-hsv-v-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,0,100.01",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-xyz",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.25,0.34",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-xyz-ones",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,1,1",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-xyz-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,1.1,0",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-xyz-three",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.5,0.5,0",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-type-not-in-format",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorTypeNotInFormat"
+      }
+    },
+    {
+      "id": "color-second-format",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,10,20,30",
+        "format": "rgb,hsv"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "color-no-format-any-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.1,0.2"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-calendar",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-leap-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-02-29"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-not-leap-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2023-02-29"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-century-not-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "1900-02-29"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-quad-century-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2000-02-29"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-day-30-feb",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-02-30"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-month-13",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-13-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-month-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-00-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-day-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-day-31-apr",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-04-31"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-year-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-year-month",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-basic-calendar",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240301"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-basic-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240229"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-basic-not-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20230229"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-060"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-ordinal-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024060"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-ordinal-366",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-366"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-non-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: ordinal day 366 only in a leap year; python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2023-366"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal-000",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal-367",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-367"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-day",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W53-7"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024W537"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-54",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W54"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-weekday-8",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-8"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-weekday-0",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-hour-minute",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-hms",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-fraction-dot",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45.123"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-fraction-comma",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45,5"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-fraction-nanos-z",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45.123456789Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-zulu",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-offset",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45+05:30"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-offset-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45-0800"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-offset-hours",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45+05"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-basic-datetime",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240301T123045Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-basic-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T123045"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-ordinal-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-060T08:00Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-1T08:00"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-midnight-24",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-hour-25",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T25:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-minute-60",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:60"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-leap-second",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2016-12-31T23:59:60Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-second-61",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:61"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-hour-24",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+24:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-minute-60",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+05:60"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-one-digit",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-needs-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-on-year",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024T12"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-on-week-no-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-dangling-t",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-lowercase-t",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01t12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-lowercase-z",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00z"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-space-separator",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01 12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-short-month",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-3-1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-two-digit-year",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "24-03-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-dangling-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00:00."
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-nul",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-fullwidth-digits",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "２０２４"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-midnight-24-hour-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-midnight-24-seconds",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-midnight-24-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T2400"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-midnight-24-zero-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00.000Z"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-hour-24-minutes",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-01-01T24:30"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-second",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00:00.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour-24-hour-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1, where hour 24 is only the end of a day (minutes, seconds and any fraction zero); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24,5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-quad-century",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2000-366"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-century",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: ordinal day 366 only in a leap year; python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "1900-366"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-53-2020",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2020-W53"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-53-2020-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2020-W53-7"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-53-2026",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2026-W53"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-53-2026-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2026W534"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "datetime-week-53-2021",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2021-W53"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-53-2024",
+      "source": "homie-5:convention.md#datetime (convention.md:132) defers to ISO 8601-1: week 53 only in a year with 53 ISO weeks (1 January a Thursday, or a leap year whose 1 January is a Wednesday); python-sdk#110 item 3",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W53"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "duration-zero-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT0S"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-hours",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-minutes",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT5M"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-example",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT12H5M46S"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-fraction-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H2M3.5S"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-half-second",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT0.5S"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-hours-over-24",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT36H"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-leading-zeros",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT00001H"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "duration-bare-pt",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-days",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "P1D"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-pt-days",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1D"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-date-and-time",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "P1DT1H"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-dangling-dot",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1.S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-leading-dot",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT.5S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-repeat-unit",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H1H"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-wrong-order",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S1M"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-lowercase",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "pt1s"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-negative",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT-1S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-comma-fraction",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1,5S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-fraction-minutes",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1.5M"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-nul",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-no-p",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "T1S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-trailing-space",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "json-empty-array",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-empty-object",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "{}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-object",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": 1}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-array",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[1, 2, 3]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-nested",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": [true, null, {\"b\": \"c\"}], \"d\": 1.5}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-whitespace-around",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": " [1] "
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-scalar-number",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-string",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "\"s\""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-null",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "null"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-true",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "true"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-nan",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "NaN"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-nan",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[NaN]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-infinity",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[Infinity]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-neg-infinity",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[-Infinity]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-unquoted-key",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "{bad: 1}"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-trailing-comma",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[1,]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-nul",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-single-quotes",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "['a']"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-unicode-escape",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"\\u00e9\"]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-astral-raw",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"😀\"]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-format-ignored",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[1]",
+        "format": "{\"type\": \"array\"}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-truncated",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-float-repr-round-trip",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[912068.5437784989]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-float-long-digits",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[2.283038836859574890682e201]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-float-many-digits",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[0.1000000000000000055511151231257827021181583404541015625]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-neg-zero-int",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[-0]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-neg-zero-float",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[-0.0]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-int-u64-max",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[18446744073709551615]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-int-i64-min",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-399); python-sdk:homie.py _parse_set_payload with the step removed",
+      "input": {
+        "datatype": "json",
+        "payload": "[-9223372036854775808]"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "json-number-overflows-to-infinity",
+      "source": "homie-5:convention.md#json (convention.md:149-150): a number beyond the f64 range decodes to an infinity, which has no JSON form, and a lone surrogate is not a Unicode scalar value; python-sdk#110 item 4",
+      "input": {
+        "datatype": "json",
+        "payload": "[1e400]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-lone-surrogate-escape",
+      "source": "homie-5:convention.md#json (convention.md:149-150): a number beyond the f64 range decodes to an infinity, which has no JSON form, and a lone surrogate is not a Unicode scalar value; python-sdk#110 item 4",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"\\ud800\"]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    }
+  ]
+}

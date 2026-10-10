@@ -3,17 +3,19 @@
 # Copyright (c) 2026 Clark Communications Corporation
 """Generate the cross-language test vectors under rust-sdk/vectors/.
 
-Spec suites (topics, empty-string, effective-state, payloads/*, description)
-express the Homie 5 convention. Where python-sdk has a matching function its
-result is the expect value, except for the cases in CONVENTION_OVERRIDES, where
-python-sdk deviates from the convention (python-sdk#110) and the override's
-expect and source replace it. Suites with no python-sdk function (topics,
+Spec suites (topics, empty-string, effective-state, payloads/*, description,
+check-value) express the Homie 5 convention. Where python-sdk has a matching
+function its result is the expect value, except for the cases in
+CONVENTION_OVERRIDES, where python-sdk deviates from the convention
+(python-sdk#110) and the override's expect and source replace it. Suites with no python-sdk function (topics,
 description, effective-state) are derived from convention.md and their
 "source" says so.
 
 python-sdk suites (vectors/python-sdk/) record python-sdk's behavior where the
 convention leaves a choice open; every expect value there is computed by
-calling python-sdk.
+calling python-sdk. float32-format is the exception: it records rust-sdk's f32
+choice, numpy's shortest float32 digits laid out by python-sdk's
+_format_float.
 
 Run from the eBus repo root with the SDK on PYTHONPATH:
 
@@ -34,6 +36,8 @@ import random
 import struct
 import sys
 from fractions import Fraction  # noqa: F401  (documents the oracle's arithmetic)
+
+import numpy as np
 
 logging.disable(logging.CRITICAL)
 
@@ -507,6 +511,94 @@ def gen_payloads() -> dict:
     return suites
 
 
+# ── check-value (spec; received values, no step rounding) ────────────────
+
+# Received-value cases beyond PAYLOAD_CASES, where skipping step rounding
+# (convention.md:399: rounding is the device's job) changes the verdict or
+# where exact comparison with a bound matters.
+CHECK_VALUE_CASES = {
+    "integer": [
+        ("off-step", "5", "0:10:2"),
+        ("above-max-step-rounds-in", "11", "1:10:3"), ("below-min-step-rounds-in", "0", "1:10:3"),
+        ("float-bound-below", "1", "1.5:10"), ("float-bound-in", "2", "1.5:10"),
+        ("exponent-bound-above", "101", "0:1e2"), ("int64-min-open-max", "-9223372036854775808", ":0"),
+    ],
+    "float": [
+        ("off-step", "0.3", "0:10:0.5"), ("above-max-step-rounds-in", "10.2", "0:10:0.5"),
+        ("below-min-step-rounds-in", "-0.1", "0:10:0.5"),
+        ("just-above-max", "10.000000000000000000000000000001", "0:10"),
+        ("just-below-max", "9.999999999999999999999999999999", "0:10"),
+        ("same-f64-as-max-above", "10.0000000000000000001", "0:10"),
+        ("exponent-bound-in", "1e2", "0:1e2"), ("exponent-bound-above", "100.0000001", "0:1e2"),
+        ("neg-zero-at-min", "-0", "0:10"), ("underflow-in-range", "1e-400", "0:10"),
+        ("max-f64-below-open-min", "-1.7976931348623157e308", "0:"),
+    ],
+}
+
+# The PAYLOAD_CASES overrides that still apply without step rounding.
+CHECK_VALUE_OVERRIDES = [k for k in CONVENTION_OVERRIDES if not k.startswith("integer-")]
+
+_NUMERIC = ("integer", "float")
+
+
+def _strip_step(dt: str, fmt):
+    """The numeric format without its step, so python-sdk does not round."""
+    if dt in _NUMERIC and isinstance(fmt, str) and fmt.count(":") == 2:
+        return fmt.rsplit(":", 1)[0]
+    return fmt
+
+
+def _verdict(text: str, dt: str, fmt) -> dict:
+    _, problem = _parse_set_payload(text, dt, fmt, None)
+    return {"valid": False, "problem": problem} if problem else {"valid": True}
+
+
+def gen_check_value() -> list:
+    """Received values and $target payloads, checked as datatype::check_value does.
+
+    The wire payload is the case text, with "" sent as 0x00 (a zero-length
+    payload deletes the topic and is not a value). The expect value is python-sdk
+    _parse_set_payload on the decoded text with any step removed from the
+    format, except for CHECK_VALUE_OVERRIDES.
+    """
+    cases = []
+    used = set()
+    disagreements = []
+    for dt in PAYLOAD_CASES:
+        for label, text, fmt in PAYLOAD_CASES[dt] + CHECK_VALUE_CASES.get(dt, []):
+            payload_id = f"{dt}-{label}"
+            wire = "\x00" if text == "" else text
+            decoded = "" if wire == "\x00" else wire
+            if text == "":
+                label = label.replace("zero-length", "nul")
+            case_id = f"{dt}-{label}"
+            inp = {"datatype": dt, **payload_field(wire)}
+            if fmt is not None:
+                inp["format"] = fmt
+            expect = _verdict(decoded, dt, _strip_step(dt, fmt))
+            source = f"{CONV}#{dt} (convention.md:74-151, :383-399); {PY} _parse_set_payload with the step removed"
+            if payload_id in CHECK_VALUE_OVERRIDES:
+                used.add(payload_id)
+                override, source = CONVENTION_OVERRIDES[payload_id]
+                if override == expect:
+                    raise SystemExit(f"check-value {case_id}: python-sdk now agrees with the convention; remove its override")
+                expect = override
+            rounded = _verdict(decoded, dt, fmt)
+            if fmt != _strip_step(dt, fmt) and rounded != expect:
+                source = (
+                    f"{CONV}#payload (convention.md:399): step rounding is the device's job, so a received value is "
+                    f"not rounded; {PY} _parse_set_payload rounds first and gives {json.dumps(rounded)}"
+                )
+                disagreements.append(case_id)
+            cases.append({"id": case_id, "source": source, "input": inp, "expect": expect})
+    unused = sorted(set(CHECK_VALUE_OVERRIDES) - used)
+    if unused:
+        raise SystemExit(f"CHECK_VALUE_OVERRIDES names no case: {unused}")
+    if not disagreements:
+        raise SystemExit("check-value: no case shows the step-rounding difference")
+    return cases
+
+
 # ── description (spec, from convention.md) ─────────────────────────────────
 
 
@@ -736,6 +828,71 @@ def gen_float_format() -> list:
                 "source": f"{PY} _format_float (repr(float(x)).replace('e+', 'e'))",
                 "input": {"f64_bits": bits, "repr_hint": repr(v)},
                 "expect": {"payload": _format_float(v)},
+            }
+        )
+    return cases
+
+
+# ── python-sdk: float32-format ─────────────────────────────────────────────────
+
+
+def f32_of_bits(h: str) -> np.float32:
+    return np.frombuffer(bytes.fromhex(h), dtype=">f4")[0].astype(np.float32)
+
+
+def format_float32(v: np.float32):
+    """numpy's shortest round-trip f32 digits in python-sdk's _format_float layout.
+
+    The digits (at most 9 significant) parse to an f64 whose repr keeps them, so
+    _format_float lays them out as python-sdk lays out a float.
+    """
+    if not np.isfinite(v):
+        return None
+    shortest = np.format_float_scientific(v, unique=True)
+    assert np.float32(float(shortest)) == v
+    return _format_float(float(shortest))
+
+
+def gen_float32_format() -> list:
+    f32_max = float(np.finfo(np.float32).max)
+    tiny = float(np.finfo(np.float32).tiny)
+    values = [
+        0.0, -0.0, 1.0, -1.0, 21.4, -21.4, 40.0, 0.1, 0.2, 0.3, 1 / 3, 0.5, 2.5, 100.0, 1234.5, 123456789.0,
+        16777216.0, 16777217.0, 2.0**31, 2.0**63, 1e-4, 9.999e-5, 1e-5, 1.5e-5, 0.00012345, 1e15, 1e16, 1.5e16,
+        1e-38, 1e38, f32_max, -f32_max, tiny, -tiny, 1e-45, 3e-45, 1e-40, 2097152.25, 2097153.75, 3.14159,
+        2.718281828459045, 6.02214076e23, 299792458.0, 65535.0, 4294967295.0, 99.99, 0.001, -0.001, 12.5,
+        float("inf"), float("-inf"), float("nan"),
+    ]
+    vals = [np.float32(v) for v in values]
+    # Subnormal edges and the largest subnormal.
+    for bits in (0x00000001, 0x00000002, 0x00000003, 0x007FFFFF, 0x00400000, 0x80000001, 0x7F7FFFFF, 0x7F7FFFFE):
+        vals.append(f32_of_bits(f"{bits:08x}"))
+    # Exponent sweep: powers of ten and a nudge either side.
+    for e in range(-45, 39):
+        v = np.float32(float(f"1e{e}"))
+        vals.append(v)
+        if v != 0 and np.isfinite(v):
+            vals.append(np.nextafter(v, np.float32(np.inf)))
+            vals.append(np.nextafter(v, np.float32(-np.inf)))
+    rng = random.Random(20261011)
+    for _ in range(60):
+        vals.append(np.float32(rng.uniform(-1e6, 1e6)))
+    for _ in range(60):
+        vals.append(f32_of_bits(f"{rng.getrandbits(32):08x}"))
+    for _ in range(20):
+        vals.append(np.float32(rng.random() * 10 ** rng.randint(-20, 20)))
+    cases, seen = [], set()
+    for v in vals:
+        bits = struct.pack(">f", float(v)).hex()
+        if bits in seen:
+            continue
+        seen.add(bits)
+        cases.append(
+            {
+                "id": f"float32-format-{bits}",
+                "source": f"numpy {np.__version__} shortest float32 digits, laid out by {PY} _format_float",
+                "input": {"f32_bits": bits, "repr_hint": str(v)},
+                "expect": {"payload": format_float32(v)},
             }
         )
     return cases
@@ -1156,8 +1313,10 @@ def main() -> None:
     for dt, cases in gen_payloads().items():
         write_suite(f"payloads/{dt}.json", f"payloads/{dt}", cases)
     write_suite("description.json", "description", gen_description())
+    write_suite("check-value.json", "check-value", gen_check_value())
     for name, gen in [
         ("float-format", gen_float_format),
+        ("float32-format", gen_float32_format),
         ("sanitize-id", gen_sanitize_id),
         ("set-payload", gen_set_payload),
         ("json-dumps", gen_json_dumps),

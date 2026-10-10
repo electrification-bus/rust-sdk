@@ -1,6 +1,6 @@
 [package]
 name = "ebus-mqtt"
-description = "MQTT vocabulary for eBus: messages and commands, topic filters and their ownership, the offline publish hold and the reconnect order."
+description = "MQTT vocabulary for eBus: messages and commands, topic filters and their ownership."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

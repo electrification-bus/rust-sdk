@@ -1,6 +1,6 @@
 [package]
 name = "ebus-homie"
-description = "Homie 5 protocol core for eBus: identifiers, topics, datatypes, descriptions and the device and controller state machines, with no I/O."
+description = "Homie 5 protocol core for eBus: identifiers, topics, datatypes, descriptions and the controller state machine, with no I/O."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,9 +11,13 @@ authors.workspace = true
 [features]
 default = ["std"]
 std = ["alloc", "serde_json/std"]
-alloc = ["dep:serde_json", "dep:sha2", "dep:num-bigint", "dep:num-traits", "dep:num-integer"]
+alloc = ["ebus-mqtt/alloc", "dep:serde_json", "dep:sha2", "dep:rpds", "dep:num-bigint", "dep:num-traits", "dep:num-integer"]
+log = ["dep:log"]
 
 [dependencies]
+ebus-mqtt.workspace = true
+log = { version = "0.4", default-features = false, optional = true }
+rpds = { workspace = true, optional = true }
 serde_json = { version = "1.0.100", default-features = false, features = ["alloc"], optional = true }
 sha2 = { version = "0.10", default-features = false, optional = true }
 num-bigint = { version = "0.4", default-features = false, optional = true }

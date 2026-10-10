@@ -6,16 +6,17 @@
 
 Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS discovery. It targets Linux single-board computers first and microcontrollers later, and follows the Homie 5 convention and the eBus specification. Where the spec leaves a choice open, it follows [python-sdk](https://github.com/electrification-bus/python-sdk).
 
-**Status:** pre-alpha. The crates below are placeholders; nothing is published to crates.io yet.
+**Status:** pre-alpha. The controller role is implemented; the device role and mDNS discovery are planned. Nothing is published to crates.io yet.
 
 ## Crates
 
 | Crate | Role | `no_std` |
 |---|---|---|
-| `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the device and controller state machines. Performs no I/O. | yes, with optional `alloc` |
-| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership, the hold for publishes made while the broker link is down, and the reconnect order. | yes, with optional `alloc` |
+| `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller state machine. Performs no I/O. | yes, with optional `alloc` |
+| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership. | yes, with optional `alloc` |
 | `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, broker selection, and mDNS backends behind features. | yes, with optional `alloc` |
-| `ebus-homie-tokio` | Runs devices and controllers on tokio over a host-owned or bundled MQTT connection. | no |
+| `ebus-homie-tokio` | Runs the controller on tokio over a host-owned MQTT connection. | no |
+| `ebus-rumqttc` | Bundled rumqttc 0.25 connection for the controller on tokio. | no |
 
 The core crates take `std` (the default), `alloc`, or neither as cargo features. The design is in [doc/design.md](doc/design.md).
 

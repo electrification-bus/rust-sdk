@@ -45,6 +45,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
+      # mosquitto for the end-to-end tests in ebus-rumqttc and ebus-homie-tokio,
+      # which start their own broker on a free port and are skipped when the
+      # binary is absent.
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y mosquitto
       - run: cargo test --workspace --locked
 
   # The core crates must build without std, with and without alloc.

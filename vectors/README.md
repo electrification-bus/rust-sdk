@@ -12,7 +12,7 @@ Output is deterministic (fixed seeds, fixed corpus order).
 
 The spec suites express the Homie 5 convention and the eBus specification. Where python-sdk (`python-sdk/src/ebus_sdk/homie.py`) has a matching function, its result is the expect value, except where python-sdk deviates from the convention ([python-sdk#110](https://github.com/electrification-bus/python-sdk/issues/110)): those cases are listed in `CONVENTION_OVERRIDES` in the generator, each with the convention's expect and a `source` citing the convention line and python-sdk#110.
 
-The python-sdk suites (`python-sdk/`) record python-sdk's behavior where the spec leaves a choice open. They are not spec requirements: rust-sdk prefers python-sdk's choice but may differ where matching it is costly.
+The python-sdk suites (`python-sdk/`) record python-sdk's behavior where the spec leaves a choice open, except `float32-format.json`, which records rust-sdk's `f32` choice: numpy's shortest `float32` digits in the layout of python-sdk's `_format_float`. They are not spec requirements: rust-sdk prefers python-sdk's choice but may differ where matching it is costly.
 
 ## File format
 
@@ -76,12 +76,24 @@ Three input shapes, selected by `direction`:
 - expect: `{"valid": true}`, `{"valid": true, "ignored": [{"node": string, "property": string | null, "error": string}]}`, or `{"valid": false, "error": string}`. `ignored` lists, in order, the nodes (`property` null) and properties that `description::parse_with_ignored` leaves out of an accepted document; nothing else is left out. `error` is a non-normative camelCase hint; a harness asserts only that parsing fails, or which entries are ignored.
 - Rules applied (convention.md:210-222, :300-306, :336-345, :383-395, :659-668): `homie` required, a string `"5.<digits>"`; `version` required, a JSON integer in the `i64` or `u64` range; `name` and `type` strings when present (not nullable); `nodes` an object; `children` an array of valid id strings; `root`/`parent` valid id strings, `parent` only with `root`; `extensions` an array of strings. A device-level violation rejects the document. A node is ignored when its id is not a valid id, it is not an object, its `name` or `type` is not a string, or its `properties` is not an object. A property is ignored when its id is not a valid id, it is not an object, its `datatype` is missing or not one of the 9 names, `settable`/`retained` are not booleans, `format`/`unit`/`name` are not strings, or its format is illegal: `enum` and `color` need a non-empty `format`; enum values are non-empty and distinct; color types are `rgb`, `hsv`, `xyz`; a non-empty boolean format has 2 distinct non-empty entries; a non-empty integer or float format is `[min]:[max][:step]` with bounds in the datatype's payload form and a step > 0. Unknown fields at any level are ignored.
 
+### `check-value.json`
+
+- input: `{"datatype": string, "payload": string | "payload_hex": hex, "format"?: string}`: a received property value or `$target` as wire bytes. A `""` value arrives as `payload_hex` `00`; no case is zero-length. `format` absent means `None`.
+- expect: `{"valid": true}` or `{"valid": false, "problem": string}`, compared with `Problem::as_str()`.
+- Maps to `datatype::check_value(text, &property)`, where `text` is `payload::classify(bytes)`'s `Received::Text` and `property` is `PropertyDescription::new(datatype)` with `format`.
+- Rules applied: the payload suites' rules with no step rounding, since rounding is the device's job (convention.md:399): a value off the step is valid and one beyond min or max is `belowMin` or `aboveMax` even where rounding would bring it in range. `0x00` is valid only for `string`. Expect values are python-sdk `_parse_set_payload` on the decoded text with the step removed from `format`, except the `datetime` and `json` cases of `CONVENTION_OVERRIDES` (python-sdk#110). Where python-sdk's `_parse_set_payload` with the step gives a different verdict, the case's `source` records it.
+
 ## python-sdk suites (`python-sdk/`)
 
 ### `python-sdk/float-format.json`
 
 - input: `{"f64_bits": string, "repr_hint": string}`. `f64_bits` is the IEEE 754 bit pattern as 16 lowercase hex digits (big-endian, `f64::from_bits(u64::from_str_radix(bits, 16))`). `repr_hint` is Python's `repr()` for humans; do not parse it.
 - expect: `{"payload": string | null}`: `pyfmt::format_float(x)`; `null` for NaN and the infinities.
+
+### `python-sdk/float32-format.json`
+
+- input: `{"f32_bits": string, "repr_hint": string}`. `f32_bits` is the IEEE 754 bit pattern as 8 lowercase hex digits (big-endian, `f32::from_bits(u32::from_str_radix(bits, 16))`). `repr_hint` is numpy's `str()` for humans; do not parse it.
+- expect: `{"payload": string | null}`: `pyfmt::format_float32(x)`: numpy's shortest round-trip `float32` digits (`21.4`, not the widened f64's `21.399999618530273`) in the layout of `python-sdk/float-format.json`; `null` for NaN and the infinities.
 
 ### `python-sdk/sanitize-id.json`
 

@@ -1,10 +1,11 @@
 //! Python-compatible text output, so payloads and `$description` documents match
 //! the Python SDK byte for byte.
 //!
-//! [`format_float`] is the Python SDK's float payload form; [`to_json`],
-//! [`write_str`] and [`write_value`] reproduce `json.dumps` with its default
-//! options (`ensure_ascii=True`, separators `", "` and `": "`); [`from_json`]
-//! reads JSON text as `json.loads` does.
+//! [`format_float`] is the Python SDK's float payload form, and
+//! [`format_float32`] lays out an `f32`'s shortest digits the same way;
+//! [`to_json`], [`write_str`] and [`write_value`] reproduce
+//! `json.dumps` with its default options (`ensure_ascii=True`, separators `", "`
+//! and `": "`); [`from_json`] reads JSON text as `json.loads` does.
 
 use alloc::collections::BTreeMap;
 use alloc::string::String;
@@ -25,6 +26,19 @@ pub fn repr_float(x: f64) -> Option<String> {
     // `{:e}` yields the shortest round-trip digits as `[-]d[.ddd]e[-]N`.
     let mut sci = String::new();
     let _ = write!(sci, "{x:e}");
+    layout(&sci, x, Width::F64)
+}
+
+/// The float width whose shortest round-trip digits are being laid out.
+#[derive(Clone, Copy)]
+enum Width {
+    F32,
+    F64,
+}
+
+/// Python `repr` layout of `sci`, the shortest round-trip digits of `x` as
+/// `{:e}` prints them for `width` (an `f32` widens to `x` exactly).
+fn layout(sci: &str, x: f64, width: Width) -> Option<String> {
     let (mantissa, exp_text) = sci.split_once('e')?;
     let exp: i32 = exp_text.parse().ok()?;
     let (negative, mantissa) = match mantissa.strip_prefix('-') {
@@ -33,7 +47,7 @@ pub fn repr_float(x: f64) -> Option<String> {
     };
     let mut digits = String::with_capacity(mantissa.len());
     digits.extend(mantissa.chars().filter(|c| *c != '.'));
-    round_tie_to_even(&mut digits, exp, x);
+    round_tie_to_even(&mut digits, exp, x, width);
 
     let mut out = String::with_capacity(digits.len() + 8);
     if negative {
@@ -78,7 +92,9 @@ pub fn repr_float(x: f64) -> Option<String> {
 /// (`2056655888558458.25` is `...458.3` in Rust, `...458.2` in Python). A tie
 /// means the exact decimal value of `x` is `digits` with its last digit lowered
 /// by one and a `5` appended, so it only arises when that last digit is odd.
-fn round_tie_to_even(digits: &mut String, exp: i32, x: f64) {
+/// `f32` has ties too: the `f32` `2097152.25` is `2097152.3` in Rust,
+/// `2097152.2` in numpy.
+fn round_tie_to_even(digits: &mut String, exp: i32, x: f64, width: Width) {
     let Some(last) = digits.bytes().last() else {
         return;
     };
@@ -108,7 +124,12 @@ fn round_tie_to_even(digits: &mut String, exp: i32, x: f64) {
     tie.pop();
     buf.clear();
     let _ = write!(buf, "{tie}e{}", exp - (tie.len() as i32 - 1));
-    if buf.parse::<f64>().ok() == Some(x.abs()) {
+    let round_trips = match width {
+        // `x` is an `f32` widened exactly, so the cast back is exact.
+        Width::F32 => buf.parse::<f32>().ok() == Some(x.abs() as f32),
+        Width::F64 => buf.parse::<f64>().ok() == Some(x.abs()),
+    };
+    if round_trips {
         *digits = tie;
     }
 }
@@ -138,6 +159,22 @@ fn same_digits(sci: &str, exp: i32, digits: &str) -> bool {
 /// Examples: `1.0`, `-0.0`, `0.0001`, `1e-05`, `1e16`, `5e-324`.
 pub fn format_float(x: f64) -> Option<String> {
     let repr = repr_float(x)?;
+    Some(repr.replacen("e+", "e", 1))
+}
+
+/// [`format_float`] for an `f32`: the shortest decimal that reads back as the
+/// same `f32`, in the same layout; `None` when `x` is NaN or infinite.
+///
+/// Examples: `21.4` (not `21.399999618530273`), `40.0`, `-0.0`, `1e-05`,
+/// `3.4028235e38`, `1e-45`.
+pub fn format_float32(x: f32) -> Option<String> {
+    if !x.is_finite() {
+        return None;
+    }
+    // `{:e}` on an `f32` yields the `f32` shortest round-trip digits.
+    let mut sci = String::new();
+    let _ = write!(sci, "{x:e}");
+    let repr = layout(&sci, f64::from(x), Width::F32)?;
     Some(repr.replacen("e+", "e", 1))
 }
 
@@ -595,6 +632,32 @@ mod tests {
     }
 
     #[test]
+    fn float32_payload_form() {
+        let cases: &[(f32, &str)] = &[
+            (21.4, "21.4"),
+            (40.0, "40.0"),
+            (-0.0, "-0.0"),
+            (0.1, "0.1"),
+            (1e-5, "1e-05"),
+            (0.0001, "0.0001"),
+            (1e16, "1e16"),
+            (123456789.0, "123456790.0"),
+            (f32::MAX, "3.4028235e38"),
+            (f32::MIN_POSITIVE, "1.1754944e-38"),
+            (f32::from_bits(1), "1e-45"),
+            // 2097152.25 and 2097153.75: exact ties, rounded to even.
+            (f32::from_bits(0x4a00_0001), "2097152.2"),
+            (f32::from_bits(0x4a00_0007), "2097153.8"),
+        ];
+        for (x, want) in cases {
+            assert_eq!(format_float32(*x).as_deref(), Some(*want), "{x:e}");
+        }
+        assert_eq!(format_float32(f32::NAN), None);
+        assert_eq!(format_float32(f32::INFINITY), None);
+        assert_eq!(format_float32(f32::NEG_INFINITY), None);
+    }
+
+    #[test]
     fn string_escapes() {
         let mut out = String::new();
         write_str(&mut out, "a\"b\\c/\n\r\t\u{08}\u{0c}\u{00}\u{1f}\u{7f}");
@@ -821,7 +884,7 @@ mod tests {
             let exp: i32 = exp.parse().unwrap();
             let shortest: String = mantissa.chars().filter(char::is_ascii_digit).collect();
             let (mut got, mut want) = (shortest.clone(), shortest.clone());
-            round_tie_to_even(&mut got, exp, x);
+            round_tie_to_even(&mut got, exp, x, Width::F64);
             reference_tie(&mut want, exp, x);
             assert_eq!(got, want, "{x:e}");
             ties += usize::from(got != shortest);

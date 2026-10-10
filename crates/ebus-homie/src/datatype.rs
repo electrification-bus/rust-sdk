@@ -1,7 +1,8 @@
 //! Property datatypes and payload grammar (convention.md: Payload).
 //!
-//! The grammar checks need no allocation. `parse_set_payload`, the exact
-//! decimal arithmetic behind step rounding, and the encoders need `alloc`.
+//! The grammar checks need no allocation. `parse_set_payload`, `check_value`,
+//! the exact decimal arithmetic behind step rounding, and the encoders need
+//! `alloc`.
 //! Every rule mirrors the Python SDK (`ebus_sdk.homie`), and every [`Problem`]
 //! code is the Python reason string.
 
@@ -21,6 +22,9 @@ use num_integer::Integer;
 use num_traits::{One, Signed, Zero};
 #[cfg(feature = "alloc")]
 use serde_json::Value;
+
+#[cfg(feature = "alloc")]
+use crate::description::PropertyDescription;
 
 /// A Homie 5 property datatype.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -979,13 +983,82 @@ fn round_and_range_check(
     if let (Some(step), Some(base)) = (&format.step, base) {
         number = round_to_step(&number, base, step)?;
     }
-    if format.min.as_ref().is_some_and(|low| number < *low) {
+    range_check(&number, format)?;
+    Ok(number)
+}
+
+/// Check `number` against the format's min and max, with no step rounding.
+#[cfg(feature = "alloc")]
+fn range_check(number: &Decimal, format: &NumericFormat) -> Result<(), Problem> {
+    if format.min.as_ref().is_some_and(|low| number < low) {
         return Err(Problem::BelowMin);
     }
-    if format.max.as_ref().is_some_and(|high| number > *high) {
+    if format.max.as_ref().is_some_and(|high| number > high) {
         return Err(Problem::AboveMax);
     }
-    Ok(number)
+    Ok(())
+}
+
+/// The value of an `integer` payload: `-?[0-9]+` within the 64-bit signed
+/// range (convention.md: Integer).
+#[cfg(feature = "alloc")]
+fn integer_value(text: &str) -> Result<i64, Problem> {
+    is_integer_payload(text)
+        .then(|| text.parse::<i64>().ok())
+        .flatten()
+        .ok_or(Problem::IntegerGrammar)
+}
+
+/// The exact value of a `float` payload already accepted by
+/// [`is_float_payload`], for comparison with or rounding to `operands`.
+/// Payload digits finer than every operand cannot change such a result, so a
+/// long payload costs only the digits that matter.
+#[cfg(feature = "alloc")]
+fn float_value(text: &str, operands: &[&Option<Decimal>]) -> Result<Decimal, Problem> {
+    let lowest = operands
+        .iter()
+        .filter_map(|d| d.as_ref())
+        .map(|d| d.exponent)
+        .fold(0, i64::min)
+        - 1;
+    Decimal::parse_from(text, Some(lowest)).ok_or(Problem::FloatGrammar)
+}
+
+/// Grammar and `$format` checks shared by [`parse_set_payload`] and
+/// [`check_value`] for the datatypes whose payload is used unchanged:
+/// `boolean`, `enum`, `color`, `datetime` and `duration`. Every other datatype
+/// is accepted here.
+#[cfg(feature = "alloc")]
+fn check_text(text: &str, datatype: Datatype, format: Option<&str>) -> Result<(), Problem> {
+    match datatype {
+        Datatype::Boolean => {
+            if text == "true" || text == "false" {
+                Ok(())
+            } else {
+                Err(Problem::BooleanGrammar)
+            }
+        }
+        Datatype::Enum => {
+            let allowed = format
+                .filter(|f| !f.is_empty())
+                .is_none_or(|f| f.split(',').any(|v| v == text));
+            if text.is_empty() || !allowed {
+                Err(Problem::EnumNotInFormat)
+            } else {
+                Ok(())
+            }
+        }
+        Datatype::Color => check_color(text, format),
+        Datatype::Duration => {
+            if is_duration_payload(text) {
+                Ok(())
+            } else {
+                Err(Problem::DurationGrammar)
+            }
+        }
+        Datatype::Datetime => check_datetime(text),
+        Datatype::Integer | Datatype::Float | Datatype::String | Datatype::Json => Ok(()),
+    }
 }
 
 // ── /set parsing and encoders (alloc) ───────────────────────────────────────
@@ -1033,11 +1106,7 @@ pub fn parse_set_payload(
     match datatype {
         Datatype::Json => decode_json(text).map(SetValue::Json),
         Datatype::Integer => {
-            let value = is_integer_payload(text)
-                .then(|| text.parse::<i64>().ok())
-                .flatten()
-                .ok_or(Problem::IntegerGrammar)?;
-            let number = Decimal::from_i64(value);
+            let number = Decimal::from_i64(integer_value(text)?);
             let format = NumericFormat::parse(format);
             let base = step_base(&format, current);
             let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
@@ -1059,15 +1128,7 @@ pub fn parse_set_payload(
             if format.min.is_none() && format.max.is_none() && base.is_none() {
                 return unchanged();
             }
-            // Payload digits finer than every operand cannot change the result,
-            // so a long payload costs only the digits that matter.
-            let lowest = [&format.min, &format.max, &format.step, &base]
-                .into_iter()
-                .flatten()
-                .map(|d| d.exponent)
-                .fold(0, i64::min)
-                - 1;
-            let number = Decimal::parse_from(text, Some(lowest)).ok_or(Problem::FloatGrammar)?;
+            let number = float_value(text, &[&format.min, &format.max, &format.step, &base])?;
             let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
             if rounded == number {
                 unchanged()
@@ -1078,37 +1139,56 @@ pub fn parse_set_payload(
                     .ok_or(Problem::FloatOutOfRange)
             }
         }
-        Datatype::Boolean => {
-            if text == "true" || text == "false" {
-                unchanged()
-            } else {
-                Err(Problem::BooleanGrammar)
-            }
-        }
-        Datatype::Enum => {
-            let allowed = format
-                .filter(|f| !f.is_empty())
-                .is_none_or(|f| f.split(',').any(|v| v == text));
-            if text.is_empty() || !allowed {
-                Err(Problem::EnumNotInFormat)
-            } else {
-                unchanged()
-            }
-        }
-        Datatype::Color => check_color(text, format).and_then(|()| unchanged()),
-        Datatype::Duration => {
-            if is_duration_payload(text) {
-                unchanged()
-            } else {
-                Err(Problem::DurationGrammar)
-            }
-        }
-        Datatype::Datetime => check_datetime(text).and_then(|()| unchanged()),
+        Datatype::Boolean
+        | Datatype::Enum
+        | Datatype::Color
+        | Datatype::Duration
+        | Datatype::Datetime => check_text(text, datatype, format).and_then(|()| unchanged()),
         Datatype::String => Ok(SetValue::String(if text == "\0" {
             String::new()
         } else {
             text.to_string()
         })),
+    }
+}
+
+/// Check a received property value or `$target` against its description, as
+/// a controller does before using it (convention.md:78).
+///
+/// `text` is the value as [`crate::payload::classify`] decodes it, so a `0x00`
+/// payload arrives as `""`, which only `string` accepts (convention.md:60-72).
+/// The checks are each datatype's payload grammar, `enum` and `color`
+/// membership in `$format`, `$format` min and max for `integer` and `float`,
+/// the 64-bit range for `integer`, finite `float` values, and an array or
+/// object for `json`. Values are not rounded to a `$format` step: rounding is
+/// the device's job (convention.md:399), so a value off the step is accepted
+/// and one beyond min or max is not.
+#[cfg(feature = "alloc")]
+pub fn check_value(text: &str, prop: &PropertyDescription) -> Result<(), Problem> {
+    let format = prop.format.as_deref();
+    match prop.datatype {
+        Datatype::Integer => {
+            let number = Decimal::from_i64(integer_value(text)?);
+            range_check(&number, &NumericFormat::parse(format))
+        }
+        Datatype::Float => {
+            if !is_float_payload(text) {
+                return Err(Problem::FloatGrammar);
+            }
+            let format = NumericFormat::parse(format);
+            if format.min.is_none() && format.max.is_none() {
+                return Ok(());
+            }
+            let number = float_value(text, &[&format.min, &format.max])?;
+            range_check(&number, &format)
+        }
+        Datatype::Json => decode_json(text).map(|_| ()),
+        Datatype::String => Ok(()),
+        Datatype::Boolean
+        | Datatype::Enum
+        | Datatype::Color
+        | Datatype::Duration
+        | Datatype::Datetime => check_text(text, prop.datatype, format),
     }
 }
 
@@ -1124,6 +1204,13 @@ pub fn encode_integer(value: i64) -> String {
 #[cfg(feature = "alloc")]
 pub fn encode_float(value: f64) -> Result<String, Problem> {
     crate::pyfmt::format_float(value).ok_or(Problem::FloatNotFinite)
+}
+
+/// [`encode_float`] for an `f32`: the shortest decimal that reads back as the
+/// same `f32` (`21.4`, not `21.399999618530273`), in the same layout.
+#[cfg(feature = "alloc")]
+pub fn encode_float32(value: f32) -> Result<String, Problem> {
+    crate::pyfmt::format_float32(value).ok_or(Problem::FloatNotFinite)
 }
 
 /// `boolean` payload for `value` (convention.md: Boolean).
@@ -1395,6 +1482,64 @@ mod tests {
             assert_eq!(has_53_weeks(year), long, "{year}");
         }
         assert_eq!(check_datetime("2000-02-29"), Ok(()));
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn check_value_cases() {
+        let prop = |datatype, format: Option<&str>| {
+            let mut p = PropertyDescription::new(datatype);
+            p.format = format.map(String::from);
+            p
+        };
+        let check = |text, datatype, format| check_value(text, &prop(datatype, format));
+        // No step rounding: off-step is fine, beyond min or max is not.
+        assert_eq!(check("5", Datatype::Integer, Some("0:10:2")), Ok(()));
+        assert_eq!(
+            check("11", Datatype::Integer, Some("1:10:3")),
+            Err(Problem::AboveMax)
+        );
+        assert_eq!(
+            check("10.2", Datatype::Float, Some("0:10:0.5")),
+            Err(Problem::AboveMax)
+        );
+        assert_eq!(
+            check("-0.1", Datatype::Float, Some("0:10")),
+            Err(Problem::BelowMin)
+        );
+        // Exact comparison, past f64 precision.
+        let above = "10.0000000000000000001";
+        assert_eq!(
+            check(above, Datatype::Float, Some("0:10")),
+            Err(Problem::AboveMax)
+        );
+        assert_eq!(
+            check("9223372036854775808", Datatype::Integer, None),
+            Err(Problem::IntegerGrammar)
+        );
+        assert_eq!(
+            check("1e999", Datatype::Float, None),
+            Err(Problem::FloatGrammar)
+        );
+        // A 0x00 payload decodes to "", which only string accepts.
+        assert_eq!(check("", Datatype::String, None), Ok(()));
+        assert_eq!(
+            check("", Datatype::Enum, Some("a,b")),
+            Err(Problem::EnumNotInFormat)
+        );
+        assert_eq!(check("", Datatype::Json, None), Err(Problem::JsonInvalid));
+        assert_eq!(
+            check("c", Datatype::Enum, Some("a,b")),
+            Err(Problem::EnumNotInFormat)
+        );
+        assert_eq!(
+            check("hsv,0,0,0", Datatype::Color, Some("rgb")),
+            Err(Problem::ColorTypeNotInFormat)
+        );
+        assert_eq!(
+            check("1", Datatype::Json, None),
+            Err(Problem::JsonNotArrayOrObject)
+        );
     }
 
     #[test]
@@ -1873,6 +2018,8 @@ mod tests {
                 encode_float(f64::NEG_INFINITY),
                 Err(Problem::FloatNotFinite)
             );
+            assert_eq!(encode_float32(21.4).as_deref(), Ok("21.4"));
+            assert_eq!(encode_float32(f32::NAN), Err(Problem::FloatNotFinite));
             assert_eq!(encode_boolean(true), "true");
             assert_eq!(encode_boolean(false), "false");
             assert_eq!(encode_duration(0, 0), "PT0S");
