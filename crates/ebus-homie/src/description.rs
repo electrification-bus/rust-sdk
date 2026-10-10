@@ -137,6 +137,8 @@ pub enum DescriptionError {
     DatatypeUnknown,
     /// A property's `format` is not a string.
     FormatInvalid,
+    /// An `enum` or `color` property has no `format` (convention.md: Formats).
+    FormatMissing,
     /// A property's `settable` is not a boolean.
     SettableInvalid,
     /// A property's `retained` is not a boolean.
@@ -176,6 +178,7 @@ impl DescriptionError {
             DescriptionError::DatatypeMissing => "datatypeMissing",
             DescriptionError::DatatypeUnknown => "datatypeUnknown",
             DescriptionError::FormatInvalid => "formatInvalid",
+            DescriptionError::FormatMissing => "formatMissing",
             DescriptionError::SettableInvalid => "settableInvalid",
             DescriptionError::RetainedInvalid => "retainedInvalid",
             DescriptionError::UnitInvalid => "unitInvalid",
@@ -493,10 +496,14 @@ fn parse_property(value: &Value) -> Result<PropertyDescription, DescriptionError
         Some(Value::String(s)) => Datatype::parse(s).ok_or(DescriptionError::DatatypeUnknown)?,
         Some(_) => return Err(DescriptionError::DatatypeUnknown),
     };
+    let format = opt_str(obj, "format", DescriptionError::FormatInvalid)?;
+    if format.is_none() && matches!(datatype, Datatype::Enum | Datatype::Color) {
+        return Err(DescriptionError::FormatMissing);
+    }
     Ok(PropertyDescription {
         name: opt_str(obj, "name", DescriptionError::NameInvalid)?,
         datatype,
-        format: opt_str(obj, "format", DescriptionError::FormatInvalid)?,
+        format,
         settable: opt_bool(obj, "settable", false, DescriptionError::SettableInvalid)?,
         retained: opt_bool(obj, "retained", true, DescriptionError::RetainedInvalid)?,
         unit: opt_str(obj, "unit", DescriptionError::UnitInvalid)?,
@@ -802,6 +809,14 @@ mod tests {
             (
                 r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"json","format":{}}}}}}"#,
                 E::FormatInvalid,
+            ),
+            (
+                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"enum"}}}}}"#,
+                E::FormatMissing,
+            ),
+            (
+                r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"color"}}}}}"#,
+                E::FormatMissing,
             ),
             (
                 r#"{"homie":"5.0","version":1,"nodes":{"n":{"properties":{"p":{"datatype":"string","settable":"true"}}}}}"#,
