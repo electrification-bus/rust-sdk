@@ -4,10 +4,9 @@ target/
 # macOS Finder metadata
 .DS_Store
 
-# Personal LLM coding-assistant configs; see CONTRIBUTING.md.
-CLAUDE.md
+# Personal LLM coding-assistant configs; AGENTS.md and CLAUDE.md are tracked.
+# See CONTRIBUTING.md.
 CLAUDE.local.md
-AGENTS.md
 GEMINI.md
 .claude/
 .cursor/

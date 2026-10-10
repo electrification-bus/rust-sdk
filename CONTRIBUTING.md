@@ -26,9 +26,11 @@ Pull requests are welcome.
 - **Keep comments to a minimum.** Reserve comments for the non-obvious *why*.
 - **Don't hard-wrap Markdown prose.** Write each paragraph as a single line.
 
-## Keep your personal LLM config out of the repo
+## LLM coding assistants
 
-Do not commit personal LLM coding-assistant config (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.cursor/`, and so on). Keep it in a separate shadow repo symlinked into your working tree, or add the paths to `.git/info/exclude`. The project `.gitignore` lists the common ones.
+[`AGENTS.md`](AGENTS.md) holds the shared instructions for LLM coding assistants (Codex, Cursor, GitHub Copilot and others read it; [`CLAUDE.md`](CLAUDE.md) imports it for Claude Code). Change it by pull request when the project's conventions change.
+
+Keep your personal configuration out of the repo: `CLAUDE.local.md` (which Claude Code loads alongside `CLAUDE.md`), `.claude/`, `.cursor/` and the like are gitignored. To version them anyway, keep them in a separate private "shadow" repository and symlink them into your working tree, for example `ln -s ~/path/to/shadow-repo/rust-sdk/CLAUDE.local.md CLAUDE.local.md`; for a file you don't need to version, `.git/info/exclude` works too.
 
 ## Code of conduct
 
