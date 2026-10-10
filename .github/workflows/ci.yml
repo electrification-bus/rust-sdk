@@ -32,7 +32,7 @@ jobs:
           components: clippy
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
-  # 1.85 is the declared rust-version; 1.91.1 is the toolchain SPAN firmware pins.
+  # 1.85 is the declared rust-version.
   test:
     name: test (${{ matrix.toolchain }})
     runs-on: ubuntu-latest

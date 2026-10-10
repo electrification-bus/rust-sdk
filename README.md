@@ -13,11 +13,11 @@ Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/sp
 | Crate | Role | `no_std` |
 |---|---|---|
 | `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the device and controller state machines. Performs no I/O. | yes, with optional `alloc` |
-| `ebus-mqtt` | Transport trait, the hold for publishes made while the broker link is down, and the reconnect order. | yes, with optional `alloc` |
+| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership, the hold for publishes made while the broker link is down, and the reconnect order. | yes, with optional `alloc` |
 | `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, broker selection, and mDNS backends behind features. | yes, with optional `alloc` |
-| `ebus-homie-tokio` | Runs devices and controllers on tokio over an `ebus-mqtt` transport. | no |
+| `ebus-homie-tokio` | Runs devices and controllers on tokio over a host-owned or bundled MQTT connection. | no |
 
-The core crates take `std` (the default), `alloc`, or neither as cargo features.
+The core crates take `std` (the default), `alloc`, or neither as cargo features. The design is in [doc/design.md](doc/design.md).
 
 ## Rust version
 
