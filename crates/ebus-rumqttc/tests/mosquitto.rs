@@ -238,8 +238,14 @@ async fn removal_and_return(test: &str, config: Config) {
     // A later zero-length value for the removed device changes nothing.
     let mark = ctl.seen.len();
     seed.publish("ebus/5/rm-1/n/p000", b"", true).await;
+    // A marker on a device the controller holds, delivered after it.
+    seed.publish("ebus/5/rm-root/n/p000", b"7", true).await;
     seed.flush().await;
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    ctl.until(5, "rm-root/n/p000 = 7", |e| {
+        matches!(e, Event::PropertyChanged { addr, value, .. }
+            if addr.device.as_str() == "rm-root" && &*value.raw == "7")
+    })
+    .await;
     assert!(ctl.handle.device("rm-1").is_none());
 
     seed.device(

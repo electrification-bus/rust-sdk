@@ -184,13 +184,19 @@ impl Inbox {
             log::warn!("reason=inboxMessageTooLarge,topic={topic},bytes={size},cap={cap}");
             return false;
         }
-        let admitted = self
-            .shared
-            .bytes
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |b| {
-                b.checked_add(size).filter(|n| *n <= cap)
-            })
-            .is_ok();
+        // A compare-exchange loop: `fetch_update` is deprecated on recent
+        // stable and its replacement is newer than the MSRV.
+        let bytes = &self.shared.bytes;
+        let mut current = bytes.load(Ordering::Acquire);
+        let admitted = loop {
+            let Some(next) = current.checked_add(size).filter(|n| *n <= cap) else {
+                break false;
+            };
+            match bytes.compare_exchange_weak(current, next, Ordering::AcqRel, Ordering::Acquire) {
+                Ok(_) => break true,
+                Err(seen) => current = seen,
+            }
+        };
         if !admitted {
             self.note_dropped(&topic);
             return false;

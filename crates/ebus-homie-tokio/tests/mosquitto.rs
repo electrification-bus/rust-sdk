@@ -212,6 +212,10 @@ struct Host {
     sent: Arc<Mutex<Vec<Command>>>,
     /// Messages the inbox refused.
     dropped: Arc<AtomicUsize>,
+    /// UNSUBSCRIBE packets the executor handed to the client.
+    unsubscribes: Arc<AtomicUsize>,
+    /// UNSUBACKs the reader received.
+    unsubacks: Arc<AtomicUsize>,
     seen: Vec<Event>,
 }
 
@@ -231,10 +235,12 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
     // its own filters on every CONNACK.
     let (own_tx, own) = std::sync::mpsc::channel();
     let dropped = Arc::new(AtomicUsize::new(0));
+    let unsubacks = Arc::new(AtomicUsize::new(0));
     {
         let inbox = ebus.inbox.clone();
         let client = Arc::clone(&client);
         let dropped = Arc::clone(&dropped);
+        let unsubacks = Arc::clone(&unsubacks);
         let filters: Vec<String> = host_filters.iter().map(|f| (*f).to_owned()).collect();
         let mut conn = conn;
         std::thread::spawn(move || {
@@ -258,6 +264,9 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
                         }
                         let _ = own_tx.send((p.topic, p.payload.to_vec()));
                     }
+                    Ok(rumqttc::Event::Incoming(Packet::UnsubAck(_))) => {
+                        unsubacks.fetch_add(1, Ordering::AcqRel);
+                    }
                     Ok(_) => {}
                     Err(_) => {
                         inbox.disconnected();
@@ -270,10 +279,12 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
 
     // One executor task; try_* never blocks, so holding the std Mutex is safe.
     let sent = Arc::new(Mutex::new(Vec::new()));
+    let unsubscribes = Arc::new(AtomicUsize::new(0));
     let executor = {
         let mut commands = ebus.commands;
         let inbox = ebus.inbox;
         let sent = Arc::clone(&sent);
+        let unsubscribes = Arc::clone(&unsubscribes);
         tokio::spawn(async move {
             while let Some(cmd) = commands.recv().await {
                 sent.lock().expect("log").push(cmd.clone());
@@ -285,9 +296,11 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
                                 .iter()
                                 .map(|(f, q)| SubscribeFilter::new(f.clone(), qos(*q))),
                         ),
-                        Command::Unsubscribe { filters } => filters
-                            .iter()
-                            .try_for_each(|f| c.try_unsubscribe(f.clone())),
+                        Command::Unsubscribe { filters } => filters.iter().try_for_each(|f| {
+                            c.try_unsubscribe(f.clone())?;
+                            unsubscribes.fetch_add(1, Ordering::AcqRel);
+                            Ok(())
+                        }),
                         Command::Publish {
                             topic,
                             payload,
@@ -313,6 +326,8 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
         own,
         sent,
         dropped,
+        unsubscribes,
+        unsubacks,
         seen: Vec::new(),
     }
 }
@@ -382,6 +397,21 @@ impl Host {
             if done {
                 return got;
             }
+        }
+    }
+
+    /// Waits until the broker acknowledged every UNSUBSCRIBE handed to the
+    /// client, so a publish after it is routed without the dropped filters.
+    async fn unsubscribed(&self) {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        loop {
+            let want = self.unsubscribes.load(Ordering::Acquire);
+            let got = self.unsubacks.load(Ordering::Acquire);
+            if got >= want {
+                return;
+            }
+            assert!(Instant::now() < deadline, "{got} of {want} UNSUBACKs");
+            tokio::time::sleep(Duration::from_millis(10)).await;
         }
     }
 
@@ -480,6 +510,7 @@ async fn host_filters_survive_controller_unsubscribes() {
 
     // The broker still delivers on every host filter, and no longer on a
     // filter only the controller held.
+    host.unsubscribed().await;
     seed.publish("ebus/5/h1/$description", "{}", false);
     seed.publish("ebus/5/h1/n/p000", "1", false);
     seed.publish("ebus/5/h2/n/p000", "2", false);
