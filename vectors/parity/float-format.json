@@ -1,0 +1,5299 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/float-format",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "float-format-0000000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000000000000000",
+        "repr_hint": "0.0"
+      },
+      "expect": {
+        "payload": "0.0"
+      }
+    },
+    {
+      "id": "float-format-8000000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "8000000000000000",
+        "repr_hint": "-0.0"
+      },
+      "expect": {
+        "payload": "-0.0"
+      }
+    },
+    {
+      "id": "float-format-3ff0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ff0000000000000",
+        "repr_hint": "1.0"
+      },
+      "expect": {
+        "payload": "1.0"
+      }
+    },
+    {
+      "id": "float-format-bff0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "bff0000000000000",
+        "repr_hint": "-1.0"
+      },
+      "expect": {
+        "payload": "-1.0"
+      }
+    },
+    {
+      "id": "float-format-3fb999999999999a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fb999999999999a",
+        "repr_hint": "0.1"
+      },
+      "expect": {
+        "payload": "0.1"
+      }
+    },
+    {
+      "id": "float-format-3fc999999999999a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fc999999999999a",
+        "repr_hint": "0.2"
+      },
+      "expect": {
+        "payload": "0.2"
+      }
+    },
+    {
+      "id": "float-format-3fd3333333333333",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fd3333333333333",
+        "repr_hint": "0.3"
+      },
+      "expect": {
+        "payload": "0.3"
+      }
+    },
+    {
+      "id": "float-format-3fd3333333333334",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fd3333333333334",
+        "repr_hint": "0.30000000000000004"
+      },
+      "expect": {
+        "payload": "0.30000000000000004"
+      }
+    },
+    {
+      "id": "float-format-3fd5555555555555",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fd5555555555555",
+        "repr_hint": "0.3333333333333333"
+      },
+      "expect": {
+        "payload": "0.3333333333333333"
+      }
+    },
+    {
+      "id": "float-format-3fe5555555555555",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fe5555555555555",
+        "repr_hint": "0.6666666666666666"
+      },
+      "expect": {
+        "payload": "0.6666666666666666"
+      }
+    },
+    {
+      "id": "float-format-bfd5555555555555",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "bfd5555555555555",
+        "repr_hint": "-0.3333333333333333"
+      },
+      "expect": {
+        "payload": "-0.3333333333333333"
+      }
+    },
+    {
+      "id": "float-format-3fe0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fe0000000000000",
+        "repr_hint": "0.5"
+      },
+      "expect": {
+        "payload": "0.5"
+      }
+    },
+    {
+      "id": "float-format-3ff8000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ff8000000000000",
+        "repr_hint": "1.5"
+      },
+      "expect": {
+        "payload": "1.5"
+      }
+    },
+    {
+      "id": "float-format-4004000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4004000000000000",
+        "repr_hint": "2.5"
+      },
+      "expect": {
+        "payload": "2.5"
+      }
+    },
+    {
+      "id": "float-format-4059000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4059000000000000",
+        "repr_hint": "100.0"
+      },
+      "expect": {
+        "payload": "100.0"
+      }
+    },
+    {
+      "id": "float-format-40934a0000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40934a0000000000",
+        "repr_hint": "1234.5"
+      },
+      "expect": {
+        "payload": "1234.5"
+      }
+    },
+    {
+      "id": "float-format-419d6f3454000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "419d6f3454000000",
+        "repr_hint": "123456789.0"
+      },
+      "expect": {
+        "payload": "123456789.0"
+      }
+    },
+    {
+      "id": "float-format-3f1a36e2eb1c432d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3f1a36e2eb1c432d",
+        "repr_hint": "0.0001"
+      },
+      "expect": {
+        "payload": "0.0001"
+      }
+    },
+    {
+      "id": "float-format-3f1a378eb79354b1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3f1a378eb79354b1",
+        "repr_hint": "0.00010001"
+      },
+      "expect": {
+        "payload": "0.00010001"
+      }
+    },
+    {
+      "id": "float-format-3f1a36e2eb1c432c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3f1a36e2eb1c432c",
+        "repr_hint": "9.999999999999999e-05"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-05"
+      }
+    },
+    {
+      "id": "float-format-3ee4f8b588e368f1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ee4f8b588e368f1",
+        "repr_hint": "1e-05"
+      },
+      "expect": {
+        "payload": "1e-05"
+      }
+    },
+    {
+      "id": "float-format-3eef75104d551d69",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3eef75104d551d69",
+        "repr_hint": "1.5e-05"
+      },
+      "expect": {
+        "payload": "1.5e-05"
+      }
+    },
+    {
+      "id": "float-format-bee4f8b588e368f1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "bee4f8b588e368f1",
+        "repr_hint": "-1e-05"
+      },
+      "expect": {
+        "payload": "-1e-05"
+      }
+    },
+    {
+      "id": "float-format-3f202e4b6ce5dc68",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3f202e4b6ce5dc68",
+        "repr_hint": "0.00012345"
+      },
+      "expect": {
+        "payload": "0.00012345"
+      }
+    },
+    {
+      "id": "float-format-430c6bf526340000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "430c6bf526340000",
+        "repr_hint": "1000000000000000.0"
+      },
+      "expect": {
+        "payload": "1000000000000000.0"
+      }
+    },
+    {
+      "id": "float-format-4341c37937e07fff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4341c37937e07fff",
+        "repr_hint": "9999999999999998.0"
+      },
+      "expect": {
+        "payload": "9999999999999998.0"
+      }
+    },
+    {
+      "id": "float-format-4341c37937e08000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4341c37937e08000",
+        "repr_hint": "1e+16"
+      },
+      "expect": {
+        "payload": "1e16"
+      }
+    },
+    {
+      "id": "float-format-4341c37937e08001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4341c37937e08001",
+        "repr_hint": "1.0000000000000002e+16"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e16"
+      }
+    },
+    {
+      "id": "float-format-434aa535d3d0c000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "434aa535d3d0c000",
+        "repr_hint": "1.5e+16"
+      },
+      "expect": {
+        "payload": "1.5e16"
+      }
+    },
+    {
+      "id": "float-format-c341c37937e08000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c341c37937e08000",
+        "repr_hint": "-1e+16"
+      },
+      "expect": {
+        "payload": "-1e16"
+      }
+    },
+    {
+      "id": "float-format-4345ee2a2eb5a5c4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4345ee2a2eb5a5c4",
+        "repr_hint": "1.2345678901234568e+16"
+      },
+      "expect": {
+        "payload": "1.2345678901234568e16"
+      }
+    },
+    {
+      "id": "float-format-4340000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4340000000000000",
+        "repr_hint": "9007199254740992.0"
+      },
+      "expect": {
+        "payload": "9007199254740992.0"
+      }
+    },
+    {
+      "id": "float-format-4340000000000001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4340000000000001",
+        "repr_hint": "9007199254740994.0"
+      },
+      "expect": {
+        "payload": "9007199254740994.0"
+      }
+    },
+    {
+      "id": "float-format-43e0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "43e0000000000000",
+        "repr_hint": "9.223372036854776e+18"
+      },
+      "expect": {
+        "payload": "9.223372036854776e18"
+      }
+    },
+    {
+      "id": "float-format-43f0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "43f0000000000000",
+        "repr_hint": "1.8446744073709552e+19"
+      },
+      "expect": {
+        "payload": "1.8446744073709552e19"
+      }
+    },
+    {
+      "id": "float-format-444b1ae4d6e2ef50",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "444b1ae4d6e2ef50",
+        "repr_hint": "1e+21"
+      },
+      "expect": {
+        "payload": "1e21"
+      }
+    },
+    {
+      "id": "float-format-4480f0cf064dd592",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4480f0cf064dd592",
+        "repr_hint": "1e+22"
+      },
+      "expect": {
+        "payload": "1e22"
+      }
+    },
+    {
+      "id": "float-format-44b52d02c7e14af6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "44b52d02c7e14af6",
+        "repr_hint": "1e+23"
+      },
+      "expect": {
+        "payload": "1e23"
+      }
+    },
+    {
+      "id": "float-format-54b249ad2594c37d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "54b249ad2594c37d",
+        "repr_hint": "1e+100"
+      },
+      "expect": {
+        "payload": "1e100"
+      }
+    },
+    {
+      "id": "float-format-7e37e43c8800759c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7e37e43c8800759c",
+        "repr_hint": "1e+300"
+      },
+      "expect": {
+        "payload": "1e300"
+      }
+    },
+    {
+      "id": "float-format-7fe1ccf385ebc8a0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7fe1ccf385ebc8a0",
+        "repr_hint": "1e+308"
+      },
+      "expect": {
+        "payload": "1e308"
+      }
+    },
+    {
+      "id": "float-format-7fefffffffffffff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7fefffffffffffff",
+        "repr_hint": "1.7976931348623157e+308"
+      },
+      "expect": {
+        "payload": "1.7976931348623157e308"
+      }
+    },
+    {
+      "id": "float-format-ffefffffffffffff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "ffefffffffffffff",
+        "repr_hint": "-1.7976931348623157e+308"
+      },
+      "expect": {
+        "payload": "-1.7976931348623157e308"
+      }
+    },
+    {
+      "id": "float-format-0010000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0010000000000000",
+        "repr_hint": "2.2250738585072014e-308"
+      },
+      "expect": {
+        "payload": "2.2250738585072014e-308"
+      }
+    },
+    {
+      "id": "float-format-000fffffffffffff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "000fffffffffffff",
+        "repr_hint": "2.225073858507201e-308"
+      },
+      "expect": {
+        "payload": "2.225073858507201e-308"
+      }
+    },
+    {
+      "id": "float-format-0000000000000001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000000000000001",
+        "repr_hint": "5e-324"
+      },
+      "expect": {
+        "payload": "5e-324"
+      }
+    },
+    {
+      "id": "float-format-8000000000000001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "8000000000000001",
+        "repr_hint": "-5e-324"
+      },
+      "expect": {
+        "payload": "-5e-324"
+      }
+    },
+    {
+      "id": "float-format-00000000000007e8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "00000000000007e8",
+        "repr_hint": "1e-320"
+      },
+      "expect": {
+        "payload": "1e-320"
+      }
+    },
+    {
+      "id": "float-format-01a56e1fc2f8f359",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "01a56e1fc2f8f359",
+        "repr_hint": "1e-300"
+      },
+      "expect": {
+        "payload": "1e-300"
+      }
+    },
+    {
+      "id": "float-format-2b2bff2ee48e0530",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2b2bff2ee48e0530",
+        "repr_hint": "1e-100"
+      },
+      "expect": {
+        "payload": "1e-100"
+      }
+    },
+    {
+      "id": "float-format-3ed23ec6e52c3f23",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ed23ec6e52c3f23",
+        "repr_hint": "4.35e-06"
+      },
+      "expect": {
+        "payload": "4.35e-06"
+      }
+    },
+    {
+      "id": "float-format-400921f9f01b866e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "400921f9f01b866e",
+        "repr_hint": "3.14159"
+      },
+      "expect": {
+        "payload": "3.14159"
+      }
+    },
+    {
+      "id": "float-format-4005bf0a8b145769",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4005bf0a8b145769",
+        "repr_hint": "2.718281828459045"
+      },
+      "expect": {
+        "payload": "2.718281828459045"
+      }
+    },
+    {
+      "id": "float-format-44dfe185ca57c517",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "44dfe185ca57c517",
+        "repr_hint": "6.02214076e+23"
+      },
+      "expect": {
+        "payload": "6.02214076e23"
+      }
+    },
+    {
+      "id": "float-format-390b860bde023111",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "390b860bde023111",
+        "repr_hint": "6.62607015e-34"
+      },
+      "expect": {
+        "payload": "6.62607015e-34"
+      }
+    },
+    {
+      "id": "float-format-41b1de784a000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41b1de784a000000",
+        "repr_hint": "299792458.0"
+      },
+      "expect": {
+        "payload": "299792458.0"
+      }
+    },
+    {
+      "id": "float-format-3ff199999999999a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ff199999999999a",
+        "repr_hint": "1.1"
+      },
+      "expect": {
+        "payload": "1.1"
+      }
+    },
+    {
+      "id": "float-format-4005666666666666",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4005666666666666",
+        "repr_hint": "2.675"
+      },
+      "expect": {
+        "payload": "2.675"
+      }
+    },
+    {
+      "id": "float-format-3e7ad7f29abcaf48",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e7ad7f29abcaf48",
+        "repr_hint": "1e-07"
+      },
+      "expect": {
+        "payload": "1e-07"
+      }
+    },
+    {
+      "id": "float-format-3c36b082c2148b8e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3c36b082c2148b8e",
+        "repr_hint": "1.23e-18"
+      },
+      "expect": {
+        "payload": "1.23e-18"
+      }
+    },
+    {
+      "id": "float-format-41e0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41e0000000000000",
+        "repr_hint": "2147483648.0"
+      },
+      "expect": {
+        "payload": "2147483648.0"
+      }
+    },
+    {
+      "id": "float-format-c1e0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c1e0000000000000",
+        "repr_hint": "-2147483648.0"
+      },
+      "expect": {
+        "payload": "-2147483648.0"
+      }
+    },
+    {
+      "id": "float-format-40efffe000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40efffe000000000",
+        "repr_hint": "65535.0"
+      },
+      "expect": {
+        "payload": "65535.0"
+      }
+    },
+    {
+      "id": "float-format-41efffffffe00000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41efffffffe00000",
+        "repr_hint": "4294967295.0"
+      },
+      "expect": {
+        "payload": "4294967295.0"
+      }
+    },
+    {
+      "id": "float-format-4202a05f20000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4202a05f20000000",
+        "repr_hint": "10000000000.0"
+      },
+      "expect": {
+        "payload": "10000000000.0"
+      }
+    },
+    {
+      "id": "float-format-3ddb7cdfd9d7bdbb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ddb7cdfd9d7bdbb",
+        "repr_hint": "1e-10"
+      },
+      "expect": {
+        "payload": "1e-10"
+      }
+    },
+    {
+      "id": "float-format-4029000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4029000000000000",
+        "repr_hint": "12.5"
+      },
+      "expect": {
+        "payload": "12.5"
+      }
+    },
+    {
+      "id": "float-format-bf50624dd2f1a9fc",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "bf50624dd2f1a9fc",
+        "repr_hint": "-0.001"
+      },
+      "expect": {
+        "payload": "-0.001"
+      }
+    },
+    {
+      "id": "float-format-4058ff5c28f5c28f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4058ff5c28f5c28f",
+        "repr_hint": "99.99"
+      },
+      "expect": {
+        "payload": "99.99"
+      }
+    },
+    {
+      "id": "float-format-42d6bcc41e900020",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42d6bcc41e900020",
+        "repr_hint": "100000000000000.5"
+      },
+      "expect": {
+        "payload": "100000000000000.5"
+      }
+    },
+    {
+      "id": "float-format-430c6bf526340002",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "430c6bf526340002",
+        "repr_hint": "1000000000000000.2"
+      },
+      "expect": {
+        "payload": "1000000000000000.2"
+      }
+    },
+    {
+      "id": "float-format-7ff0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7ff0000000000000",
+        "repr_hint": "inf"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float-format-fff0000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "fff0000000000000",
+        "repr_hint": "-inf"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float-format-7ff8000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7ff8000000000000",
+        "repr_hint": "nan"
+      },
+      "expect": {
+        "payload": null
+      }
+    },
+    {
+      "id": "float-format-0000000000000002",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000000000000002",
+        "repr_hint": "1e-323"
+      },
+      "expect": {
+        "payload": "1e-323"
+      }
+    },
+    {
+      "id": "float-format-0000000000000003",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000000000000003",
+        "repr_hint": "1.5e-323"
+      },
+      "expect": {
+        "payload": "1.5e-323"
+      }
+    },
+    {
+      "id": "float-format-000000000134d761",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "000000000134d761",
+        "repr_hint": "1e-316"
+      },
+      "expect": {
+        "payload": "1e-316"
+      }
+    },
+    {
+      "id": "float-format-000000000134d762",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "000000000134d762",
+        "repr_hint": "1.00000003e-316"
+      },
+      "expect": {
+        "payload": "1.00000003e-316"
+      }
+    },
+    {
+      "id": "float-format-000000000134d760",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "000000000134d760",
+        "repr_hint": "9.9999993e-317"
+      },
+      "expect": {
+        "payload": "9.9999993e-317"
+      }
+    },
+    {
+      "id": "float-format-0000b8157268fdaf",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000b8157268fdaf",
+        "repr_hint": "1e-309"
+      },
+      "expect": {
+        "payload": "1e-309"
+      }
+    },
+    {
+      "id": "float-format-0000b8157268fdb0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000b8157268fdb0",
+        "repr_hint": "1.000000000000007e-309"
+      },
+      "expect": {
+        "payload": "1.000000000000007e-309"
+      }
+    },
+    {
+      "id": "float-format-0000b8157268fdae",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0000b8157268fdae",
+        "repr_hint": "9.99999999999997e-310"
+      },
+      "expect": {
+        "payload": "9.99999999999997e-310"
+      }
+    },
+    {
+      "id": "float-format-013b6e3d22865634",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "013b6e3d22865634",
+        "repr_hint": "1e-302"
+      },
+      "expect": {
+        "payload": "1e-302"
+      }
+    },
+    {
+      "id": "float-format-013b6e3d22865635",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "013b6e3d22865635",
+        "repr_hint": "1.0000000000000001e-302"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-302"
+      }
+    },
+    {
+      "id": "float-format-013b6e3d22865633",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "013b6e3d22865633",
+        "repr_hint": "9.999999999999998e-303"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-303"
+      }
+    },
+    {
+      "id": "float-format-02b059949b708f29",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "02b059949b708f29",
+        "repr_hint": "1e-295"
+      },
+      "expect": {
+        "payload": "1e-295"
+      }
+    },
+    {
+      "id": "float-format-02b059949b708f2a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "02b059949b708f2a",
+        "repr_hint": "1.0000000000000003e-295"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e-295"
+      }
+    },
+    {
+      "id": "float-format-02b059949b708f28",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "02b059949b708f28",
+        "repr_hint": "9.999999999999998e-296"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-296"
+      }
+    },
+    {
+      "id": "float-format-04237d99cc506d59",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "04237d99cc506d59",
+        "repr_hint": "1e-288"
+      },
+      "expect": {
+        "payload": "1e-288"
+      }
+    },
+    {
+      "id": "float-format-04237d99cc506d5a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "04237d99cc506d5a",
+        "repr_hint": "1.0000000000000002e-288"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-288"
+      }
+    },
+    {
+      "id": "float-format-04237d99cc506d58",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "04237d99cc506d58",
+        "repr_hint": "9.999999999999999e-289"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-289"
+      }
+    },
+    {
+      "id": "float-format-05973c115074bc6a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "05973c115074bc6a",
+        "repr_hint": "1e-281"
+      },
+      "expect": {
+        "payload": "1e-281"
+      }
+    },
+    {
+      "id": "float-format-05973c115074bc6b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "05973c115074bc6b",
+        "repr_hint": "1.0000000000000002e-281"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-281"
+      }
+    },
+    {
+      "id": "float-format-05973c115074bc69",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "05973c115074bc69",
+        "repr_hint": "9.999999999999999e-282"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-282"
+      }
+    },
+    {
+      "id": "float-format-070bb2a62fe638ff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "070bb2a62fe638ff",
+        "repr_hint": "1e-274"
+      },
+      "expect": {
+        "payload": "1e-274"
+      }
+    },
+    {
+      "id": "float-format-070bb2a62fe63900",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "070bb2a62fe63900",
+        "repr_hint": "1.0000000000000001e-274"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-274"
+      }
+    },
+    {
+      "id": "float-format-070bb2a62fe638fe",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "070bb2a62fe638fe",
+        "repr_hint": "9.999999999999998e-275"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-275"
+      }
+    },
+    {
+      "id": "float-format-0880825b3323dab0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0880825b3323dab0",
+        "repr_hint": "1e-267"
+      },
+      "expect": {
+        "payload": "1e-267"
+      }
+    },
+    {
+      "id": "float-format-0880825b3323dab1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0880825b3323dab1",
+        "repr_hint": "1.0000000000000002e-267"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-267"
+      }
+    },
+    {
+      "id": "float-format-0880825b3323daaf",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0880825b3323daaf",
+        "repr_hint": "9.999999999999998e-268"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-268"
+      }
+    },
+    {
+      "id": "float-format-09f3ae3591f5b4d9",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "09f3ae3591f5b4d9",
+        "repr_hint": "1e-260"
+      },
+      "expect": {
+        "payload": "1e-260"
+      }
+    },
+    {
+      "id": "float-format-09f3ae3591f5b4da",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "09f3ae3591f5b4da",
+        "repr_hint": "1.0000000000000001e-260"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-260"
+      }
+    },
+    {
+      "id": "float-format-09f3ae3591f5b4d8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "09f3ae3591f5b4d8",
+        "repr_hint": "9.999999999999998e-261"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-261"
+      }
+    },
+    {
+      "id": "float-format-0b677603725064a8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0b677603725064a8",
+        "repr_hint": "1e-253"
+      },
+      "expect": {
+        "payload": "1e-253"
+      }
+    },
+    {
+      "id": "float-format-0b677603725064a9",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0b677603725064a9",
+        "repr_hint": "1.0000000000000002e-253"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-253"
+      }
+    },
+    {
+      "id": "float-format-0b677603725064a7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0b677603725064a7",
+        "repr_hint": "9.999999999999999e-254"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-254"
+      }
+    },
+    {
+      "id": "float-format-0cdbf7b9d9cce00d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0cdbf7b9d9cce00d",
+        "repr_hint": "1e-246"
+      },
+      "expect": {
+        "payload": "1e-246"
+      }
+    },
+    {
+      "id": "float-format-0cdbf7b9d9cce00e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0cdbf7b9d9cce00e",
+        "repr_hint": "1.0000000000000001e-246"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-246"
+      }
+    },
+    {
+      "id": "float-format-0cdbf7b9d9cce00c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0cdbf7b9d9cce00c",
+        "repr_hint": "9.999999999999998e-247"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-247"
+      }
+    },
+    {
+      "id": "float-format-0e50ab877c142ffa",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0e50ab877c142ffa",
+        "repr_hint": "1e-239"
+      },
+      "expect": {
+        "payload": "1e-239"
+      }
+    },
+    {
+      "id": "float-format-0e50ab877c142ffb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0e50ab877c142ffb",
+        "repr_hint": "1.0000000000000003e-239"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e-239"
+      }
+    },
+    {
+      "id": "float-format-0e50ab877c142ff9",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0e50ab877c142ff9",
+        "repr_hint": "9.999999999999999e-240"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-240"
+      }
+    },
+    {
+      "id": "float-format-0fc3df4a91a4dcb5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0fc3df4a91a4dcb5",
+        "repr_hint": "1e-232"
+      },
+      "expect": {
+        "payload": "1e-232"
+      }
+    },
+    {
+      "id": "float-format-0fc3df4a91a4dcb6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0fc3df4a91a4dcb6",
+        "repr_hint": "1.0000000000000002e-232"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-232"
+      }
+    },
+    {
+      "id": "float-format-0fc3df4a91a4dcb4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0fc3df4a91a4dcb4",
+        "repr_hint": "9.999999999999998e-233"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-233"
+      }
+    },
+    {
+      "id": "float-format-1137b08617a104ee",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1137b08617a104ee",
+        "repr_hint": "1e-225"
+      },
+      "expect": {
+        "payload": "1e-225"
+      }
+    },
+    {
+      "id": "float-format-1137b08617a104ef",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1137b08617a104ef",
+        "repr_hint": "1.0000000000000001e-225"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-225"
+      }
+    },
+    {
+      "id": "float-format-1137b08617a104ed",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1137b08617a104ed",
+        "repr_hint": "9.999999999999998e-226"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-226"
+      }
+    },
+    {
+      "id": "float-format-12ac3d79c9b8fe2e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "12ac3d79c9b8fe2e",
+        "repr_hint": "1e-218"
+      },
+      "expect": {
+        "payload": "1e-218"
+      }
+    },
+    {
+      "id": "float-format-12ac3d79c9b8fe2f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "12ac3d79c9b8fe2f",
+        "repr_hint": "1.0000000000000002e-218"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-218"
+      }
+    },
+    {
+      "id": "float-format-12ac3d79c9b8fe2d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "12ac3d79c9b8fe2d",
+        "repr_hint": "9.999999999999999e-219"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-219"
+      }
+    },
+    {
+      "id": "float-format-1420d51a73deee2d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1420d51a73deee2d",
+        "repr_hint": "1e-211"
+      },
+      "expect": {
+        "payload": "1e-211"
+      }
+    },
+    {
+      "id": "float-format-1420d51a73deee2e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1420d51a73deee2e",
+        "repr_hint": "1.0000000000000003e-211"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e-211"
+      }
+    },
+    {
+      "id": "float-format-1420d51a73deee2c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1420d51a73deee2c",
+        "repr_hint": "9.999999999999999e-212"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-212"
+      }
+    },
+    {
+      "id": "float-format-159410d9f9b2f7f3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "159410d9f9b2f7f3",
+        "repr_hint": "1e-204"
+      },
+      "expect": {
+        "payload": "1e-204"
+      }
+    },
+    {
+      "id": "float-format-159410d9f9b2f7f4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "159410d9f9b2f7f4",
+        "repr_hint": "1.0000000000000002e-204"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-204"
+      }
+    },
+    {
+      "id": "float-format-159410d9f9b2f7f2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "159410d9f9b2f7f2",
+        "repr_hint": "9.999999999999998e-205"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-205"
+      }
+    },
+    {
+      "id": "float-format-1707eb9aa8cf1dde",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1707eb9aa8cf1dde",
+        "repr_hint": "1e-197"
+      },
+      "expect": {
+        "payload": "1e-197"
+      }
+    },
+    {
+      "id": "float-format-1707eb9aa8cf1ddf",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1707eb9aa8cf1ddf",
+        "repr_hint": "1.0000000000000001e-197"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-197"
+      }
+    },
+    {
+      "id": "float-format-1707eb9aa8cf1ddd",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1707eb9aa8cf1ddd",
+        "repr_hint": "9.999999999999998e-198"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-198"
+      }
+    },
+    {
+      "id": "float-format-187c83e7ad4e6efe",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "187c83e7ad4e6efe",
+        "repr_hint": "1e-190"
+      },
+      "expect": {
+        "payload": "1e-190"
+      }
+    },
+    {
+      "id": "float-format-187c83e7ad4e6eff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "187c83e7ad4e6eff",
+        "repr_hint": "1.0000000000000001e-190"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-190"
+      }
+    },
+    {
+      "id": "float-format-187c83e7ad4e6efd",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "187c83e7ad4e6efd",
+        "repr_hint": "9.999999999999999e-191"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-191"
+      }
+    },
+    {
+      "id": "float-format-19f0ff151a99f483",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "19f0ff151a99f483",
+        "repr_hint": "1e-183"
+      },
+      "expect": {
+        "payload": "1e-183"
+      }
+    },
+    {
+      "id": "float-format-19f0ff151a99f484",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "19f0ff151a99f484",
+        "repr_hint": "1.0000000000000002e-183"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-183"
+      }
+    },
+    {
+      "id": "float-format-19f0ff151a99f482",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "19f0ff151a99f482",
+        "repr_hint": "9.999999999999998e-184"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-184"
+      }
+    },
+    {
+      "id": "float-format-1b6442e4fb671960",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1b6442e4fb671960",
+        "repr_hint": "1e-176"
+      },
+      "expect": {
+        "payload": "1e-176"
+      }
+    },
+    {
+      "id": "float-format-1b6442e4fb671961",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1b6442e4fb671961",
+        "repr_hint": "1.0000000000000002e-176"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-176"
+      }
+    },
+    {
+      "id": "float-format-1b6442e4fb67195f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1b6442e4fb67195f",
+        "repr_hint": "9.999999999999998e-177"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-177"
+      }
+    },
+    {
+      "id": "float-format-1cd8274291c6065b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1cd8274291c6065b",
+        "repr_hint": "1e-169"
+      },
+      "expect": {
+        "payload": "1e-169"
+      }
+    },
+    {
+      "id": "float-format-1cd8274291c6065c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1cd8274291c6065c",
+        "repr_hint": "1.0000000000000002e-169"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-169"
+      }
+    },
+    {
+      "id": "float-format-1cd8274291c6065a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1cd8274291c6065a",
+        "repr_hint": "9.999999999999999e-170"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-170"
+      }
+    },
+    {
+      "id": "float-format-1e4ccb0536608d61",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1e4ccb0536608d61",
+        "repr_hint": "1e-162"
+      },
+      "expect": {
+        "payload": "1e-162"
+      }
+    },
+    {
+      "id": "float-format-1e4ccb0536608d62",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1e4ccb0536608d62",
+        "repr_hint": "1.0000000000000001e-162"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-162"
+      }
+    },
+    {
+      "id": "float-format-1e4ccb0536608d60",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1e4ccb0536608d60",
+        "repr_hint": "9.999999999999998e-163"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-163"
+      }
+    },
+    {
+      "id": "float-format-1fc1297872d9cbb5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1fc1297872d9cbb5",
+        "repr_hint": "1e-155"
+      },
+      "expect": {
+        "payload": "1e-155"
+      }
+    },
+    {
+      "id": "float-format-1fc1297872d9cbb6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1fc1297872d9cbb6",
+        "repr_hint": "1.0000000000000002e-155"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-155"
+      }
+    },
+    {
+      "id": "float-format-1fc1297872d9cbb4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "1fc1297872d9cbb4",
+        "repr_hint": "9.999999999999998e-156"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-156"
+      }
+    },
+    {
+      "id": "float-format-2134756ccb01abfb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2134756ccb01abfb",
+        "repr_hint": "1e-148"
+      },
+      "expect": {
+        "payload": "1e-148"
+      }
+    },
+    {
+      "id": "float-format-2134756ccb01abfc",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2134756ccb01abfc",
+        "repr_hint": "1.0000000000000001e-148"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-148"
+      }
+    },
+    {
+      "id": "float-format-2134756ccb01abfa",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2134756ccb01abfa",
+        "repr_hint": "9.999999999999998e-149"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-149"
+      }
+    },
+    {
+      "id": "float-format-22a8637f41fcad32",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "22a8637f41fcad32",
+        "repr_hint": "1e-141"
+      },
+      "expect": {
+        "payload": "1e-141"
+      }
+    },
+    {
+      "id": "float-format-22a8637f41fcad33",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "22a8637f41fcad33",
+        "repr_hint": "1.0000000000000002e-141"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-141"
+      }
+    },
+    {
+      "id": "float-format-22a8637f41fcad31",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "22a8637f41fcad31",
+        "repr_hint": "9.999999999999999e-142"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-142"
+      }
+    },
+    {
+      "id": "float-format-241d12d41afca3c3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "241d12d41afca3c3",
+        "repr_hint": "1e-134"
+      },
+      "expect": {
+        "payload": "1e-134"
+      }
+    },
+    {
+      "id": "float-format-241d12d41afca3c4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "241d12d41afca3c4",
+        "repr_hint": "1.0000000000000002e-134"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-134"
+      }
+    },
+    {
+      "id": "float-format-241d12d41afca3c2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "241d12d41afca3c2",
+        "repr_hint": "9.999999999999999e-135"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-135"
+      }
+    },
+    {
+      "id": "float-format-2591544581b7dec2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2591544581b7dec2",
+        "repr_hint": "1e-127"
+      },
+      "expect": {
+        "payload": "1e-127"
+      }
+    },
+    {
+      "id": "float-format-2591544581b7dec3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2591544581b7dec3",
+        "repr_hint": "1.0000000000000002e-127"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-127"
+      }
+    },
+    {
+      "id": "float-format-2591544581b7dec1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2591544581b7dec1",
+        "repr_hint": "9.999999999999998e-128"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-128"
+      }
+    },
+    {
+      "id": "float-format-2704a8729fc3ddb7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2704a8729fc3ddb7",
+        "repr_hint": "1e-120"
+      },
+      "expect": {
+        "payload": "1e-120"
+      }
+    },
+    {
+      "id": "float-format-2704a8729fc3ddb8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2704a8729fc3ddb8",
+        "repr_hint": "1.0000000000000002e-120"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-120"
+      }
+    },
+    {
+      "id": "float-format-2704a8729fc3ddb6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2704a8729fc3ddb6",
+        "repr_hint": "9.999999999999998e-121"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-121"
+      }
+    },
+    {
+      "id": "float-format-2878a0522c7e7095",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2878a0522c7e7095",
+        "repr_hint": "1e-113"
+      },
+      "expect": {
+        "payload": "1e-113"
+      }
+    },
+    {
+      "id": "float-format-2878a0522c7e7096",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2878a0522c7e7096",
+        "repr_hint": "1.0000000000000001e-113"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-113"
+      }
+    },
+    {
+      "id": "float-format-2878a0522c7e7094",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2878a0522c7e7094",
+        "repr_hint": "9.999999999999998e-114"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-114"
+      }
+    },
+    {
+      "id": "float-format-29ed5b561574765b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "29ed5b561574765b",
+        "repr_hint": "1e-106"
+      },
+      "expect": {
+        "payload": "1e-106"
+      }
+    },
+    {
+      "id": "float-format-29ed5b561574765c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "29ed5b561574765c",
+        "repr_hint": "1.0000000000000001e-106"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-106"
+      }
+    },
+    {
+      "id": "float-format-29ed5b561574765a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "29ed5b561574765a",
+        "repr_hint": "9.999999999999998e-107"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-107"
+      }
+    },
+    {
+      "id": "float-format-2b617f7d4ed8c33e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2b617f7d4ed8c33e",
+        "repr_hint": "1e-99"
+      },
+      "expect": {
+        "payload": "1e-99"
+      }
+    },
+    {
+      "id": "float-format-2b617f7d4ed8c33f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2b617f7d4ed8c33f",
+        "repr_hint": "1.0000000000000002e-99"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-99"
+      }
+    },
+    {
+      "id": "float-format-2b617f7d4ed8c33d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2b617f7d4ed8c33d",
+        "repr_hint": "9.999999999999998e-100"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-100"
+      }
+    },
+    {
+      "id": "float-format-2cd4dbf7b3f71cb7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2cd4dbf7b3f71cb7",
+        "repr_hint": "1e-92"
+      },
+      "expect": {
+        "payload": "1e-92"
+      }
+    },
+    {
+      "id": "float-format-2cd4dbf7b3f71cb8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2cd4dbf7b3f71cb8",
+        "repr_hint": "1.0000000000000002e-92"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-92"
+      }
+    },
+    {
+      "id": "float-format-2cd4dbf7b3f71cb6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2cd4dbf7b3f71cb6",
+        "repr_hint": "9.999999999999998e-93"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-93"
+      }
+    },
+    {
+      "id": "float-format-2e48ddbcc7f40ba6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2e48ddbcc7f40ba6",
+        "repr_hint": "1e-85"
+      },
+      "expect": {
+        "payload": "1e-85"
+      }
+    },
+    {
+      "id": "float-format-2e48ddbcc7f40ba7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2e48ddbcc7f40ba7",
+        "repr_hint": "1.0000000000000001e-85"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-85"
+      }
+    },
+    {
+      "id": "float-format-2e48ddbcc7f40ba5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2e48ddbcc7f40ba5",
+        "repr_hint": "9.999999999999998e-86"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-86"
+      }
+    },
+    {
+      "id": "float-format-2fbda48ce468e7c7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2fbda48ce468e7c7",
+        "repr_hint": "1e-78"
+      },
+      "expect": {
+        "payload": "1e-78"
+      }
+    },
+    {
+      "id": "float-format-2fbda48ce468e7c8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2fbda48ce468e7c8",
+        "repr_hint": "1.0000000000000001e-78"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-78"
+      }
+    },
+    {
+      "id": "float-format-2fbda48ce468e7c6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2fbda48ce468e7c6",
+        "repr_hint": "9.999999999999999e-79"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-79"
+      }
+    },
+    {
+      "id": "float-format-3131ab20e472914a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3131ab20e472914a",
+        "repr_hint": "1e-71"
+      },
+      "expect": {
+        "payload": "1e-71"
+      }
+    },
+    {
+      "id": "float-format-3131ab20e472914b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3131ab20e472914b",
+        "repr_hint": "1.0000000000000001e-71"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-71"
+      }
+    },
+    {
+      "id": "float-format-3131ab20e4729149",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3131ab20e4729149",
+        "repr_hint": "9.999999999999997e-72"
+      },
+      "expect": {
+        "payload": "9.999999999999997e-72"
+      }
+    },
+    {
+      "id": "float-format-32a50ffd44f4a73d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "32a50ffd44f4a73d",
+        "repr_hint": "1e-64"
+      },
+      "expect": {
+        "payload": "1e-64"
+      }
+    },
+    {
+      "id": "float-format-32a50ffd44f4a73e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "32a50ffd44f4a73e",
+        "repr_hint": "1.0000000000000001e-64"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-64"
+      }
+    },
+    {
+      "id": "float-format-32a50ffd44f4a73c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "32a50ffd44f4a73c",
+        "repr_hint": "9.999999999999998e-65"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-65"
+      }
+    },
+    {
+      "id": "float-format-34191bc08eac9a41",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "34191bc08eac9a41",
+        "repr_hint": "1e-57"
+      },
+      "expect": {
+        "payload": "1e-57"
+      }
+    },
+    {
+      "id": "float-format-34191bc08eac9a42",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "34191bc08eac9a42",
+        "repr_hint": "1.0000000000000001e-57"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-57"
+      }
+    },
+    {
+      "id": "float-format-34191bc08eac9a40",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "34191bc08eac9a40",
+        "repr_hint": "9.999999999999998e-58"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-58"
+      }
+    },
+    {
+      "id": "float-format-358dee7a4ad4b81f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "358dee7a4ad4b81f",
+        "repr_hint": "1e-50"
+      },
+      "expect": {
+        "payload": "1e-50"
+      }
+    },
+    {
+      "id": "float-format-358dee7a4ad4b820",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "358dee7a4ad4b820",
+        "repr_hint": "1.0000000000000001e-50"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-50"
+      }
+    },
+    {
+      "id": "float-format-358dee7a4ad4b81e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "358dee7a4ad4b81e",
+        "repr_hint": "9.999999999999999e-51"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-51"
+      }
+    },
+    {
+      "id": "float-format-3701d7314f534b61",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3701d7314f534b61",
+        "repr_hint": "1e-43"
+      },
+      "expect": {
+        "payload": "1e-43"
+      }
+    },
+    {
+      "id": "float-format-3701d7314f534b62",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3701d7314f534b62",
+        "repr_hint": "1.0000000000000003e-43"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e-43"
+      }
+    },
+    {
+      "id": "float-format-3701d7314f534b60",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3701d7314f534b60",
+        "repr_hint": "9.999999999999999e-44"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-44"
+      }
+    },
+    {
+      "id": "float-format-38754484932d2e72",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "38754484932d2e72",
+        "repr_hint": "1e-36"
+      },
+      "expect": {
+        "payload": "1e-36"
+      }
+    },
+    {
+      "id": "float-format-38754484932d2e73",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "38754484932d2e73",
+        "repr_hint": "1.0000000000000001e-36"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-36"
+      }
+    },
+    {
+      "id": "float-format-38754484932d2e71",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "38754484932d2e71",
+        "repr_hint": "9.999999999999998e-37"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-37"
+      }
+    },
+    {
+      "id": "float-format-39e95a5efea6b347",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "39e95a5efea6b347",
+        "repr_hint": "1e-29"
+      },
+      "expect": {
+        "payload": "1e-29"
+      }
+    },
+    {
+      "id": "float-format-39e95a5efea6b348",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "39e95a5efea6b348",
+        "repr_hint": "1.0000000000000001e-29"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e-29"
+      }
+    },
+    {
+      "id": "float-format-39e95a5efea6b346",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "39e95a5efea6b346",
+        "repr_hint": "9.999999999999998e-30"
+      },
+      "expect": {
+        "payload": "9.999999999999998e-30"
+      }
+    },
+    {
+      "id": "float-format-3b5e392010175ee6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3b5e392010175ee6",
+        "repr_hint": "1e-22"
+      },
+      "expect": {
+        "payload": "1e-22"
+      }
+    },
+    {
+      "id": "float-format-3b5e392010175ee7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3b5e392010175ee7",
+        "repr_hint": "1.0000000000000002e-22"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-22"
+      }
+    },
+    {
+      "id": "float-format-3b5e392010175ee5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3b5e392010175ee5",
+        "repr_hint": "9.999999999999999e-23"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-23"
+      }
+    },
+    {
+      "id": "float-format-3cd203af9ee75616",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3cd203af9ee75616",
+        "repr_hint": "1e-15"
+      },
+      "expect": {
+        "payload": "1e-15"
+      }
+    },
+    {
+      "id": "float-format-3cd203af9ee75617",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3cd203af9ee75617",
+        "repr_hint": "1.0000000000000003e-15"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e-15"
+      }
+    },
+    {
+      "id": "float-format-3cd203af9ee75615",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3cd203af9ee75615",
+        "repr_hint": "9.999999999999999e-16"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-16"
+      }
+    },
+    {
+      "id": "float-format-3e45798ee2308c3a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e45798ee2308c3a",
+        "repr_hint": "1e-08"
+      },
+      "expect": {
+        "payload": "1e-08"
+      }
+    },
+    {
+      "id": "float-format-3e45798ee2308c3b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e45798ee2308c3b",
+        "repr_hint": "1.0000000000000002e-08"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e-08"
+      }
+    },
+    {
+      "id": "float-format-3e45798ee2308c39",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e45798ee2308c39",
+        "repr_hint": "9.999999999999999e-09"
+      },
+      "expect": {
+        "payload": "9.999999999999999e-09"
+      }
+    },
+    {
+      "id": "float-format-3fb999999999999b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fb999999999999b",
+        "repr_hint": "0.10000000000000002"
+      },
+      "expect": {
+        "payload": "0.10000000000000002"
+      }
+    },
+    {
+      "id": "float-format-3fb9999999999999",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fb9999999999999",
+        "repr_hint": "0.09999999999999999"
+      },
+      "expect": {
+        "payload": "0.09999999999999999"
+      }
+    },
+    {
+      "id": "float-format-412e848000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412e848000000000",
+        "repr_hint": "1000000.0"
+      },
+      "expect": {
+        "payload": "1000000.0"
+      }
+    },
+    {
+      "id": "float-format-412e848000000001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412e848000000001",
+        "repr_hint": "1000000.0000000001"
+      },
+      "expect": {
+        "payload": "1000000.0000000001"
+      }
+    },
+    {
+      "id": "float-format-412e847fffffffff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412e847fffffffff",
+        "repr_hint": "999999.9999999999"
+      },
+      "expect": {
+        "payload": "999999.9999999999"
+      }
+    },
+    {
+      "id": "float-format-42a2309ce5400000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42a2309ce5400000",
+        "repr_hint": "10000000000000.0"
+      },
+      "expect": {
+        "payload": "10000000000000.0"
+      }
+    },
+    {
+      "id": "float-format-42a2309ce5400001",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42a2309ce5400001",
+        "repr_hint": "10000000000000.002"
+      },
+      "expect": {
+        "payload": "10000000000000.002"
+      }
+    },
+    {
+      "id": "float-format-42a2309ce53fffff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42a2309ce53fffff",
+        "repr_hint": "9999999999999.998"
+      },
+      "expect": {
+        "payload": "9999999999999.998"
+      }
+    },
+    {
+      "id": "float-format-4415af1d78b58c40",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4415af1d78b58c40",
+        "repr_hint": "1e+20"
+      },
+      "expect": {
+        "payload": "1e20"
+      }
+    },
+    {
+      "id": "float-format-4415af1d78b58c41",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4415af1d78b58c41",
+        "repr_hint": "1.0000000000000002e+20"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e20"
+      }
+    },
+    {
+      "id": "float-format-4415af1d78b58c3f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4415af1d78b58c3f",
+        "repr_hint": "9.999999999999998e+19"
+      },
+      "expect": {
+        "payload": "9.999999999999998e19"
+      }
+    },
+    {
+      "id": "float-format-4589d971e4fe8402",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4589d971e4fe8402",
+        "repr_hint": "1e+27"
+      },
+      "expect": {
+        "payload": "1e27"
+      }
+    },
+    {
+      "id": "float-format-4589d971e4fe8403",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4589d971e4fe8403",
+        "repr_hint": "1.0000000000000002e+27"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e27"
+      }
+    },
+    {
+      "id": "float-format-4589d971e4fe8401",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4589d971e4fe8401",
+        "repr_hint": "9.999999999999999e+26"
+      },
+      "expect": {
+        "payload": "9.999999999999999e26"
+      }
+    },
+    {
+      "id": "float-format-46fed09bead87c03",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "46fed09bead87c03",
+        "repr_hint": "1e+34"
+      },
+      "expect": {
+        "payload": "1e34"
+      }
+    },
+    {
+      "id": "float-format-46fed09bead87c04",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "46fed09bead87c04",
+        "repr_hint": "1.0000000000000001e+34"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e34"
+      }
+    },
+    {
+      "id": "float-format-46fed09bead87c02",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "46fed09bead87c02",
+        "repr_hint": "9.999999999999998e+33"
+      },
+      "expect": {
+        "payload": "9.999999999999998e33"
+      }
+    },
+    {
+      "id": "float-format-48725dfa371a19e7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "48725dfa371a19e7",
+        "repr_hint": "1e+41"
+      },
+      "expect": {
+        "payload": "1e41"
+      }
+    },
+    {
+      "id": "float-format-48725dfa371a19e8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "48725dfa371a19e8",
+        "repr_hint": "1.0000000000000002e+41"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e41"
+      }
+    },
+    {
+      "id": "float-format-48725dfa371a19e6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "48725dfa371a19e6",
+        "repr_hint": "9.999999999999998e+40"
+      },
+      "expect": {
+        "payload": "9.999999999999998e40"
+      }
+    },
+    {
+      "id": "float-format-49e5e531a0a1c873",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "49e5e531a0a1c873",
+        "repr_hint": "1e+48"
+      },
+      "expect": {
+        "payload": "1e48"
+      }
+    },
+    {
+      "id": "float-format-49e5e531a0a1c874",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "49e5e531a0a1c874",
+        "repr_hint": "1.0000000000000002e+48"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e48"
+      }
+    },
+    {
+      "id": "float-format-49e5e531a0a1c872",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "49e5e531a0a1c872",
+        "repr_hint": "9.999999999999999e+47"
+      },
+      "expect": {
+        "payload": "9.999999999999999e47"
+      }
+    },
+    {
+      "id": "float-format-4b5a19e96a19fc41",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4b5a19e96a19fc41",
+        "repr_hint": "1e+55"
+      },
+      "expect": {
+        "payload": "1e55"
+      }
+    },
+    {
+      "id": "float-format-4b5a19e96a19fc42",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4b5a19e96a19fc42",
+        "repr_hint": "1.0000000000000001e+55"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e55"
+      }
+    },
+    {
+      "id": "float-format-4b5a19e96a19fc40",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4b5a19e96a19fc40",
+        "repr_hint": "9.999999999999999e+54"
+      },
+      "expect": {
+        "payload": "9.999999999999999e54"
+      }
+    },
+    {
+      "id": "float-format-4ccf1d75a5709c1b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4ccf1d75a5709c1b",
+        "repr_hint": "1e+62"
+      },
+      "expect": {
+        "payload": "1e62"
+      }
+    },
+    {
+      "id": "float-format-4ccf1d75a5709c1c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4ccf1d75a5709c1c",
+        "repr_hint": "1.0000000000000001e+62"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e62"
+      }
+    },
+    {
+      "id": "float-format-4ccf1d75a5709c1a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4ccf1d75a5709c1a",
+        "repr_hint": "9.999999999999999e+61"
+      },
+      "expect": {
+        "payload": "9.999999999999999e61"
+      }
+    },
+    {
+      "id": "float-format-4e428bc8abe49f64",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4e428bc8abe49f64",
+        "repr_hint": "1e+69"
+      },
+      "expect": {
+        "payload": "1e69"
+      }
+    },
+    {
+      "id": "float-format-4e428bc8abe49f65",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4e428bc8abe49f65",
+        "repr_hint": "1.0000000000000003e+69"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e69"
+      }
+    },
+    {
+      "id": "float-format-4e428bc8abe49f63",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4e428bc8abe49f63",
+        "repr_hint": "9.999999999999999e+68"
+      },
+      "expect": {
+        "payload": "9.999999999999999e68"
+      }
+    },
+    {
+      "id": "float-format-4fb61bcca7119916",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4fb61bcca7119916",
+        "repr_hint": "1e+76"
+      },
+      "expect": {
+        "payload": "1e76"
+      }
+    },
+    {
+      "id": "float-format-4fb61bcca7119917",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4fb61bcca7119917",
+        "repr_hint": "1.0000000000000002e+76"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e76"
+      }
+    },
+    {
+      "id": "float-format-4fb61bcca7119915",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4fb61bcca7119915",
+        "repr_hint": "9.999999999999999e+75"
+      },
+      "expect": {
+        "payload": "9.999999999999999e75"
+      }
+    },
+    {
+      "id": "float-format-512a5b01b605557b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "512a5b01b605557b",
+        "repr_hint": "1e+83"
+      },
+      "expect": {
+        "payload": "1e83"
+      }
+    },
+    {
+      "id": "float-format-512a5b01b605557c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "512a5b01b605557c",
+        "repr_hint": "1.0000000000000002e+83"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e83"
+      }
+    },
+    {
+      "id": "float-format-512a5b01b605557a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "512a5b01b605557a",
+        "repr_hint": "9.999999999999999e+82"
+      },
+      "expect": {
+        "payload": "9.999999999999999e82"
+      }
+    },
+    {
+      "id": "float-format-529f6b0f092959c7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "529f6b0f092959c7",
+        "repr_hint": "1e+90"
+      },
+      "expect": {
+        "payload": "1e90"
+      }
+    },
+    {
+      "id": "float-format-529f6b0f092959c8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "529f6b0f092959c8",
+        "repr_hint": "1.0000000000000001e+90"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e90"
+      }
+    },
+    {
+      "id": "float-format-529f6b0f092959c6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "529f6b0f092959c6",
+        "repr_hint": "9.999999999999999e+89"
+      },
+      "expect": {
+        "payload": "9.999999999999999e89"
+      }
+    },
+    {
+      "id": "float-format-5412ba095dc7701e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5412ba095dc7701e",
+        "repr_hint": "1e+97"
+      },
+      "expect": {
+        "payload": "1e97"
+      }
+    },
+    {
+      "id": "float-format-5412ba095dc7701f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5412ba095dc7701f",
+        "repr_hint": "1.0000000000000003e+97"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e97"
+      }
+    },
+    {
+      "id": "float-format-5412ba095dc7701d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5412ba095dc7701d",
+        "repr_hint": "9.999999999999999e+96"
+      },
+      "expect": {
+        "payload": "9.999999999999999e96"
+      }
+    },
+    {
+      "id": "float-format-558652efdc6018a2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "558652efdc6018a2",
+        "repr_hint": "1e+104"
+      },
+      "expect": {
+        "payload": "1e104"
+      }
+    },
+    {
+      "id": "float-format-558652efdc6018a3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "558652efdc6018a3",
+        "repr_hint": "1.0000000000000002e+104"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e104"
+      }
+    },
+    {
+      "id": "float-format-558652efdc6018a1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "558652efdc6018a1",
+        "repr_hint": "9.999999999999998e+103"
+      },
+      "expect": {
+        "payload": "9.999999999999998e103"
+      }
+    },
+    {
+      "id": "float-format-56fa9cbc59b83a3d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "56fa9cbc59b83a3d",
+        "repr_hint": "1e+111"
+      },
+      "expect": {
+        "payload": "1e111"
+      }
+    },
+    {
+      "id": "float-format-56fa9cbc59b83a3e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "56fa9cbc59b83a3e",
+        "repr_hint": "1.0000000000000001e+111"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e111"
+      }
+    },
+    {
+      "id": "float-format-56fa9cbc59b83a3c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "56fa9cbc59b83a3c",
+        "repr_hint": "9.999999999999998e+110"
+      },
+      "expect": {
+        "payload": "9.999999999999998e110"
+      }
+    },
+    {
+      "id": "float-format-586fb969f40042c5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "586fb969f40042c5",
+        "repr_hint": "1e+118"
+      },
+      "expect": {
+        "payload": "1e118"
+      }
+    },
+    {
+      "id": "float-format-586fb969f40042c6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "586fb969f40042c6",
+        "repr_hint": "1.0000000000000001e+118"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e118"
+      }
+    },
+    {
+      "id": "float-format-586fb969f40042c4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "586fb969f40042c4",
+        "repr_hint": "9.999999999999999e+117"
+      },
+      "expect": {
+        "payload": "9.999999999999999e117"
+      }
+    },
+    {
+      "id": "float-format-59e2e8bd69aa19cc",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "59e2e8bd69aa19cc",
+        "repr_hint": "1e+125"
+      },
+      "expect": {
+        "payload": "1e125"
+      }
+    },
+    {
+      "id": "float-format-59e2e8bd69aa19cd",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "59e2e8bd69aa19cd",
+        "repr_hint": "1.0000000000000001e+125"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e125"
+      }
+    },
+    {
+      "id": "float-format-59e2e8bd69aa19cb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "59e2e8bd69aa19cb",
+        "repr_hint": "9.999999999999997e+124"
+      },
+      "expect": {
+        "payload": "9.999999999999997e124"
+      }
+    },
+    {
+      "id": "float-format-5b568a9c942f3ba3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5b568a9c942f3ba3",
+        "repr_hint": "1e+132"
+      },
+      "expect": {
+        "payload": "1e132"
+      }
+    },
+    {
+      "id": "float-format-5b568a9c942f3ba4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5b568a9c942f3ba4",
+        "repr_hint": "1.0000000000000001e+132"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e132"
+      }
+    },
+    {
+      "id": "float-format-5b568a9c942f3ba2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5b568a9c942f3ba2",
+        "repr_hint": "9.999999999999998e+131"
+      },
+      "expect": {
+        "payload": "9.999999999999998e131"
+      }
+    },
+    {
+      "id": "float-format-5ccadf1aea12525b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5ccadf1aea12525b",
+        "repr_hint": "1e+139"
+      },
+      "expect": {
+        "payload": "1e139"
+      }
+    },
+    {
+      "id": "float-format-5ccadf1aea12525c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5ccadf1aea12525c",
+        "repr_hint": "1.0000000000000002e+139"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e139"
+      }
+    },
+    {
+      "id": "float-format-5ccadf1aea12525a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5ccadf1aea12525a",
+        "repr_hint": "9.999999999999999e+138"
+      },
+      "expect": {
+        "payload": "9.999999999999999e138"
+      }
+    },
+    {
+      "id": "float-format-5e400444244d7cab",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5e400444244d7cab",
+        "repr_hint": "1e+146"
+      },
+      "expect": {
+        "payload": "1e146"
+      }
+    },
+    {
+      "id": "float-format-5e400444244d7cac",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5e400444244d7cac",
+        "repr_hint": "1.0000000000000002e+146"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e146"
+      }
+    },
+    {
+      "id": "float-format-5e400444244d7caa",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5e400444244d7caa",
+        "repr_hint": "9.999999999999997e+145"
+      },
+      "expect": {
+        "payload": "9.999999999999997e145"
+      }
+    },
+    {
+      "id": "float-format-5fb317e5ef3ab327",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5fb317e5ef3ab327",
+        "repr_hint": "1e+153"
+      },
+      "expect": {
+        "payload": "1e153"
+      }
+    },
+    {
+      "id": "float-format-5fb317e5ef3ab328",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5fb317e5ef3ab328",
+        "repr_hint": "1.0000000000000002e+153"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e153"
+      }
+    },
+    {
+      "id": "float-format-5fb317e5ef3ab326",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5fb317e5ef3ab326",
+        "repr_hint": "9.999999999999998e+152"
+      },
+      "expect": {
+        "payload": "9.999999999999998e152"
+      }
+    },
+    {
+      "id": "float-format-6126c2d4256ffcc3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6126c2d4256ffcc3",
+        "repr_hint": "1e+160"
+      },
+      "expect": {
+        "payload": "1e160"
+      }
+    },
+    {
+      "id": "float-format-6126c2d4256ffcc4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6126c2d4256ffcc4",
+        "repr_hint": "1.0000000000000002e+160"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e160"
+      }
+    },
+    {
+      "id": "float-format-6126c2d4256ffcc2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6126c2d4256ffcc2",
+        "repr_hint": "9.999999999999999e+159"
+      },
+      "expect": {
+        "payload": "9.999999999999999e159"
+      }
+    },
+    {
+      "id": "float-format-629b221effe500d4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "629b221effe500d4",
+        "repr_hint": "1e+167"
+      },
+      "expect": {
+        "payload": "1e167"
+      }
+    },
+    {
+      "id": "float-format-629b221effe500d5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "629b221effe500d5",
+        "repr_hint": "1.0000000000000002e+167"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e167"
+      }
+    },
+    {
+      "id": "float-format-629b221effe500d3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "629b221effe500d3",
+        "repr_hint": "9.999999999999999e+166"
+      },
+      "expect": {
+        "payload": "9.999999999999999e166"
+      }
+    },
+    {
+      "id": "float-format-64102c35f729689f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "64102c35f729689f",
+        "repr_hint": "1e+174"
+      },
+      "expect": {
+        "payload": "1e174"
+      }
+    },
+    {
+      "id": "float-format-64102c35f72968a0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "64102c35f72968a0",
+        "repr_hint": "1.0000000000000003e+174"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e174"
+      }
+    },
+    {
+      "id": "float-format-64102c35f729689e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "64102c35f729689e",
+        "repr_hint": "9.999999999999998e+173"
+      },
+      "expect": {
+        "payload": "9.999999999999998e173"
+      }
+    },
+    {
+      "id": "float-format-6583478410f4c7ec",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6583478410f4c7ec",
+        "repr_hint": "1e+181"
+      },
+      "expect": {
+        "payload": "1e181"
+      }
+    },
+    {
+      "id": "float-format-6583478410f4c7ed",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6583478410f4c7ed",
+        "repr_hint": "1.0000000000000001e+181"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e181"
+      }
+    },
+    {
+      "id": "float-format-6583478410f4c7eb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6583478410f4c7eb",
+        "repr_hint": "9.999999999999997e+180"
+      },
+      "expect": {
+        "payload": "9.999999999999997e180"
+      }
+    },
+    {
+      "id": "float-format-66f6fb97ea6a9d38",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "66f6fb97ea6a9d38",
+        "repr_hint": "1e+188"
+      },
+      "expect": {
+        "payload": "1e188"
+      }
+    },
+    {
+      "id": "float-format-66f6fb97ea6a9d39",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "66f6fb97ea6a9d39",
+        "repr_hint": "1.0000000000000002e+188"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e188"
+      }
+    },
+    {
+      "id": "float-format-66f6fb97ea6a9d37",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "66f6fb97ea6a9d37",
+        "repr_hint": "9.999999999999999e+187"
+      },
+      "expect": {
+        "payload": "9.999999999999999e187"
+      }
+    },
+    {
+      "id": "float-format-686b65ca37fd3a0d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "686b65ca37fd3a0d",
+        "repr_hint": "1e+195"
+      },
+      "expect": {
+        "payload": "1e195"
+      }
+    },
+    {
+      "id": "float-format-686b65ca37fd3a0e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "686b65ca37fd3a0e",
+        "repr_hint": "1.0000000000000001e+195"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e195"
+      }
+    },
+    {
+      "id": "float-format-686b65ca37fd3a0c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "686b65ca37fd3a0c",
+        "repr_hint": "9.999999999999998e+194"
+      },
+      "expect": {
+        "payload": "9.999999999999998e194"
+      }
+    },
+    {
+      "id": "float-format-69e0548b68a044d6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "69e0548b68a044d6",
+        "repr_hint": "1e+202"
+      },
+      "expect": {
+        "payload": "1e202"
+      }
+    },
+    {
+      "id": "float-format-69e0548b68a044d7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "69e0548b68a044d7",
+        "repr_hint": "1.0000000000000001e+202"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e202"
+      }
+    },
+    {
+      "id": "float-format-69e0548b68a044d5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "69e0548b68a044d5",
+        "repr_hint": "9.999999999999997e+201"
+      },
+      "expect": {
+        "payload": "9.999999999999997e201"
+      }
+    },
+    {
+      "id": "float-format-6b537798f4285630",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6b537798f4285630",
+        "repr_hint": "1e+209"
+      },
+      "expect": {
+        "payload": "1e209"
+      }
+    },
+    {
+      "id": "float-format-6b537798f4285631",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6b537798f4285631",
+        "repr_hint": "1.0000000000000003e+209"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e209"
+      }
+    },
+    {
+      "id": "float-format-6b537798f428562f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6b537798f428562f",
+        "repr_hint": "9.999999999999999e+208"
+      },
+      "expect": {
+        "payload": "9.999999999999999e208"
+      }
+    },
+    {
+      "id": "float-format-6cc734e940c6f9c6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6cc734e940c6f9c6",
+        "repr_hint": "1e+216"
+      },
+      "expect": {
+        "payload": "1e216"
+      }
+    },
+    {
+      "id": "float-format-6cc734e940c6f9c7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6cc734e940c6f9c7",
+        "repr_hint": "1.0000000000000002e+216"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e216"
+      }
+    },
+    {
+      "id": "float-format-6cc734e940c6f9c5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6cc734e940c6f9c5",
+        "repr_hint": "9.999999999999999e+215"
+      },
+      "expect": {
+        "payload": "9.999999999999999e215"
+      }
+    },
+    {
+      "id": "float-format-6e3baa1e332d728f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6e3baa1e332d728f",
+        "repr_hint": "1e+223"
+      },
+      "expect": {
+        "payload": "1e223"
+      }
+    },
+    {
+      "id": "float-format-6e3baa1e332d7290",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6e3baa1e332d7290",
+        "repr_hint": "1.0000000000000002e+223"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e223"
+      }
+    },
+    {
+      "id": "float-format-6e3baa1e332d728e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6e3baa1e332d728e",
+        "repr_hint": "9.999999999999999e+222"
+      },
+      "expect": {
+        "payload": "9.999999999999999e222"
+      }
+    },
+    {
+      "id": "float-format-6fb07d457124123d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6fb07d457124123d",
+        "repr_hint": "1e+230"
+      },
+      "expect": {
+        "payload": "1e230"
+      }
+    },
+    {
+      "id": "float-format-6fb07d457124123e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6fb07d457124123e",
+        "repr_hint": "1.0000000000000003e+230"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e230"
+      }
+    },
+    {
+      "id": "float-format-6fb07d457124123c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "6fb07d457124123c",
+        "repr_hint": "9.999999999999999e+229"
+      },
+      "expect": {
+        "payload": "9.999999999999999e229"
+      }
+    },
+    {
+      "id": "float-format-7123a825c100dd11",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7123a825c100dd11",
+        "repr_hint": "1e+237"
+      },
+      "expect": {
+        "payload": "1e237"
+      }
+    },
+    {
+      "id": "float-format-7123a825c100dd12",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7123a825c100dd12",
+        "repr_hint": "1.0000000000000001e+237"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e237"
+      }
+    },
+    {
+      "id": "float-format-7123a825c100dd10",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7123a825c100dd10",
+        "repr_hint": "9.999999999999998e+236"
+      },
+      "expect": {
+        "payload": "9.999999999999998e236"
+      }
+    },
+    {
+      "id": "float-format-72976ec98994f489",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "72976ec98994f489",
+        "repr_hint": "1e+244"
+      },
+      "expect": {
+        "payload": "1e244"
+      }
+    },
+    {
+      "id": "float-format-72976ec98994f48a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "72976ec98994f48a",
+        "repr_hint": "1.0000000000000002e+244"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e244"
+      }
+    },
+    {
+      "id": "float-format-72976ec98994f488",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "72976ec98994f488",
+        "repr_hint": "9.999999999999999e+243"
+      },
+      "expect": {
+        "payload": "9.999999999999999e243"
+      }
+    },
+    {
+      "id": "float-format-740bef1c9657a686",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "740bef1c9657a686",
+        "repr_hint": "1e+251"
+      },
+      "expect": {
+        "payload": "1e251"
+      }
+    },
+    {
+      "id": "float-format-740bef1c9657a687",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "740bef1c9657a687",
+        "repr_hint": "1.0000000000000002e+251"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e251"
+      }
+    },
+    {
+      "id": "float-format-740bef1c9657a685",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "740bef1c9657a685",
+        "repr_hint": "9.999999999999999e+250"
+      },
+      "expect": {
+        "payload": "9.999999999999999e250"
+      }
+    },
+    {
+      "id": "float-format-7580a6650b926d67",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7580a6650b926d67",
+        "repr_hint": "1e+258"
+      },
+      "expect": {
+        "payload": "1e258"
+      }
+    },
+    {
+      "id": "float-format-7580a6650b926d68",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7580a6650b926d68",
+        "repr_hint": "1.0000000000000003e+258"
+      },
+      "expect": {
+        "payload": "1.0000000000000003e258"
+      }
+    },
+    {
+      "id": "float-format-7580a6650b926d66",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7580a6650b926d66",
+        "repr_hint": "9.999999999999998e+257"
+      },
+      "expect": {
+        "payload": "9.999999999999998e257"
+      }
+    },
+    {
+      "id": "float-format-76f3d92ba28c7d15",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "76f3d92ba28c7d15",
+        "repr_hint": "1e+265"
+      },
+      "expect": {
+        "payload": "1e265"
+      }
+    },
+    {
+      "id": "float-format-76f3d92ba28c7d16",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "76f3d92ba28c7d16",
+        "repr_hint": "1.0000000000000002e+265"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e265"
+      }
+    },
+    {
+      "id": "float-format-76f3d92ba28c7d14",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "76f3d92ba28c7d14",
+        "repr_hint": "9.999999999999999e+264"
+      },
+      "expect": {
+        "payload": "9.999999999999999e264"
+      }
+    },
+    {
+      "id": "float-format-7867a93a2954f3b8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7867a93a2954f3b8",
+        "repr_hint": "1e+272"
+      },
+      "expect": {
+        "payload": "1e272"
+      }
+    },
+    {
+      "id": "float-format-7867a93a2954f3b9",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7867a93a2954f3b9",
+        "repr_hint": "1.0000000000000002e+272"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e272"
+      }
+    },
+    {
+      "id": "float-format-7867a93a2954f3b7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7867a93a2954f3b7",
+        "repr_hint": "9.999999999999999e+271"
+      },
+      "expect": {
+        "payload": "9.999999999999999e271"
+      }
+    },
+    {
+      "id": "float-format-79dc34c70a777a4d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "79dc34c70a777a4d",
+        "repr_hint": "1e+279"
+      },
+      "expect": {
+        "payload": "1e279"
+      }
+    },
+    {
+      "id": "float-format-79dc34c70a777a4e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "79dc34c70a777a4e",
+        "repr_hint": "1.0000000000000002e+279"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e279"
+      }
+    },
+    {
+      "id": "float-format-79dc34c70a777a4c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "79dc34c70a777a4c",
+        "repr_hint": "9.999999999999999e+278"
+      },
+      "expect": {
+        "payload": "9.999999999999999e278"
+      }
+    },
+    {
+      "id": "float-format-7b50cfeb353a97db",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7b50cfeb353a97db",
+        "repr_hint": "1e+286"
+      },
+      "expect": {
+        "payload": "1e286"
+      }
+    },
+    {
+      "id": "float-format-7b50cfeb353a97dc",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7b50cfeb353a97dc",
+        "repr_hint": "1.0000000000000002e+286"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e286"
+      }
+    },
+    {
+      "id": "float-format-7b50cfeb353a97da",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7b50cfeb353a97da",
+        "repr_hint": "9.999999999999998e+285"
+      },
+      "expect": {
+        "payload": "9.999999999999998e285"
+      }
+    },
+    {
+      "id": "float-format-7cc40aabc6c32a38",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7cc40aabc6c32a38",
+        "repr_hint": "1e+293"
+      },
+      "expect": {
+        "payload": "1e293"
+      }
+    },
+    {
+      "id": "float-format-7cc40aabc6c32a39",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7cc40aabc6c32a39",
+        "repr_hint": "1.0000000000000001e+293"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e293"
+      }
+    },
+    {
+      "id": "float-format-7cc40aabc6c32a37",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7cc40aabc6c32a37",
+        "repr_hint": "9.999999999999997e+292"
+      },
+      "expect": {
+        "payload": "9.999999999999997e292"
+      }
+    },
+    {
+      "id": "float-format-7e37e43c8800759d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7e37e43c8800759d",
+        "repr_hint": "1.0000000000000002e+300"
+      },
+      "expect": {
+        "payload": "1.0000000000000002e300"
+      }
+    },
+    {
+      "id": "float-format-7e37e43c8800759b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7e37e43c8800759b",
+        "repr_hint": "9.999999999999999e+299"
+      },
+      "expect": {
+        "payload": "9.999999999999999e299"
+      }
+    },
+    {
+      "id": "float-format-7fac7b1f3cac7433",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7fac7b1f3cac7433",
+        "repr_hint": "1e+307"
+      },
+      "expect": {
+        "payload": "1e307"
+      }
+    },
+    {
+      "id": "float-format-7fac7b1f3cac7434",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7fac7b1f3cac7434",
+        "repr_hint": "1.0000000000000001e+307"
+      },
+      "expect": {
+        "payload": "1.0000000000000001e307"
+      }
+    },
+    {
+      "id": "float-format-7fac7b1f3cac7432",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "7fac7b1f3cac7432",
+        "repr_hint": "9.999999999999999e+306"
+      },
+      "expect": {
+        "payload": "9.999999999999999e306"
+      }
+    },
+    {
+      "id": "float-format-4000000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4000000000000000",
+        "repr_hint": "2.0"
+      },
+      "expect": {
+        "payload": "2.0"
+      }
+    },
+    {
+      "id": "float-format-c000000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c000000000000000",
+        "repr_hint": "-2.0"
+      },
+      "expect": {
+        "payload": "-2.0"
+      }
+    },
+    {
+      "id": "float-format-401c000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "401c000000000000",
+        "repr_hint": "7.0"
+      },
+      "expect": {
+        "payload": "7.0"
+      }
+    },
+    {
+      "id": "float-format-c01c000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c01c000000000000",
+        "repr_hint": "-7.0"
+      },
+      "expect": {
+        "payload": "-7.0"
+      }
+    },
+    {
+      "id": "float-format-4024000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4024000000000000",
+        "repr_hint": "10.0"
+      },
+      "expect": {
+        "payload": "10.0"
+      }
+    },
+    {
+      "id": "float-format-c024000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c024000000000000",
+        "repr_hint": "-10.0"
+      },
+      "expect": {
+        "payload": "-10.0"
+      }
+    },
+    {
+      "id": "float-format-4045000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4045000000000000",
+        "repr_hint": "42.0"
+      },
+      "expect": {
+        "payload": "42.0"
+      }
+    },
+    {
+      "id": "float-format-c045000000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c045000000000000",
+        "repr_hint": "-42.0"
+      },
+      "expect": {
+        "payload": "-42.0"
+      }
+    },
+    {
+      "id": "float-format-408f400000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "408f400000000000",
+        "repr_hint": "1000.0"
+      },
+      "expect": {
+        "payload": "1000.0"
+      }
+    },
+    {
+      "id": "float-format-c08f400000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c08f400000000000",
+        "repr_hint": "-1000.0"
+      },
+      "expect": {
+        "payload": "-1000.0"
+      }
+    },
+    {
+      "id": "float-format-c12e848000000000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12e848000000000",
+        "repr_hint": "-1000000.0"
+      },
+      "expect": {
+        "payload": "-1000000.0"
+      }
+    },
+    {
+      "id": "float-format-430c6bf52633fff8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "430c6bf52633fff8",
+        "repr_hint": "999999999999999.0"
+      },
+      "expect": {
+        "payload": "999999999999999.0"
+      }
+    },
+    {
+      "id": "float-format-c30c6bf52633fff8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c30c6bf52633fff8",
+        "repr_hint": "-999999999999999.0"
+      },
+      "expect": {
+        "payload": "-999999999999999.0"
+      }
+    },
+    {
+      "id": "float-format-c30c6bf526340000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c30c6bf526340000",
+        "repr_hint": "-1000000000000000.0"
+      },
+      "expect": {
+        "payload": "-1000000000000000.0"
+      }
+    },
+    {
+      "id": "float-format-c341c37937e07fff",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c341c37937e07fff",
+        "repr_hint": "-9999999999999998.0"
+      },
+      "expect": {
+        "payload": "-9999999999999998.0"
+      }
+    },
+    {
+      "id": "float-format-4376345785d8a000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4376345785d8a000",
+        "repr_hint": "1e+17"
+      },
+      "expect": {
+        "payload": "1e17"
+      }
+    },
+    {
+      "id": "float-format-c376345785d8a000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c376345785d8a000",
+        "repr_hint": "-1e+17"
+      },
+      "expect": {
+        "payload": "-1e17"
+      }
+    },
+    {
+      "id": "float-format-c11249845f8bfa0a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11249845f8bfa0a",
+        "repr_hint": "-299617.0933074063"
+      },
+      "expect": {
+        "payload": "-299617.0933074063"
+      }
+    },
+    {
+      "id": "float-format-4113c9618a32c398",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4113c9618a32c398",
+        "repr_hint": "324184.38495927444"
+      },
+      "expect": {
+        "payload": "324184.38495927444"
+      }
+    },
+    {
+      "id": "float-format-c12bf16f047b5241",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12bf16f047b5241",
+        "repr_hint": "-915639.5087533669"
+      },
+      "expect": {
+        "payload": "-915639.5087533669"
+      }
+    },
+    {
+      "id": "float-format-41243ccf0f92ef84",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41243ccf0f92ef84",
+        "repr_hint": "663143.5304179047"
+      },
+      "expect": {
+        "payload": "663143.5304179047"
+      }
+    },
+    {
+      "id": "float-format-c11da6090db7d51c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11da6090db7d51c",
+        "repr_hint": "-485762.2633965777"
+      },
+      "expect": {
+        "payload": "-485762.2633965777"
+      }
+    },
+    {
+      "id": "float-format-c10812674977ee98",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c10812674977ee98",
+        "repr_hint": "-197196.9108732834"
+      },
+      "expect": {
+        "payload": "-197196.9108732834"
+      }
+    },
+    {
+      "id": "float-format-c1117ed37d27c2e6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c1117ed37d27c2e6",
+        "repr_hint": "-286644.8722219899"
+      },
+      "expect": {
+        "payload": "-286644.8722219899"
+      }
+    },
+    {
+      "id": "float-format-410f00afae507c38",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "410f00afae507c38",
+        "repr_hint": "253973.9601144509"
+      },
+      "expect": {
+        "payload": "253973.9601144509"
+      }
+    },
+    {
+      "id": "float-format-c123eb97da6da8d0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c123eb97da6da8d0",
+        "repr_hint": "-652747.926617885"
+      },
+      "expect": {
+        "payload": "-652747.926617885"
+      }
+    },
+    {
+      "id": "float-format-c10a30d40e7a8d94",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c10a30d40e7a8d94",
+        "repr_hint": "-214554.50706968887"
+      },
+      "expect": {
+        "payload": "-214554.50706968887"
+      }
+    },
+    {
+      "id": "float-format-c0f6dc94bc60dde0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c0f6dc94bc60dde0",
+        "repr_hint": "-93641.29599081678"
+      },
+      "expect": {
+        "payload": "-93641.29599081678"
+      }
+    },
+    {
+      "id": "float-format-412171757fbc4ed6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412171757fbc4ed6",
+        "repr_hint": "571578.7494835507"
+      },
+      "expect": {
+        "payload": "571578.7494835507"
+      }
+    },
+    {
+      "id": "float-format-40d9b6e03b241560",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40d9b6e03b241560",
+        "repr_hint": "26331.503609677195"
+      },
+      "expect": {
+        "payload": "26331.503609677195"
+      }
+    },
+    {
+      "id": "float-format-c1150bd9e6196160",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c1150bd9e6196160",
+        "repr_hint": "-344822.47470619343"
+      },
+      "expect": {
+        "payload": "-344822.47470619343"
+      }
+    },
+    {
+      "id": "float-format-41099bf87cf49618",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41099bf87cf49618",
+        "repr_hint": "209791.06101338635"
+      },
+      "expect": {
+        "payload": "209791.06101338635"
+      }
+    },
+    {
+      "id": "float-format-c1241e1aa213d2c4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c1241e1aa213d2c4",
+        "repr_hint": "-659213.3165574898"
+      },
+      "expect": {
+        "payload": "-659213.3165574898"
+      }
+    },
+    {
+      "id": "float-format-c112e81e84729cf2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c112e81e84729cf2",
+        "repr_hint": "-309767.62934346416"
+      },
+      "expect": {
+        "payload": "-309767.62934346416"
+      }
+    },
+    {
+      "id": "float-format-c11887c90f8ff582",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11887c90f8ff582",
+        "repr_hint": "-401906.26519759756"
+      },
+      "expect": {
+        "payload": "-401906.26519759756"
+      }
+    },
+    {
+      "id": "float-format-411f721969bb9de8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "411f721969bb9de8",
+        "repr_hint": "515206.3532547639"
+      },
+      "expect": {
+        "payload": "515206.3532547639"
+      }
+    },
+    {
+      "id": "float-format-4115ee443a1bd138",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4115ee443a1bd138",
+        "repr_hint": "359313.0567467394"
+      },
+      "expect": {
+        "payload": "359313.0567467394"
+      }
+    },
+    {
+      "id": "float-format-c129523a0434c716",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c129523a0434c716",
+        "repr_hint": "-829725.0082151617"
+      },
+      "expect": {
+        "payload": "-829725.0082151617"
+      }
+    },
+    {
+      "id": "float-format-c11623b5c2f06a48",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11623b5c2f06a48",
+        "repr_hint": "-362733.44037023606"
+      },
+      "expect": {
+        "payload": "-362733.44037023606"
+      }
+    },
+    {
+      "id": "float-format-41261f2ce412341e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41261f2ce412341e",
+        "repr_hint": "724886.4454513823"
+      },
+      "expect": {
+        "payload": "724886.4454513823"
+      }
+    },
+    {
+      "id": "float-format-c109ee085fd3d3b8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c109ee085fd3d3b8",
+        "repr_hint": "-212417.04679074674"
+      },
+      "expect": {
+        "payload": "-212417.04679074674"
+      }
+    },
+    {
+      "id": "float-format-41152563b93ed17c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41152563b93ed17c",
+        "repr_hint": "346456.9309036953"
+      },
+      "expect": {
+        "payload": "346456.9309036953"
+      }
+    },
+    {
+      "id": "float-format-c0f645efb94e17d0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c0f645efb94e17d0",
+        "repr_hint": "-91230.98274049093"
+      },
+      "expect": {
+        "payload": "-91230.98274049093"
+      }
+    },
+    {
+      "id": "float-format-c126393597a7238e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c126393597a7238e",
+        "repr_hint": "-728218.7961970435"
+      },
+      "expect": {
+        "payload": "-728218.7961970435"
+      }
+    },
+    {
+      "id": "float-format-411d0b5c9946bdf0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "411d0b5c9946bdf0",
+        "repr_hint": "475863.1496839216"
+      },
+      "expect": {
+        "payload": "475863.1496839216"
+      }
+    },
+    {
+      "id": "float-format-40fdcc8fbeb6f830",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40fdcc8fbeb6f830",
+        "repr_hint": "122056.98406121205"
+      },
+      "expect": {
+        "payload": "122056.98406121205"
+      }
+    },
+    {
+      "id": "float-format-412d49ddc56602c4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412d49ddc56602c4",
+        "repr_hint": "959726.8855439057"
+      },
+      "expect": {
+        "payload": "959726.8855439057"
+      }
+    },
+    {
+      "id": "float-format-40f67ac2c77f33e0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40f67ac2c77f33e0",
+        "repr_hint": "92076.17370529426"
+      },
+      "expect": {
+        "payload": "92076.17370529426"
+      }
+    },
+    {
+      "id": "float-format-c12389e49f3459ea",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12389e49f3459ea",
+        "repr_hint": "-640242.3109462832"
+      },
+      "expect": {
+        "payload": "-640242.3109462832"
+      }
+    },
+    {
+      "id": "float-format-4108eed0722cd9c8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4108eed0722cd9c8",
+        "repr_hint": "204250.05574960844"
+      },
+      "expect": {
+        "payload": "204250.05574960844"
+      }
+    },
+    {
+      "id": "float-format-4121a7f3c5c19e66",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4121a7f3c5c19e66",
+        "repr_hint": "578553.8862428188"
+      },
+      "expect": {
+        "payload": "578553.8862428188"
+      }
+    },
+    {
+      "id": "float-format-412286d473de2f88",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412286d473de2f88",
+        "repr_hint": "607082.2263045171"
+      },
+      "expect": {
+        "payload": "607082.2263045171"
+      }
+    },
+    {
+      "id": "float-format-c11411f1d4488116",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11411f1d4488116",
+        "repr_hint": "-328828.45730783173"
+      },
+      "expect": {
+        "payload": "-328828.45730783173"
+      }
+    },
+    {
+      "id": "float-format-412734f58945cd2c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "412734f58945cd2c",
+        "repr_hint": "760442.7681106678"
+      },
+      "expect": {
+        "payload": "760442.7681106678"
+      }
+    },
+    {
+      "id": "float-format-410a355830cffd18",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "410a355830cffd18",
+        "repr_hint": "214699.02383420686"
+      },
+      "expect": {
+        "payload": "214699.02383420686"
+      }
+    },
+    {
+      "id": "float-format-4126ca5cd9afa72c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4126ca5cd9afa72c",
+        "repr_hint": "746798.4251682512"
+      },
+      "expect": {
+        "payload": "746798.4251682512"
+      }
+    },
+    {
+      "id": "float-format-4115b99139ab2a38",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4115b99139ab2a38",
+        "repr_hint": "355940.30631700484"
+      },
+      "expect": {
+        "payload": "355940.30631700484"
+      }
+    },
+    {
+      "id": "float-format-c10409158f13e988",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c10409158f13e988",
+        "repr_hint": "-164130.69486219832"
+      },
+      "expect": {
+        "payload": "-164130.69486219832"
+      }
+    },
+    {
+      "id": "float-format-c121b4a736a68570",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c121b4a736a68570",
+        "repr_hint": "-580179.6067392062"
+      },
+      "expect": {
+        "payload": "-580179.6067392062"
+      }
+    },
+    {
+      "id": "float-format-40f2b365fdd82e80",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40f2b365fdd82e80",
+        "repr_hint": "76598.374473745"
+      },
+      "expect": {
+        "payload": "76598.374473745"
+      }
+    },
+    {
+      "id": "float-format-c107ce505f896000",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c107ce505f896000",
+        "repr_hint": "-195018.04664874077"
+      },
+      "expect": {
+        "payload": "-195018.04664874077"
+      }
+    },
+    {
+      "id": "float-format-c128674e44fe5650",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c128674e44fe5650",
+        "repr_hint": "-799655.1347529385"
+      },
+      "expect": {
+        "payload": "-799655.1347529385"
+      }
+    },
+    {
+      "id": "float-format-c12dcd997f4525ab",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12dcd997f4525ab",
+        "repr_hint": "-976588.7485744258"
+      },
+      "expect": {
+        "payload": "-976588.7485744258"
+      }
+    },
+    {
+      "id": "float-format-c0dcccd7cb7128c0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c0dcccd7cb7128c0",
+        "repr_hint": "-29491.37179211597"
+      },
+      "expect": {
+        "payload": "-29491.37179211597"
+      }
+    },
+    {
+      "id": "float-format-411bddb2e1d5c674",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "411bddb2e1d5c674",
+        "repr_hint": "456556.7205420502"
+      },
+      "expect": {
+        "payload": "456556.7205420502"
+      }
+    },
+    {
+      "id": "float-format-c11adf62eeb34d66",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11adf62eeb34d66",
+        "repr_hint": "-440280.73310585914"
+      },
+      "expect": {
+        "payload": "-440280.73310585914"
+      }
+    },
+    {
+      "id": "float-format-c12ce67d9fc6090f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12ce67d9fc6090f",
+        "repr_hint": "-947006.8120577651"
+      },
+      "expect": {
+        "payload": "-947006.8120577651"
+      }
+    },
+    {
+      "id": "float-format-411b07bff9a40cd0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "411b07bff9a40cd0",
+        "repr_hint": "442863.9937898638"
+      },
+      "expect": {
+        "payload": "442863.9937898638"
+      }
+    },
+    {
+      "id": "float-format-c129877d51d236e2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c129877d51d236e2",
+        "repr_hint": "-836542.6598069335"
+      },
+      "expect": {
+        "payload": "-836542.6598069335"
+      }
+    },
+    {
+      "id": "float-format-c12534c74bb0b168",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c12534c74bb0b168",
+        "repr_hint": "-694883.6478324356"
+      },
+      "expect": {
+        "payload": "-694883.6478324356"
+      }
+    },
+    {
+      "id": "float-format-40f43149e4e3f3e0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40f43149e4e3f3e0",
+        "repr_hint": "82708.61838145507"
+      },
+      "expect": {
+        "payload": "82708.61838145507"
+      }
+    },
+    {
+      "id": "float-format-411c29a640a42cd4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "411c29a640a42cd4",
+        "repr_hint": "461417.56312627834"
+      },
+      "expect": {
+        "payload": "461417.56312627834"
+      }
+    },
+    {
+      "id": "float-format-41006c4411df7300",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41006c4411df7300",
+        "repr_hint": "134536.5087269768"
+      },
+      "expect": {
+        "payload": "134536.5087269768"
+      }
+    },
+    {
+      "id": "float-format-40f88c1df19631c0",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40f88c1df19631c0",
+        "repr_hint": "100545.8714811271"
+      },
+      "expect": {
+        "payload": "100545.8714811271"
+      }
+    },
+    {
+      "id": "float-format-4105d20ba056dc28",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4105d20ba056dc28",
+        "repr_hint": "178753.45329067227"
+      },
+      "expect": {
+        "payload": "178753.45329067227"
+      }
+    },
+    {
+      "id": "float-format-c105e85d96094dbc",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c105e85d96094dbc",
+        "repr_hint": "-179467.6982599328"
+      },
+      "expect": {
+        "payload": "-179467.6982599328"
+      }
+    },
+    {
+      "id": "float-format-c11879df31358b34",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "c11879df31358b34",
+        "repr_hint": "-401015.79805581574"
+      },
+      "expect": {
+        "payload": "-401015.79805581574"
+      }
+    },
+    {
+      "id": "float-format-13bc7ee73e14d37a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "13bc7ee73e14d37a",
+        "repr_hint": "1.3225821612861468e-213"
+      },
+      "expect": {
+        "payload": "1.3225821612861468e-213"
+      }
+    },
+    {
+      "id": "float-format-4a6a98fbd18674df",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4a6a98fbd18674df",
+        "repr_hint": "3.109793992562758e+50"
+      },
+      "expect": {
+        "payload": "3.109793992562758e50"
+      }
+    },
+    {
+      "id": "float-format-ad82dec044beecac",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "ad82dec044beecac",
+        "repr_hint": "-1.8527037817981474e-89"
+      },
+      "expect": {
+        "payload": "-1.8527037817981474e-89"
+      }
+    },
+    {
+      "id": "float-format-0d41b9c6433d71a1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "0d41b9c6433d71a1",
+        "repr_hint": "8.112532979356904e-245"
+      },
+      "expect": {
+        "payload": "8.112532979356904e-245"
+      }
+    },
+    {
+      "id": "float-format-07daf055f70b4eef",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "07daf055f70b4eef",
+        "repr_hint": "7.967505025126745e-271"
+      },
+      "expect": {
+        "payload": "7.967505025126745e-271"
+      }
+    },
+    {
+      "id": "float-format-a9a387f286edc85a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "a9a387f286edc85a",
+        "repr_hint": "-4.158120138547955e-108"
+      },
+      "expect": {
+        "payload": "-4.158120138547955e-108"
+      }
+    },
+    {
+      "id": "float-format-39df461b26c612f4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "39df461b26c612f4",
+        "repr_hint": "6.16767975985818e-30"
+      },
+      "expect": {
+        "payload": "6.16767975985818e-30"
+      }
+    },
+    {
+      "id": "float-format-e143935ca2f5f77f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "e143935ca2f5f77f",
+        "repr_hint": "-3.4401985181473675e+160"
+      },
+      "expect": {
+        "payload": "-3.4401985181473675e160"
+      }
+    },
+    {
+      "id": "float-format-ad513dee42684654",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "ad513dee42684654",
+        "repr_hint": "-2.116054527299941e-90"
+      },
+      "expect": {
+        "payload": "-2.116054527299941e-90"
+      }
+    },
+    {
+      "id": "float-format-00628eb50a6bb6ce",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "00628eb50a6bb6ce",
+        "repr_hint": "8.258339358176256e-307"
+      },
+      "expect": {
+        "payload": "8.258339358176256e-307"
+      }
+    },
+    {
+      "id": "float-format-252e2a7f377ba84a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "252e2a7f377ba84a",
+        "repr_hint": "1.3599710297814142e-129"
+      },
+      "expect": {
+        "payload": "1.3599710297814142e-129"
+      }
+    },
+    {
+      "id": "float-format-b0edb1c4db8d17f2",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "b0edb1c4db8d17f2",
+        "repr_hint": "-5.252012654857476e-73"
+      },
+      "expect": {
+        "payload": "-5.252012654857476e-73"
+      }
+    },
+    {
+      "id": "float-format-92434aa1e0b7f60b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "92434aa1e0b7f60b",
+        "repr_hint": "-1.0673821045031988e-220"
+      },
+      "expect": {
+        "payload": "-1.0673821045031988e-220"
+      }
+    },
+    {
+      "id": "float-format-9ef1988de78bf66c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "9ef1988de78bf66c",
+        "repr_hint": "-1.2515671893503324e-159"
+      },
+      "expect": {
+        "payload": "-1.2515671893503324e-159"
+      }
+    },
+    {
+      "id": "float-format-aeb5f35186bae193",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "aeb5f35186bae193",
+        "repr_hint": "-1.1299127108222403e-83"
+      },
+      "expect": {
+        "payload": "-1.1299127108222403e-83"
+      }
+    },
+    {
+      "id": "float-format-ab14cde21ce14f50",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "ab14cde21ce14f50",
+        "repr_hint": "-3.71546472523263e-101"
+      },
+      "expect": {
+        "payload": "-3.71546472523263e-101"
+      }
+    },
+    {
+      "id": "float-format-8799d170d4007f72",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "8799d170d4007f72",
+        "repr_hint": "-4.772530096896267e-272"
+      },
+      "expect": {
+        "payload": "-4.772530096896267e-272"
+      }
+    },
+    {
+      "id": "float-format-84d3668509638183",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "84d3668509638183",
+        "repr_hint": "-2.0385262778399203e-285"
+      },
+      "expect": {
+        "payload": "-2.0385262778399203e-285"
+      }
+    },
+    {
+      "id": "float-format-2f878cbccb27bb0b",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2f878cbccb27bb0b",
+        "repr_hint": "9.930647470029986e-80"
+      },
+      "expect": {
+        "payload": "9.930647470029986e-80"
+      }
+    },
+    {
+      "id": "float-format-f6fada3839111601",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "f6fada3839111601",
+        "repr_hint": "-1.3528811303816548e+265"
+      },
+      "expect": {
+        "payload": "-1.3528811303816548e265"
+      }
+    },
+    {
+      "id": "float-format-21ecd59e658857db",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "21ecd59e658857db",
+        "repr_hint": "2.8864480640552356e-145"
+      },
+      "expect": {
+        "payload": "2.8864480640552356e-145"
+      }
+    },
+    {
+      "id": "float-format-8c61a95dc5bd6fcb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "8c61a95dc5bd6fcb",
+        "repr_hint": "-4.933593032437532e-249"
+      },
+      "expect": {
+        "payload": "-4.933593032437532e-249"
+      }
+    },
+    {
+      "id": "float-format-2421e062b7d538c9",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "2421e062b7d538c9",
+        "repr_hint": "1.2297436639707902e-134"
+      },
+      "expect": {
+        "payload": "1.2297436639707902e-134"
+      }
+    },
+    {
+      "id": "float-format-9023e89f9153ac9f",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "9023e89f9153ac9f",
+        "repr_hint": "-6.411740033287881e-231"
+      },
+      "expect": {
+        "payload": "-6.411740033287881e-231"
+      }
+    },
+    {
+      "id": "float-format-07dbf1653fb10397",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "07dbf1653fb10397",
+        "repr_hint": "8.264492371546324e-271"
+      },
+      "expect": {
+        "payload": "8.264492371546324e-271"
+      }
+    },
+    {
+      "id": "float-format-fdcccba00945815e",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "fdcccba00945815e",
+        "repr_hint": "-9.416055426642742e+297"
+      },
+      "expect": {
+        "payload": "-9.416055426642742e297"
+      }
+    },
+    {
+      "id": "float-format-049a118bee72143a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "049a118bee72143a",
+        "repr_hint": "1.7119886027619963e-286"
+      },
+      "expect": {
+        "payload": "1.7119886027619963e-286"
+      }
+    },
+    {
+      "id": "float-format-78ec15d6e75837c6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "78ec15d6e75837c6",
+        "repr_hint": "3.0386822963551488e+274"
+      },
+      "expect": {
+        "payload": "3.0386822963551488e274"
+      }
+    },
+    {
+      "id": "float-format-8e29486ed094b497",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "8e29486ed094b497",
+        "repr_hint": "-1.8958372956210518e-240"
+      },
+      "expect": {
+        "payload": "-1.8958372956210518e-240"
+      }
+    },
+    {
+      "id": "float-format-db258de2fb1a00c3",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "db258de2fb1a00c3",
+        "repr_hint": "-1.1952560213616652e+131"
+      },
+      "expect": {
+        "payload": "-1.1952560213616652e131"
+      }
+    },
+    {
+      "id": "float-format-eb00807dc759ac46",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "eb00807dc759ac46",
+        "repr_hint": "-2.648997124956377e+207"
+      },
+      "expect": {
+        "payload": "-2.648997124956377e207"
+      }
+    },
+    {
+      "id": "float-format-80e3062b66780995",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "80e3062b66780995",
+        "repr_hint": "-2.167297382564361e-304"
+      },
+      "expect": {
+        "payload": "-2.167297382564361e-304"
+      }
+    },
+    {
+      "id": "float-format-028f8ec61ba28bea",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "028f8ec61ba28bea",
+        "repr_hint": "2.4126802319627687e-296"
+      },
+      "expect": {
+        "payload": "2.4126802319627687e-296"
+      }
+    },
+    {
+      "id": "float-format-24b18aeaf9b52e5a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "24b18aeaf9b52e5a",
+        "repr_hint": "6.178699239078026e-132"
+      },
+      "expect": {
+        "payload": "6.178699239078026e-132"
+      }
+    },
+    {
+      "id": "float-format-5446a7a223bf1ebe",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "5446a7a223bf1ebe",
+        "repr_hint": "9.678079426307874e+97"
+      },
+      "expect": {
+        "payload": "9.678079426307874e97"
+      }
+    },
+    {
+      "id": "float-format-285d432500cb9632",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "285d432500cb9632",
+        "repr_hint": "2.970638929067953e-114"
+      },
+      "expect": {
+        "payload": "2.970638929067953e-114"
+      }
+    },
+    {
+      "id": "float-format-920ad471c37df1a4",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "920ad471c37df1a4",
+        "repr_hint": "-9.277941403180137e-222"
+      },
+      "expect": {
+        "payload": "-9.277941403180137e-222"
+      }
+    },
+    {
+      "id": "float-format-e0acfe89c7e70b14",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "e0acfe89c7e70b14",
+        "repr_hint": "-4.975998331284223e+157"
+      },
+      "expect": {
+        "payload": "-4.975998331284223e157"
+      }
+    },
+    {
+      "id": "float-format-b0b72baeb8371cdb",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "b0b72baeb8371cdb",
+        "repr_hint": "-5.12270098715048e-74"
+      },
+      "expect": {
+        "payload": "-5.12270098715048e-74"
+      }
+    },
+    {
+      "id": "float-format-69b3a676ec769bb6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "69b3a676ec769bb6",
+        "repr_hint": "1.5041295658879386e+201"
+      },
+      "expect": {
+        "payload": "1.5041295658879386e201"
+      }
+    },
+    {
+      "id": "float-format-3c2c28b5795ab3a8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3c2c28b5795ab3a8",
+        "repr_hint": "7.632517413800126e-19"
+      },
+      "expect": {
+        "payload": "7.632517413800126e-19"
+      }
+    },
+    {
+      "id": "float-format-43401f64bc8f8138",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "43401f64bc8f8138",
+        "repr_hint": "9076234296164976.0"
+      },
+      "expect": {
+        "payload": "9076234296164976.0"
+      }
+    },
+    {
+      "id": "float-format-436abb0356292fc5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "436abb0356292fc5",
+        "repr_hint": "6.0191779194502696e+16"
+      },
+      "expect": {
+        "payload": "6.0191779194502696e16"
+      }
+    },
+    {
+      "id": "float-format-40a1bd5e8a43452d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40a1bd5e8a43452d",
+        "repr_hint": "2270.684648611254"
+      },
+      "expect": {
+        "payload": "2270.684648611254"
+      }
+    },
+    {
+      "id": "float-format-40466a917967cd9a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40466a917967cd9a",
+        "repr_hint": "44.83256452148926"
+      },
+      "expect": {
+        "payload": "44.83256452148926"
+      }
+    },
+    {
+      "id": "float-format-3d73c02fbd622f7d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3d73c02fbd622f7d",
+        "repr_hint": "1.1226989301590262e-12"
+      },
+      "expect": {
+        "payload": "1.1226989301590262e-12"
+      }
+    },
+    {
+      "id": "float-format-3e363a92150fb1e7",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e363a92150fb1e7",
+        "repr_hint": "5.1755438415694344e-09"
+      },
+      "expect": {
+        "payload": "5.1755438415694344e-09"
+      }
+    },
+    {
+      "id": "float-format-42304c55ba659c14",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42304c55ba659c14",
+        "repr_hint": "70000163429.60968"
+      },
+      "expect": {
+        "payload": "70000163429.60968"
+      }
+    },
+    {
+      "id": "float-format-40ef7755a2a13de8",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40ef7755a2a13de8",
+        "repr_hint": "64442.67610227672"
+      },
+      "expect": {
+        "payload": "64442.67610227672"
+      }
+    },
+    {
+      "id": "float-format-433a7d2b0530da03",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "433a7d2b0530da03",
+        "repr_hint": "7455973118630403.0"
+      },
+      "expect": {
+        "payload": "7455973118630403.0"
+      }
+    },
+    {
+      "id": "float-format-4013989ccae1cad6",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4013989ccae1cad6",
+        "repr_hint": "4.899035615950842"
+      },
+      "expect": {
+        "payload": "4.899035615950842"
+      }
+    },
+    {
+      "id": "float-format-41b7ddcc8899e762",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "41b7ddcc8899e762",
+        "repr_hint": "400411784.6011869"
+      },
+      "expect": {
+        "payload": "400411784.6011869"
+      }
+    },
+    {
+      "id": "float-format-3e7ff022feebbcf5",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e7ff022feebbcf5",
+        "repr_hint": "1.1897844818716852e-07"
+      },
+      "expect": {
+        "payload": "1.1897844818716852e-07"
+      }
+    },
+    {
+      "id": "float-format-3ede92999cf6ed64",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3ede92999cf6ed64",
+        "repr_hint": "7.2890893102987746e-06"
+      },
+      "expect": {
+        "payload": "7.2890893102987746e-06"
+      }
+    },
+    {
+      "id": "float-format-42f774f6f7ca1847",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "42f774f6f7ca1847",
+        "repr_hint": "412658033271172.44"
+      },
+      "expect": {
+        "payload": "412658033271172.44"
+      }
+    },
+    {
+      "id": "float-format-3fe9b4b0721bd02a",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3fe9b4b0721bd02a",
+        "repr_hint": "0.803306792133758"
+      },
+      "expect": {
+        "payload": "0.803306792133758"
+      }
+    },
+    {
+      "id": "float-format-3bb3a6f241def29d",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3bb3a6f241def29d",
+        "repr_hint": "4.161501256722045e-21"
+      },
+      "expect": {
+        "payload": "4.161501256722045e-21"
+      }
+    },
+    {
+      "id": "float-format-40672041a8ff41b1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "40672041a8ff41b1",
+        "repr_hint": "185.00801515440756"
+      },
+      "expect": {
+        "payload": "185.00801515440756"
+      }
+    },
+    {
+      "id": "float-format-3e8a8f849b4f5cd1",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "3e8a8f849b4f5cd1",
+        "repr_hint": "1.9789201890941133e-07"
+      },
+      "expect": {
+        "payload": "1.9789201890941133e-07"
+      }
+    },
+    {
+      "id": "float-format-4189d618cf73f53c",
+      "source": "python-sdk:homie.py _format_float (repr(float(x)).replace('e+', 'e'))",
+      "input": {
+        "f64_bits": "4189d618cf73f53c",
+        "repr_hint": "54182681.93162009"
+      },
+      "expect": {
+        "payload": "54182681.93162009"
+      }
+    }
+  ]
+}

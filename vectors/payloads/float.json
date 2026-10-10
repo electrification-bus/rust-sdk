@@ -1,0 +1,630 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/float",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "float-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0"
+      }
+    },
+    {
+      "id": "float-neg-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-0"
+      }
+    },
+    {
+      "id": "float-zero-point-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0.0"
+      }
+    },
+    {
+      "id": "float-neg-zero-float",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-0.0"
+      }
+    },
+    {
+      "id": "float-integer",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1"
+      }
+    },
+    {
+      "id": "float-negative",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-1"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-1"
+      }
+    },
+    {
+      "id": "float-decimal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1.5"
+      }
+    },
+    {
+      "id": "float-leading-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": ".5"
+      },
+      "expect": {
+        "valid": true,
+        "value": ".5"
+      }
+    },
+    {
+      "id": "float-trailing-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5."
+      },
+      "expect": {
+        "valid": true,
+        "value": "5."
+      }
+    },
+    {
+      "id": "float-neg-leading-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-.5"
+      }
+    },
+    {
+      "id": "float-exponent",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1e5"
+      }
+    },
+    {
+      "id": "float-exponent-upper",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1E5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1E5"
+      }
+    },
+    {
+      "id": "float-exponent-negative",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1e-5"
+      }
+    },
+    {
+      "id": "float-exponent-plus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e+5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-leading-zeros",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "00012.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "00012.5"
+      }
+    },
+    {
+      "id": "float-lone-minus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-zero-length",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-plus-sign",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "+1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-leading-space",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": " 1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-trailing-space",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1 "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-two-dots",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.2.3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-lone-dot",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "."
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-no-digits",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-only",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "e5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-exponent-fraction",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e5.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-dot-exponent",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": ".e5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-inf",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "inf"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-infinity",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "Infinity"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-nan",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "nan"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-nan-upper",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "NaN"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-max",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.7976931348623157e308"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1.7976931348623157e308"
+      }
+    },
+    {
+      "id": "float-above-max-overflows",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e309"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-1e999",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e999"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-neg-1e999",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-1e999"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-underflow-to-zero",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-400"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1e-400"
+      }
+    },
+    {
+      "id": "float-min-subnormal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "4.9e-324"
+      },
+      "expect": {
+        "valid": true,
+        "value": "4.9e-324"
+      }
+    },
+    {
+      "id": "float-hex",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0x10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-underscore",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1_000.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-comma-decimal",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1,5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-double-minus",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "--1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-fullwidth-digit",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "１"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "float-range-in",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5.5",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5.5"
+      }
+    },
+    {
+      "id": "float-range-above",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "10.0001",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "float-range-below",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.1",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "float-range-max-inclusive",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "10",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true,
+        "value": "10"
+      }
+    },
+    {
+      "id": "float-float-bounds",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "10.2",
+        "format": "10.123:15.123"
+      },
+      "expect": {
+        "valid": true,
+        "value": "10.2"
+      }
+    },
+    {
+      "id": "float-step-half",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0.5"
+      }
+    },
+    {
+      "id": "float-step-half-tie-up",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "2.25",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2.5"
+      }
+    },
+    {
+      "id": "float-step-exact-unchanged",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "2.5",
+        "format": "0:10:0.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2.5"
+      }
+    },
+    {
+      "id": "float-step-tenth",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.35",
+        "format": "0:1:0.1"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0.4"
+      }
+    },
+    {
+      "id": "float-step-result-needs-reformat",
+      "source": "homie-5:convention.md#float (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.29",
+        "format": "0:1:0.1"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0.3"
+      }
+    }
+  ]
+}

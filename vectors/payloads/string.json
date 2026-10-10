@@ -1,0 +1,117 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/string",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "string-text",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "hello"
+      },
+      "expect": {
+        "valid": true,
+        "value": "hello"
+      }
+    },
+    {
+      "id": "string-nul-is-empty",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": true,
+        "value": ""
+      }
+    },
+    {
+      "id": "string-two-nul",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload_hex": "0000"
+      },
+      "expect": {
+        "valid": true,
+        "value": "\u0000\u0000"
+      }
+    },
+    {
+      "id": "string-space",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": " "
+      },
+      "expect": {
+        "valid": true,
+        "value": " "
+      }
+    },
+    {
+      "id": "string-unicode",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "°C"
+      },
+      "expect": {
+        "valid": true,
+        "value": "°C"
+      }
+    },
+    {
+      "id": "string-astral",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "😀"
+      },
+      "expect": {
+        "valid": true,
+        "value": "😀"
+      }
+    },
+    {
+      "id": "string-json-looking",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "null"
+      },
+      "expect": {
+        "valid": true,
+        "value": "null"
+      }
+    },
+    {
+      "id": "string-newline",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "a\nb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "a\nb"
+      }
+    },
+    {
+      "id": "string-format-ignored",
+      "source": "homie-5:convention.md#string (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "x",
+        "format": "a,b"
+      },
+      "expect": {
+        "valid": true,
+        "value": "x"
+      }
+    }
+  ]
+}

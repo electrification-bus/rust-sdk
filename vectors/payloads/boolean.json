@@ -1,0 +1,142 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/boolean",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "boolean-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true"
+      },
+      "expect": {
+        "valid": true,
+        "value": "true"
+      }
+    },
+    {
+      "id": "boolean-false",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "false"
+      },
+      "expect": {
+        "valid": true,
+        "value": "false"
+      }
+    },
+    {
+      "id": "boolean-upper-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "TRUE"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-title-false",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "False"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-one",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-zero",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-trailing-space",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-zero-length",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-yes",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "yes"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-format-label-not-payload",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "on",
+        "format": "off,on"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "boolean-format-true",
+      "source": "homie-5:convention.md#boolean (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true",
+        "format": "off,on"
+      },
+      "expect": {
+        "valid": true,
+        "value": "true"
+      }
+    }
+  ]
+}

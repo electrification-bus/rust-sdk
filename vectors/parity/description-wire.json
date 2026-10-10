@@ -1,0 +1,1646 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/description-wire",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "description-wire-bare-no-type-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1909023855364247, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 1909023855364247,
+        "content_hash_hex": "6c83f40c44897bb983bbd8f6798adb577c0cb71158b548aa68e8930b48f3063d"
+      }
+    },
+    {
+      "id": "description-wire-bare-typed-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "energy.ebus.device.panel",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2999997065864097, \"type\": \"energy.ebus.device.panel\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 2999997065864097,
+        "content_hash_hex": "aa87b3f7023a1af7447dc4d17bb005edadb94812e0d14cd1a9d3fec86b504b23"
+      }
+    },
+    {
+      "id": "description-wire-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "Living Room",
+        "type": "t",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 705720245421419, \"type\": \"t\", \"name\": \"Living Room\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 705720245421419,
+        "content_hash_hex": "281d94c8a056bf84f4ef1dcf798a35b23886ff3388ec2ddd2c15e554d5c7bb34"
+      }
+    },
+    {
+      "id": "description-wire-empty-name-defaults-to-id-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "t",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 466731644645623, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 466731644645623,
+        "content_hash_hex": "1a87d6de270f771a94124b2f89de3348bca65ef6661f02d5e7af6721e4962037"
+      }
+    },
+    {
+      "id": "description-wire-empty-type-kept-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 240403089343664, \"type\": \"\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 240403089343664,
+        "content_hash_hex": "0daa534be44b08455bf9c35bbcdc63e23d383d716779cc87b96e8495b520595c"
+      }
+    },
+    {
+      "id": "description-wire-unicode-name-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "Café ☕ 😀 中文",
+        "type": "té",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 742880693998592, \"type\": \"t\\u00e9\", \"name\": \"Caf\\u00e9 \\u2615 \\ud83d\\ude00 \\u4e2d\\u6587\", \"nodes\": {}, \"children\": [], \"extensions\": []}",
+        "version": 742880693998592,
+        "content_hash_hex": "2a3a563e05400b676921021a42031e2e4e1ecc7557e66656c2eea650ee5c4159"
+      }
+    },
+    {
+      "id": "description-wire-node-untyped-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": []
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}",
+        "version": 2793494030065259,
+        "content_hash_hex": "9ecab03581e6b5063e3aa925e0ecde43b43f43fed8c6feacc7b35e333a0afbe2"
+      }
+    },
+    {
+      "id": "description-wire-node-typed-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "Nöde",
+            "type": "org.example.node",
+            "properties": []
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 259480474976112, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"N\\u00f6de\", \"type\": \"org.example.node\", \"properties\": {}}}, \"children\": [], \"extensions\": []}",
+        "version": 259480474976112,
+        "content_hash_hex": "0ebff01897f704f401eb35217c63de6ab6607777c1d212f95804ef6096e87a14"
+      }
+    },
+    {
+      "id": "description-wire-node-empty-type-kept-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": "",
+            "properties": []
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3725966126593516, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"type\": \"\", \"properties\": {}}}, \"children\": [], \"extensions\": []}",
+        "version": 3725966126593516,
+        "content_hash_hex": "d3cbf176bb5ecf904f7ad8c6243011e41b36199a3f5e85ba9e104d5b4a69a9fb"
+      }
+    },
+    {
+      "id": "description-wire-node-empty-name-defaults-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": []
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2793494030065259, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {}}}, \"children\": [], \"extensions\": []}",
+        "version": 2793494030065259,
+        "content_hash_hex": "9ecab03581e6b5063e3aa925e0ecde43b43f43fed8c6feacc7b35e333a0afbe2"
+      }
+    },
+    {
+      "id": "description-wire-prop-minimal-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 125271116949906,
+        "content_hash_hex": "071eef46d2992bac82c0a43656b208bea85a71317ddd6c34aea7f8626a49759b"
+      }
+    },
+    {
+      "id": "description-wire-prop-named-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "Power °",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3156078660645223, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"Power \\u00b0\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 3156078660645223,
+        "content_hash_hex": "b366fd3737167ee5298264b02fa2a3cd8d3a6a64613e2c1031e6a9b8591acd24"
+      }
+    },
+    {
+      "id": "description-wire-prop-empty-name-defaults-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4185008502764042,
+        "content_hash_hex": "ede3e3930720a35cb617f235e1dc1810d543a7f953a4aa9f68a5b454eeef6c34"
+      }
+    },
+    {
+      "id": "description-wire-prop-format-string-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "integer",
+                "format": "0:100:5",
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3740778805830459, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\", \"format\": \"0:100:5\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 3740778805830459,
+        "content_hash_hex": "d4a37efe7a33be3af474555f4d18feb3c69dbaae0b78317b950ca1c2049d967b"
+      }
+    },
+    {
+      "id": "description-wire-prop-format-empty-omitted-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "integer",
+                "format": "",
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 125271116949906, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 125271116949906,
+        "content_hash_hex": "071eef46d2992bac82c0a43656b208bea85a71317ddd6c34aea7f8626a49759b"
+      }
+    },
+    {
+      "id": "description-wire-prop-format-json-schema-dict-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "req",
+                "name": "req",
+                "datatype": "json",
+                "format": "{\"type\": \"object\", \"properties\": {\"level\": {\"type\": \"integer\", \"minimum\": 0, \"maximum\": 100}}, \"required\": [\"level\"]}",
+                "settable": true,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1444759323438410, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\": \\\"object\\\", \\\"properties\\\": {\\\"level\\\": {\\\"type\\\": \\\"integer\\\", \\\"minimum\\\": 0, \\\"maximum\\\": 100}}, \\\"required\\\": [\\\"level\\\"]}\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}",
+        "version": 1444759323438410,
+        "content_hash_hex": "522003e426d4a2fa9a538dcd93e48fb3f09fddf6b37a982b913baf484f73f475"
+      }
+    },
+    {
+      "id": "description-wire-prop-format-json-schema-string-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "req",
+                "name": "req",
+                "datatype": "json",
+                "format": "{\"type\":\"array\"}",
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1185726012849327, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"req\": {\"name\": \"req\", \"datatype\": \"json\", \"format\": \"{\\\"type\\\":\\\"array\\\"}\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 1185726012849327,
+        "content_hash_hex": "4366959cbfcaf10152f649fa169984d4f41a3a34a43f19d72002ac7c494826f1"
+      }
+    },
+    {
+      "id": "description-wire-prop-settable-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "boolean",
+                "format": null,
+                "settable": true,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1465724754092977, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": []}",
+        "version": 1465724754092977,
+        "content_hash_hex": "53511a34e63b1c3b178acc34db148e5b99d4b838bc00fc30e316d02001f8741a"
+      }
+    },
+    {
+      "id": "description-wire-prop-not-retained-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "string",
+                "format": null,
+                "settable": false,
+                "retained": false,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2073218796887997, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"string\", \"retained\": false}}}}, \"children\": [], \"extensions\": []}",
+        "version": 2073218796887997,
+        "content_hash_hex": "75d94ddee1fbdf6dd5b2346832e7acdf6684ce1b1e25f5f7ca1de93311a70c29"
+      }
+    },
+    {
+      "id": "description-wire-prop-settable-not-retained-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "brew",
+                "name": "brew",
+                "datatype": "boolean",
+                "format": null,
+                "settable": true,
+                "retained": false,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3933092691585795, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"brew\": {\"name\": \"brew\", \"datatype\": \"boolean\", \"settable\": true, \"retained\": false}}}}, \"children\": [], \"extensions\": []}",
+        "version": 3933092691585795,
+        "content_hash_hex": "df92080c02b035b6aa6f0b2a702fffb99c1b58257174201c38744a8bc89e60b2"
+      }
+    },
+    {
+      "id": "description-wire-prop-unit-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": "W"
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4366185694794201, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4366185694794201,
+        "content_hash_hex": "f8305d35c91d9580a8527f7bddc0676eb64dc225c76420f4f962456b7bfc8d6c"
+      }
+    },
+    {
+      "id": "description-wire-prop-unit-degree-c-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "t",
+                "name": "t",
+                "datatype": "float",
+                "format": "-20:120",
+                "settable": false,
+                "retained": true,
+                "unit": "°C"
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1790036054265299, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"t\": {\"name\": \"t\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 1790036054265299,
+        "content_hash_hex": "65c073f264dd3ed0f94b3851386752010361b51f9e5cd983f143a13c02d7249f"
+      }
+    },
+    {
+      "id": "description-wire-prop-unit-mired-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "ct",
+                "name": "ct",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": "MK⁻¹"
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4011383035551432, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"ct\": {\"name\": \"ct\", \"datatype\": \"integer\", \"unit\": \"MK\\u207b\\u00b9\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4011383035551432,
+        "content_hash_hex": "e4054e4e45ec84b13696dbd1d482041ef30ade13eb0427b0612eaf4d1a7a04cd"
+      }
+    },
+    {
+      "id": "description-wire-prop-unit-empty-omitted-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": ""
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4185008502764042, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"float\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4185008502764042,
+        "content_hash_hex": "ede3e3930720a35cb617f235e1dc1810d543a7f953a4aa9f68a5b454eeef6c34"
+      }
+    },
+    {
+      "id": "description-wire-prop-every-option-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "All",
+                "datatype": "float",
+                "format": "0:1:0.1",
+                "settable": true,
+                "retained": false,
+                "unit": "%"
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4207248871274391, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"All\", \"datatype\": \"float\", \"format\": \"0:1:0.1\", \"settable\": true, \"retained\": false, \"unit\": \"%\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4207248871274391,
+        "content_hash_hex": "ef278767437976fcdcb12193496ee2527597915120fd278217dd16855834aa93"
+      }
+    },
+    {
+      "id": "description-wire-every-datatype-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "i",
+                "name": "i",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "f",
+                "name": "f",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "b",
+                "name": "b",
+                "datatype": "boolean",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "s",
+                "name": "s",
+                "datatype": "string",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "e",
+                "name": "e",
+                "datatype": "enum",
+                "format": "a,b,c",
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "c",
+                "name": "c",
+                "datatype": "color",
+                "format": "rgb,hsv",
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "dt",
+                "name": "dt",
+                "datatype": "datetime",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "du",
+                "name": "du",
+                "datatype": "duration",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "j",
+                "name": "j",
+                "datatype": "json",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2799797067559831, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"i\": {\"name\": \"i\", \"datatype\": \"integer\"}, \"f\": {\"name\": \"f\", \"datatype\": \"float\"}, \"b\": {\"name\": \"b\", \"datatype\": \"boolean\"}, \"s\": {\"name\": \"s\", \"datatype\": \"string\"}, \"e\": {\"name\": \"e\", \"datatype\": \"enum\", \"format\": \"a,b,c\"}, \"c\": {\"name\": \"c\", \"datatype\": \"color\", \"format\": \"rgb,hsv\"}, \"dt\": {\"name\": \"dt\", \"datatype\": \"datetime\"}, \"du\": {\"name\": \"du\", \"datatype\": \"duration\"}, \"j\": {\"name\": \"j\", \"datatype\": \"json\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 2799797067559831,
+        "content_hash_hex": "9f2668da7b39710d6841afffdf554c7034a43c4c15dd0c277dfa8f4bf3d6997e"
+      }
+    },
+    {
+      "id": "description-wire-property-order-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "zeta",
+                "name": "zeta",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "alpha",
+                "name": "alpha",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "mid",
+                "name": "mid",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4350072593684037, \"name\": \"dev\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"zeta\": {\"name\": \"zeta\", \"datatype\": \"integer\"}, \"alpha\": {\"name\": \"alpha\", \"datatype\": \"integer\"}, \"mid\": {\"name\": \"mid\", \"datatype\": \"integer\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 4350072593684037,
+        "content_hash_hex": "f745e33b19645576ed6c2eeef188a6932373f67c81db886a61b1ddc1e3767824"
+      }
+    },
+    {
+      "id": "description-wire-multiple-nodes-order-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [
+          {
+            "id": "z-node",
+            "name": "z-node",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          },
+          {
+            "id": "a-node",
+            "name": "a-node",
+            "type": null,
+            "properties": [
+              {
+                "id": "q",
+                "name": "q",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          },
+          {
+            "id": "m",
+            "name": "m",
+            "type": null,
+            "properties": [
+              {
+                "id": "r",
+                "name": "r",
+                "datatype": "string",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 689620389774245, \"name\": \"dev\", \"nodes\": {\"z-node\": {\"name\": \"z-node\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"integer\"}}}, \"a-node\": {\"name\": \"a-node\", \"properties\": {\"q\": {\"name\": \"q\", \"datatype\": \"float\"}}}, \"m\": {\"name\": \"m\", \"properties\": {\"r\": {\"name\": \"r\", \"datatype\": \"string\"}}}}, \"children\": [], \"extensions\": []}",
+        "version": 689620389774245,
+        "content_hash_hex": "27334c25cc3a54beec95f71aec5ea00f39526b854c8580fdf0108f207b60fb6e"
+      }
+    },
+    {
+      "id": "description-wire-extensions-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "t",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [
+          "energy.ebus.imported",
+          "org.example.feature"
+        ],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2384861161266637, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [\"energy.ebus.imported\", \"org.example.feature\"]}",
+        "version": 2384861161266637,
+        "content_hash_hex": "87904c25b1dcd08fd22042a9db19057d5f0fdecc28aa07d295d9d4f72ae97bf3"
+      }
+    },
+    {
+      "id": "description-wire-extras-scalar-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": [
+          [
+            "imported-from",
+            "vendor-x"
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 714496110177991, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"imported-from\": \"vendor-x\"}",
+        "version": 714496110177991,
+        "content_hash_hex": "289d496d72ec7e05544a49ae82740466142eb0c85e939fa221d62e2b4a819dd1"
+      }
+    },
+    {
+      "id": "description-wire-extras-nested-and-float-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "t",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": [
+          [
+            "z-extra",
+            {
+              "a": [
+                1,
+                2.5
+              ],
+              "b": {
+                "c": null,
+                "d": true
+              }
+            }
+          ],
+          [
+            "a-extra",
+            0.1
+          ],
+          [
+            "n",
+            1e+16
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2647337103880958, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"z-extra\": {\"a\": [1, 2.5], \"b\": {\"c\": null, \"d\": true}}, \"a-extra\": 0.1, \"n\": 1e+16}",
+        "version": 2647337103880958,
+        "content_hash_hex": "967bd33ad72fe0c96ddf11c38b7e7b507551b504bf965917b87e0cede467cd36"
+      }
+    },
+    {
+      "id": "description-wire-extras-core-key-dropped-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": "t",
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": [
+          [
+            "name",
+            "evil"
+          ],
+          [
+            "root",
+            "x"
+          ],
+          [
+            "type",
+            "y"
+          ],
+          [
+            "keep",
+            "k"
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3431881682669072, \"type\": \"t\", \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"keep\": \"k\"}",
+        "version": 3431881682669072,
+        "content_hash_hex": "c3147389b4e103fcce37c4f358f46b7443f42c252923757fb4e7ba54a2365162"
+      }
+    },
+    {
+      "id": "description-wire-extras-unicode-dev",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dev",
+        "name": "dev",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": [
+          [
+            "label",
+            "°C 😀"
+          ],
+          [
+            "é",
+            1
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1209220764178055, \"name\": \"dev\", \"nodes\": {}, \"children\": [], \"extensions\": [], \"label\": \"\\u00b0C \\ud83d\\ude00\", \"\\u00e9\": 1}",
+        "version": 1209220764178055,
+        "content_hash_hex": "44bc7a61a9687017728a43cca121ccdd710b5667e1e1d53bf9e9def479e6e5a9"
+      }
+    },
+    {
+      "id": "description-wire-child-one-bridge",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "bridge",
+        "name": "bridge",
+        "type": "bridge",
+        "nodes": [],
+        "children": [
+          "relay"
+        ],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1477652449966850, \"type\": \"bridge\", \"name\": \"bridge\", \"nodes\": {}, \"children\": [\"relay\"], \"extensions\": []}",
+        "version": 1477652449966850,
+        "content_hash_hex": "53feac561bb02ebcc0c1dfc46d8ca20cfa78b7a89ca4b0140394bbba98d2a3b0"
+      }
+    },
+    {
+      "id": "description-wire-child-one-relay",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "relay",
+        "name": "relay",
+        "type": "relay",
+        "nodes": [
+          {
+            "id": "n",
+            "name": "n",
+            "type": null,
+            "properties": [
+              {
+                "id": "p",
+                "name": "p",
+                "datatype": "boolean",
+                "format": null,
+                "settable": true,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": "bridge",
+        "parent": "bridge",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1341968275767104, \"type\": \"relay\", \"name\": \"relay\", \"nodes\": {\"n\": {\"name\": \"n\", \"properties\": {\"p\": {\"name\": \"p\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}",
+        "version": 1341968275767104,
+        "content_hash_hex": "4c48356607f40afce37e9d183dcce40618de03978954798e1560d5d37ce20d9b"
+      }
+    },
+    {
+      "id": "description-wire-child-tree-zwave-bridge",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "bridge",
+        "name": "Zwave bridge",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "dualrelay"
+        ],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2127907897624128, \"name\": \"Zwave bridge\", \"nodes\": {}, \"children\": [\"dualrelay\"], \"extensions\": []}",
+        "version": 2127907897624128,
+        "content_hash_hex": "78f522a5a4640e3ed7454934e68f9237a824c55202723ab825512a7357b01c10"
+      }
+    },
+    {
+      "id": "description-wire-child-tree-zwave-dualrelay",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "dualrelay",
+        "name": "Zwave relay",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "light1",
+          "light2"
+        ],
+        "root": "bridge",
+        "parent": "bridge",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 550551548909504, \"name\": \"Zwave relay\", \"nodes\": {}, \"children\": [\"light1\", \"light2\"], \"root\": \"bridge\", \"parent\": \"bridge\", \"extensions\": []}",
+        "version": 550551548909504,
+        "content_hash_hex": "1f4b94580d7c0b084125506023f267cf4546bcd6106f8ab5f26463c914333ac7"
+      }
+    },
+    {
+      "id": "description-wire-child-tree-zwave-light1",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "light1",
+        "name": "First light",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "bridge",
+        "parent": "dualrelay",
+        "extensions": [
+          "x.y.z"
+        ],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3188320171093166, \"name\": \"First light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": [\"x.y.z\"]}",
+        "version": 3188320171093166,
+        "content_hash_hex": "b53c2a33a6cae3ce54558046ed14c743b74eeca320ab8ff29c6c5b3aa48d3788"
+      }
+    },
+    {
+      "id": "description-wire-child-tree-zwave-light2",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "light2",
+        "name": "Second light",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "bridge",
+        "parent": "dualrelay",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 441073648771121, \"name\": \"Second light\", \"nodes\": {}, \"children\": [], \"root\": \"bridge\", \"parent\": \"dualrelay\", \"extensions\": []}",
+        "version": 441073648771121,
+        "content_hash_hex": "191277627a0316945e8ba2fd1aa08ff64e5e58b28f029a9b1464c29bbede4cb8"
+      }
+    },
+    {
+      "id": "description-wire-children-order-root",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "root",
+        "name": "root",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "c-3",
+          "c-1",
+          "c-2"
+        ],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2514209743640279, \"name\": \"root\", \"nodes\": {}, \"children\": [\"c-3\", \"c-1\", \"c-2\"], \"extensions\": []}",
+        "version": 2514209743640279,
+        "content_hash_hex": "8eea912a916d7cb046c4cf95e588b1bea88dfed87c20d39ece6c4310d3113e42"
+      }
+    },
+    {
+      "id": "description-wire-children-order-c-3",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "c-3",
+        "name": "c-3",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "root",
+        "parent": "root",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3545180114001287, \"name\": \"c-3\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}",
+        "version": 3545180114001287,
+        "content_hash_hex": "c9852915c1d87939557d15ad9d8f7ed8ea7e97c1dea9c942105689a112e7c2a8"
+      }
+    },
+    {
+      "id": "description-wire-children-order-c-1",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "c-1",
+        "name": "c-1",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "root",
+        "parent": "root",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 4203977339672320, \"name\": \"c-1\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}",
+        "version": 4203977339672320,
+        "content_hash_hex": "eef7ebff9970036ba5e4c29f6fc03bcf3807eb385fa8f83fa975cef88057b0ac"
+      }
+    },
+    {
+      "id": "description-wire-children-order-c-2",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "c-2",
+        "name": "c-2",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "root",
+        "parent": "root",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 503462664723912, \"name\": \"c-2\", \"nodes\": {}, \"children\": [], \"root\": \"root\", \"parent\": \"root\", \"extensions\": []}",
+        "version": 503462664723912,
+        "content_hash_hex": "1c9e58949ddc85800ddaa5c3f510a4fce28dd7ee9bcd3d66d947a38651ddc548"
+      }
+    },
+    {
+      "id": "description-wire-child-with-extras-panel",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "panel",
+        "name": "panel",
+        "type": "energy.ebus.device.panel",
+        "nodes": [],
+        "children": [
+          "circuit-1"
+        ],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": [
+          [
+            "vendor",
+            "x"
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 3336164530600545, \"type\": \"energy.ebus.device.panel\", \"name\": \"panel\", \"nodes\": {}, \"children\": [\"circuit-1\"], \"extensions\": [], \"vendor\": \"x\"}",
+        "version": 3336164530600545,
+        "content_hash_hex": "bda3955c23a6193d6e3a6745096a14a05a1a5e31930e1d396f483adec8ea1e54"
+      }
+    },
+    {
+      "id": "description-wire-child-with-extras-circuit-1",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "circuit-1",
+        "name": "circuit-1",
+        "type": "energy.ebus.device.circuit",
+        "nodes": [
+          {
+            "id": "power",
+            "name": "power",
+            "type": null,
+            "properties": [
+              {
+                "id": "w",
+                "name": "Power",
+                "datatype": "float",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": "W"
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": "panel",
+        "parent": "panel",
+        "extensions": [],
+        "extras": [
+          [
+            "imported-from",
+            {
+              "id": "c1",
+              "source": "span"
+            }
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2061440437905178, \"type\": \"energy.ebus.device.circuit\", \"name\": \"circuit-1\", \"nodes\": {\"power\": {\"name\": \"power\", \"properties\": {\"w\": {\"name\": \"Power\", \"datatype\": \"float\", \"unit\": \"W\"}}}}, \"children\": [], \"root\": \"panel\", \"parent\": \"panel\", \"extensions\": [], \"imported-from\": {\"id\": \"c1\", \"source\": \"span\"}}",
+        "version": 2061440437905178,
+        "content_hash_hex": "752de8106e71adb9270c75ff5e04047f5093e0b3d6ee18f2b9989b1059641c68"
+      }
+    },
+    {
+      "id": "description-wire-deep-chain-a",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "a",
+        "name": "a",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "b"
+        ],
+        "root": null,
+        "parent": null,
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2276249678046153, \"name\": \"a\", \"nodes\": {}, \"children\": [\"b\"], \"extensions\": []}",
+        "version": 2276249678046153,
+        "content_hash_hex": "8163cad7ae3c93b6e36f007920fab74c43d29094fc08809880703acebd076fcb"
+      }
+    },
+    {
+      "id": "description-wire-deep-chain-b",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "b",
+        "name": "b",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "c"
+        ],
+        "root": "a",
+        "parent": "a",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1586246313388064, \"name\": \"b\", \"nodes\": {}, \"children\": [\"c\"], \"root\": \"a\", \"parent\": \"a\", \"extensions\": []}",
+        "version": 1586246313388064,
+        "content_hash_hex": "5a2aec0092820c1baace10139b56599af56ae05cb02314ba9971437598fd23a2"
+      }
+    },
+    {
+      "id": "description-wire-deep-chain-c",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "c",
+        "name": "c",
+        "type": null,
+        "nodes": [],
+        "children": [
+          "d"
+        ],
+        "root": "a",
+        "parent": "b",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 2960512731190681, \"name\": \"c\", \"nodes\": {}, \"children\": [\"d\"], \"root\": \"a\", \"parent\": \"b\", \"extensions\": []}",
+        "version": 2960512731190681,
+        "content_hash_hex": "a849215b21599918dd22a660157ace09a84d7a6271a5e5109a8ee073e048b591"
+      }
+    },
+    {
+      "id": "description-wire-deep-chain-d",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "d",
+        "name": "d",
+        "type": null,
+        "nodes": [],
+        "children": [],
+        "root": "a",
+        "parent": "c",
+        "extensions": [],
+        "extras": []
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 1871248224717500, \"name\": \"d\", \"nodes\": {}, \"children\": [], \"root\": \"a\", \"parent\": \"c\", \"extensions\": []}",
+        "version": 1871248224717500,
+        "content_hash_hex": "6a5e3edb88abc7c58a15baea4d309b2c65b0385263f786e778740d03b799f570"
+      }
+    },
+    {
+      "id": "description-wire-full-super-car",
+      "source": "python-sdk:homie.py json.dumps(Device.description()), Device._description_content_hash",
+      "input": {
+        "id": "super-car",
+        "name": "Supercar",
+        "type": "org.example.car",
+        "nodes": [
+          {
+            "id": "engine",
+            "name": "Car engine",
+            "type": "org.example.engine",
+            "properties": [
+              {
+                "id": "temperature",
+                "name": "Engine temperature",
+                "datatype": "float",
+                "format": "-20:120",
+                "settable": false,
+                "retained": true,
+                "unit": "°C"
+              },
+              {
+                "id": "speed",
+                "name": "speed",
+                "datatype": "integer",
+                "format": null,
+                "settable": false,
+                "retained": true,
+                "unit": "rpm"
+              }
+            ]
+          },
+          {
+            "id": "lights",
+            "name": "lights",
+            "type": null,
+            "properties": [
+              {
+                "id": "color",
+                "name": "color",
+                "datatype": "color",
+                "format": "rgb",
+                "settable": true,
+                "retained": true,
+                "unit": null
+              },
+              {
+                "id": "on",
+                "name": "on",
+                "datatype": "boolean",
+                "format": null,
+                "settable": true,
+                "retained": true,
+                "unit": null
+              }
+            ]
+          }
+        ],
+        "children": [],
+        "root": null,
+        "parent": null,
+        "extensions": [
+          "org.example.our-feature"
+        ],
+        "extras": [
+          [
+            "model-year",
+            2026
+          ]
+        ]
+      },
+      "expect": {
+        "wire": "{\"homie\": \"5.0\", \"version\": 417805995514652, \"type\": \"org.example.car\", \"name\": \"Supercar\", \"nodes\": {\"engine\": {\"name\": \"Car engine\", \"type\": \"org.example.engine\", \"properties\": {\"temperature\": {\"name\": \"Engine temperature\", \"datatype\": \"float\", \"format\": \"-20:120\", \"unit\": \"\\u00b0C\"}, \"speed\": {\"name\": \"speed\", \"datatype\": \"integer\", \"unit\": \"rpm\"}}}, \"lights\": {\"name\": \"lights\", \"properties\": {\"color\": {\"name\": \"color\", \"datatype\": \"color\", \"format\": \"rgb\", \"settable\": true}, \"on\": {\"name\": \"on\", \"datatype\": \"boolean\", \"settable\": true}}}}, \"children\": [], \"extensions\": [\"org.example.our-feature\"], \"model-year\": 2026}",
+        "version": 417805995514652,
+        "content_hash_hex": "17bfe09f29b1cda97efb678ce777678c50b0eeffba909b503a675931ec5e5ab4"
+      }
+    }
+  ]
+}

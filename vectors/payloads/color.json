@@ -1,0 +1,409 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/color",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "color-rgb",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,255,255,255",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,255,255,255"
+      }
+    },
+    {
+      "id": "color-rgb-zero",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,0,0,0"
+      }
+    },
+    {
+      "id": "color-rgb-float",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,100.5,0.25,1e2",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,100.5,0.25,1e2"
+      }
+    },
+    {
+      "id": "color-rgb-leading-dot",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,.5,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,.5,0,0"
+      }
+    },
+    {
+      "id": "color-rgb-trailing-dot",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,5.,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,5.,0,0"
+      }
+    },
+    {
+      "id": "color-rgb-neg-zero",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,-0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": true,
+        "value": "rgb,-0,0,0"
+      }
+    },
+    {
+      "id": "color-rgb-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,256,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-negative",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,-1,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-1e999",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1e999,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-rgb-two",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-four",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2,3,4",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-trailing-comma",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2,3,",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-rgb-space",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb, 1,2,3",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-rgb-nan",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,nan,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-rgb-plus",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,+1,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentGrammar"
+      }
+    },
+    {
+      "id": "color-upper-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "RGB,1,2,3",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-unknown-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "cmyk,1,2,3,4"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-zero-length",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload_hex": "",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "color-type-only",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-hsv",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,360,100,100",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": true,
+        "value": "hsv,360,100,100"
+      }
+    },
+    {
+      "id": "color-hsv-example",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,300,50,75",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": true,
+        "value": "hsv,300,50,75"
+      }
+    },
+    {
+      "id": "color-hsv-h-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,361,0,0",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-hsv-s-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,101,0",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-hsv-v-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,0,100.01",
+        "format": "hsv"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-xyz",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.25,0.34",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": true,
+        "value": "xyz,0.25,0.34"
+      }
+    },
+    {
+      "id": "color-xyz-ones",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,1,1",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": true,
+        "value": "xyz,1,1"
+      }
+    },
+    {
+      "id": "color-xyz-above",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,1.1,0",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentRange"
+      }
+    },
+    {
+      "id": "color-xyz-three",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.5,0.5,0",
+        "format": "xyz"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorComponentCount"
+      }
+    },
+    {
+      "id": "color-type-not-in-format",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,0,0,0",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorTypeNotInFormat"
+      }
+    },
+    {
+      "id": "color-second-format",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "hsv,10,20,30",
+        "format": "rgb,hsv"
+      },
+      "expect": {
+        "valid": true,
+        "value": "hsv,10,20,30"
+      }
+    },
+    {
+      "id": "color-no-format-any-type",
+      "source": "homie-5:convention.md#color (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "xyz,0.1,0.2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "xyz,0.1,0.2"
+      }
+    }
+  ]
+}

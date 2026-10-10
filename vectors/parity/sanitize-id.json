@@ -1,0 +1,658 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/sanitize-id",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "sanitize-empty",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": ""
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-already-valid",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "abc-123"
+      },
+      "expect": {
+        "id": "abc-123"
+      }
+    },
+    {
+      "id": "sanitize-upper",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ABC"
+      },
+      "expect": {
+        "id": "abc"
+      }
+    },
+    {
+      "id": "sanitize-mixed",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "MyDevice_01"
+      },
+      "expect": {
+        "id": "mydevice-01"
+      }
+    },
+    {
+      "id": "sanitize-underscores",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a__b___c"
+      },
+      "expect": {
+        "id": "a-b-c"
+      }
+    },
+    {
+      "id": "sanitize-dots",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a.b..c"
+      },
+      "expect": {
+        "id": "a-b-c"
+      }
+    },
+    {
+      "id": "sanitize-mixed-separators",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a_. _b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-tab",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\tb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-newline",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\nb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-cr",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\rb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-vt",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\u000bb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-ff",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\fb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-file-sep-1c",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\u001cb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-group-sep-1d",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\u001db"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-record-sep-1e",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\u001eb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-unit-sep-1f",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a\u001fb"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-nel-85",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ab"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-nbsp-a0",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-ogham-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-en-quad",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-hair-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-zwsp-not-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a​b"
+      },
+      "expect": {
+        "id": "ab"
+      }
+    },
+    {
+      "id": "sanitize-line-sep",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-para-sep",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-narrow-nbsp",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-math-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-ideographic-space",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a　b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-bom",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a﻿b"
+      },
+      "expect": {
+        "id": "ab"
+      }
+    },
+    {
+      "id": "sanitize-leading-trailing",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "  -abc-  "
+      },
+      "expect": {
+        "id": "abc"
+      }
+    },
+    {
+      "id": "sanitize-only-separators",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "_ . _"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-hyphen-runs",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a---b"
+      },
+      "expect": {
+        "id": "a-b"
+      }
+    },
+    {
+      "id": "sanitize-kelvin-sign",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "K"
+      },
+      "expect": {
+        "id": "k"
+      }
+    },
+    {
+      "id": "sanitize-kelvin-in-word",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "300Kelvin"
+      },
+      "expect": {
+        "id": "300kelvin"
+      }
+    },
+    {
+      "id": "sanitize-angstrom-sign",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Å"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-ohm-sign",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Ω"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-turkish-dotted-i",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "İstanbul"
+      },
+      "expect": {
+        "id": "istanbul"
+      }
+    },
+    {
+      "id": "sanitize-turkish-dotless-i",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ızmir"
+      },
+      "expect": {
+        "id": "zmir"
+      }
+    },
+    {
+      "id": "sanitize-german-sharp-s",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Straße"
+      },
+      "expect": {
+        "id": "strae"
+      }
+    },
+    {
+      "id": "sanitize-capital-sharp-s",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "STRAẞE"
+      },
+      "expect": {
+        "id": "strae"
+      }
+    },
+    {
+      "id": "sanitize-e-acute",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Café"
+      },
+      "expect": {
+        "id": "caf"
+      }
+    },
+    {
+      "id": "sanitize-e-combining",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Café"
+      },
+      "expect": {
+        "id": "cafe"
+      }
+    },
+    {
+      "id": "sanitize-greek-sigma",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Σσς"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-cyrillic",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Москва"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-fullwidth-latin",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Ａｂｃ"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-fullwidth-digits",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "１２"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-superscript-two",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "m²"
+      },
+      "expect": {
+        "id": "m"
+      }
+    },
+    {
+      "id": "sanitize-roman-numeral",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ⅠⅡ"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-ligature-fi",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ﬁle"
+      },
+      "expect": {
+        "id": "le"
+      }
+    },
+    {
+      "id": "sanitize-long-s",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ſ"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-emoji",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a😀b"
+      },
+      "expect": {
+        "id": "ab"
+      }
+    },
+    {
+      "id": "sanitize-astral-letter",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "𝐀"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-degree",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "20°C"
+      },
+      "expect": {
+        "id": "20c"
+      }
+    },
+    {
+      "id": "sanitize-serial",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "SN: 0000-1002_4176"
+      },
+      "expect": {
+        "id": "sn-0000-1002-4176"
+      }
+    },
+    {
+      "id": "sanitize-composed",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "panel-1/bess.2"
+      },
+      "expect": {
+        "id": "panel-1bess-2"
+      }
+    },
+    {
+      "id": "sanitize-slash",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a/b"
+      },
+      "expect": {
+        "id": "ab"
+      }
+    },
+    {
+      "id": "sanitize-dollar",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "$state"
+      },
+      "expect": {
+        "id": "state"
+      }
+    },
+    {
+      "id": "sanitize-plus-hash",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "a+b#c"
+      },
+      "expect": {
+        "id": "abc"
+      }
+    },
+    {
+      "id": "sanitize-unicode-digit",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "٣٤"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-dz-digraph",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Ǆ"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-title-dz",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "ǅ"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-armenian-ligature",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "և"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-i-with-dot-only",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "İ"
+      },
+      "expect": {
+        "id": "i"
+      }
+    },
+    {
+      "id": "sanitize-upper-a-ring",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "Å"
+      },
+      "expect": {
+        "id": ""
+      }
+    },
+    {
+      "id": "sanitize-deseret",
+      "source": "python-sdk:homie.py sanitize_homie_id",
+      "input": {
+        "value": "𐐀"
+      },
+      "expect": {
+        "id": ""
+      }
+    }
+  ]
+}

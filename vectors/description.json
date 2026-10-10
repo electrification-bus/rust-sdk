@@ -1,0 +1,802 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "description",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "description-minimal",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-full",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 7, \"name\": \"Supercar\", \"type\": \"org.example.car\", \"nodes\": {\"engine\": {\"name\": \"Car engine\", \"type\": \"org.example.engine\", \"properties\": {\"temperature\": {\"name\": \"Engine temperature\", \"unit\": \"°C\", \"datatype\": \"float\", \"format\": \"-20:120\"}, \"on\": {\"datatype\": \"boolean\", \"settable\": true, \"retained\": true}, \"mode\": {\"datatype\": \"enum\", \"format\": \"eco,sport\"}, \"color\": {\"datatype\": \"color\", \"format\": \"rgb,hsv\"}, \"event\": {\"datatype\": \"string\", \"retained\": false}, \"config\": {\"datatype\": \"json\", \"format\": \"{\\\"type\\\": \\\"object\\\"}\"}}}}, \"children\": [\"wheel-1\", \"wheel-2\"], \"extensions\": [\"org.example.feature\"]}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-future-minor",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.3\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-minor-two-digits",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.10\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-version-zero",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 0}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-version-2-53-minus-1",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 9007199254740991}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-version-u64-max",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 18446744073709551615}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-empty-nodes",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-node-no-properties",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-node-empty-properties",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-child-root-only",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"root\": \"bridge\"}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-child-root-and-parent",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"root\": \"bridge\", \"parent\": \"dualrelay\"}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-children",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"children\": [\"light1\", \"light2\"]}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-unknown-top-level-field",
+      "source": "homie-5:convention.md#forward-compatibility (convention.md:659-668), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"imported-from\": {\"source\": \"x\"}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-unknown-node-field",
+      "source": "homie-5:convention.md#forward-compatibility (convention.md:659-668), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"icon\": \"car\", \"properties\": {}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-unknown-property-field",
+      "source": "homie-5:convention.md#forward-compatibility (convention.md:659-668), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"precision\": 2}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-every-datatype",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"n\": {\"properties\": {\"a\": {\"datatype\": \"integer\"}, \"b\": {\"datatype\": \"float\"}, \"c\": {\"datatype\": \"boolean\"}, \"d\": {\"datatype\": \"string\"}, \"e\": {\"datatype\": \"enum\", \"format\": \"x\"}, \"f\": {\"datatype\": \"color\", \"format\": \"xyz\"}, \"g\": {\"datatype\": \"datetime\"}, \"h\": {\"datatype\": \"duration\"}, \"i\": {\"datatype\": \"json\"}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-ids-digits-hyphens",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"0-a\": {\"properties\": {\"-1-\": {\"datatype\": \"integer\"}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-settable-false",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"settable\": false}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-unit-unicode",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"unit\": \"m³\"}}}}}"
+      },
+      "expect": {
+        "valid": true
+      }
+    },
+    {
+      "id": "description-not-json",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{"
+      },
+      "expect": {
+        "valid": false,
+        "error": "notJson"
+      }
+    },
+    {
+      "id": "description-top-level-array",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "[]"
+      },
+      "expect": {
+        "valid": false,
+        "error": "notObject"
+      }
+    },
+    {
+      "id": "description-top-level-string",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "\"x\""
+      },
+      "expect": {
+        "valid": false,
+        "error": "notObject"
+      }
+    },
+    {
+      "id": "description-empty-object",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieMissing"
+      }
+    },
+    {
+      "id": "description-homie-missing",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieMissing"
+      }
+    },
+    {
+      "id": "description-homie-major-only",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-with-patch",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0.0\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-major-4",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"4.0\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-major-6",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"6.0\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-number",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": 5.0, \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-letter-minor",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.x\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-empty-minor",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.\", \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-homie-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": null, \"version\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "homieVersion"
+      }
+    },
+    {
+      "id": "description-version-missing",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "versionMissing"
+      }
+    },
+    {
+      "id": "description-version-string",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": \"1\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "versionNotInteger"
+      }
+    },
+    {
+      "id": "description-version-fraction",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1.5}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "versionNotInteger"
+      }
+    },
+    {
+      "id": "description-version-bool",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": true}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "versionNotInteger"
+      }
+    },
+    {
+      "id": "description-version-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": null}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "versionNotInteger"
+      }
+    },
+    {
+      "id": "description-name-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"name\": null}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nameType"
+      }
+    },
+    {
+      "id": "description-name-number",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"name\": 1}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nameType"
+      }
+    },
+    {
+      "id": "description-type-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"type\": null}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "typeType"
+      }
+    },
+    {
+      "id": "description-nodes-array",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": []}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nodesNotObject"
+      }
+    },
+    {
+      "id": "description-nodes-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": null}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nodesNotObject"
+      }
+    },
+    {
+      "id": "description-node-id-upper",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"Node\": {}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "description-node-id-underscore",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"my_node\": {}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "description-node-id-empty",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"\": {}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "description-node-id-dollar",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"$node\": {}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "description-node-not-object",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": []}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nodeNotObject"
+      }
+    },
+    {
+      "id": "description-node-name-null",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"name\": null}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "nameType"
+      }
+    },
+    {
+      "id": "description-node-type-number",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"type\": 3}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "typeType"
+      }
+    },
+    {
+      "id": "description-properties-array",
+      "source": "homie-5:convention.md#node-attributes (convention.md:300-306), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": []}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "propertiesNotObject"
+      }
+    },
+    {
+      "id": "description-property-id-upper",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"Prop\": {\"datatype\": \"integer\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidPropertyId"
+      }
+    },
+    {
+      "id": "description-property-id-dot",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"a.b\": {\"datatype\": \"integer\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidPropertyId"
+      }
+    },
+    {
+      "id": "description-property-not-object",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": \"integer\"}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "propertyNotObject"
+      }
+    },
+    {
+      "id": "description-datatype-missing",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "datatypeMissing"
+      }
+    },
+    {
+      "id": "description-datatype-unknown",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"number\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "datatypeUnknown"
+      }
+    },
+    {
+      "id": "description-datatype-upper",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"Integer\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "datatypeUnknown"
+      }
+    },
+    {
+      "id": "description-datatype-null",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": null}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "datatypeUnknown"
+      }
+    },
+    {
+      "id": "description-settable-string",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"settable\": \"true\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "settableType"
+      }
+    },
+    {
+      "id": "description-retained-number",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": 1}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "retainedType"
+      }
+    },
+    {
+      "id": "description-retained-null",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"retained\": null}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "retainedType"
+      }
+    },
+    {
+      "id": "description-format-nested-object",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"json\", \"format\": {\"type\": \"object\"}}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "formatType"
+      }
+    },
+    {
+      "id": "description-unit-number",
+      "source": "homie-5:convention.md#property-attributes (convention.md:336-345), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"integer\", \"unit\": 5}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unitType"
+      }
+    },
+    {
+      "id": "description-enum-format-missing",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"enum\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "formatMissing"
+      }
+    },
+    {
+      "id": "description-color-format-missing",
+      "source": "homie-5:convention.md#formats (convention.md:383-395), derived from the convention",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"nodes\": {\"node\": {\"properties\": {\"prop\": {\"datatype\": \"color\"}}}}}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "formatMissing"
+      }
+    },
+    {
+      "id": "description-children-not-array",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"children\": \"a\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "childrenNotArray"
+      }
+    },
+    {
+      "id": "description-children-invalid-id",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"children\": [\"Light1\"]}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidChildId"
+      }
+    },
+    {
+      "id": "description-children-non-string",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"children\": [1]}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidChildId"
+      }
+    },
+    {
+      "id": "description-root-invalid-id",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"root\": \"Bridge\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidRootId"
+      }
+    },
+    {
+      "id": "description-root-null",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"root\": null}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidRootId"
+      }
+    },
+    {
+      "id": "description-parent-without-root",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"parent\": \"dualrelay\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "parentWithoutRoot"
+      }
+    },
+    {
+      "id": "description-parent-invalid-id",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"root\": \"bridge\", \"parent\": \"dual_relay\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidParentId"
+      }
+    },
+    {
+      "id": "description-extensions-not-array",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"extensions\": \"org.example.x\"}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "extensionsNotArray"
+      }
+    },
+    {
+      "id": "description-extensions-non-string",
+      "source": "homie-5:convention.md#device-attributes (convention.md:210-222), derived from the convention: python-sdk has no $description parser",
+      "input": {
+        "payload": "{\"homie\": \"5.0\", \"version\": 1, \"extensions\": [1]}"
+      },
+      "expect": {
+        "valid": false,
+        "error": "extensionsNotArray"
+      }
+    }
+  ]
+}

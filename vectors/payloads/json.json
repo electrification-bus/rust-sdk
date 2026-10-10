@@ -1,0 +1,296 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/json",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "json-empty-array",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[]"
+      },
+      "expect": {
+        "valid": true,
+        "value": []
+      }
+    },
+    {
+      "id": "json-empty-object",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{}"
+      },
+      "expect": {
+        "valid": true,
+        "value": {}
+      }
+    },
+    {
+      "id": "json-object",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": 1}"
+      },
+      "expect": {
+        "valid": true,
+        "value": {
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "json-array",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[1, 2, 3]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": "json-nested",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": [true, null, {\"b\": \"c\"}], \"d\": 1.5}"
+      },
+      "expect": {
+        "valid": true,
+        "value": {
+          "a": [
+            true,
+            null,
+            {
+              "b": "c"
+            }
+          ],
+          "d": 1.5
+        }
+      }
+    },
+    {
+      "id": "json-whitespace-around",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": " [1] "
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "json-scalar-number",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-string",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "\"s\""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-null",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "null"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-scalar-true",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "true"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "json-nan",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "NaN"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-nan",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[NaN]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-infinity",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[Infinity]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-array-neg-infinity",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[-Infinity]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-unquoted-key",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{bad: 1}"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-trailing-comma",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[1,]"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-zero-length",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-single-quotes",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "['a']"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    },
+    {
+      "id": "json-unicode-escape",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"\\u00e9\"]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          "é"
+        ]
+      }
+    },
+    {
+      "id": "json-astral-raw",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[\"😀\"]"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          "😀"
+        ]
+      }
+    },
+    {
+      "id": "json-format-ignored",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "[1]",
+        "format": "{\"type\": \"array\"}"
+      },
+      "expect": {
+        "valid": true,
+        "value": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "json-truncated",
+      "source": "homie-5:convention.md#json (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"a\": "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    }
+  ]
+}

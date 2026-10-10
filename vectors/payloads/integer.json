@@ -1,0 +1,554 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/integer",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "integer-zero",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0"
+      }
+    },
+    {
+      "id": "integer-neg-zero",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-0"
+      }
+    },
+    {
+      "id": "integer-positive",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "42"
+      },
+      "expect": {
+        "valid": true,
+        "value": "42"
+      }
+    },
+    {
+      "id": "integer-negative",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-42"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-42"
+      }
+    },
+    {
+      "id": "integer-leading-zeros",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "007"
+      },
+      "expect": {
+        "valid": true,
+        "value": "007"
+      }
+    },
+    {
+      "id": "integer-neg-leading-zeros",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-007"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-007"
+      }
+    },
+    {
+      "id": "integer-lone-minus",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-zero-length",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-plus-sign",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "+1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-leading-space",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": " 1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-trailing-space",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1 "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-trailing-newline",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1\n"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-decimal",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1.0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-exponent",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1e3"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-int64-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807"
+      },
+      "expect": {
+        "valid": true,
+        "value": "9223372036854775807"
+      }
+    },
+    {
+      "id": "integer-int64-max-plus-1",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775808"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-int64-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-9223372036854775808"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-9223372036854775808"
+      }
+    },
+    {
+      "id": "integer-int64-min-minus-1",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-9223372036854775809"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-huge",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "10000000000000000000000000000000000000000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-hex",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "0x1F"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-underscore",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1_000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-double-minus",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "--1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-fullwidth-digits",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "１２"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-arabic-indic-digit",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "٣"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-nan",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "nan"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-inf",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "inf"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "integer-range-in",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "10",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true,
+        "value": "10"
+      }
+    },
+    {
+      "id": "integer-range-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "0",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": true,
+        "value": "0"
+      }
+    },
+    {
+      "id": "integer-range-above",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-range-below",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-1",
+        "format": "0:10"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "integer-open-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1000000",
+        "format": "0:"
+      },
+      "expect": {
+        "valid": true,
+        "value": "1000000"
+      }
+    },
+    {
+      "id": "integer-open-min",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-1000000",
+        "format": ":10"
+      },
+      "expect": {
+        "valid": true,
+        "value": "-1000000"
+      }
+    },
+    {
+      "id": "integer-step-rounds-up",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "6"
+      }
+    },
+    {
+      "id": "integer-step-from-max",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": ":10:2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "6"
+      }
+    },
+    {
+      "id": "integer-step-exact",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "4",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "4"
+      }
+    },
+    {
+      "id": "integer-step-above-after-round",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "integer-step-not-whole",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "3",
+        "format": "0:10:2.5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerStepNotWhole"
+      }
+    },
+    {
+      "id": "integer-step-whole-from-fraction",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "4",
+        "format": "0:10:2.5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5"
+      }
+    },
+    {
+      "id": "integer-leading-zeros-step-changes",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "007",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "8"
+      }
+    },
+    {
+      "id": "integer-leading-zeros-step-unchanged",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "008",
+        "format": "0:10:2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "008"
+      }
+    },
+    {
+      "id": "integer-format-unparseable",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "a:b"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5"
+      }
+    },
+    {
+      "id": "integer-format-too-many-parts",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "1:2:3:4"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5"
+      }
+    },
+    {
+      "id": "integer-step-zero-ignored",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:0"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5"
+      }
+    },
+    {
+      "id": "integer-step-negative-ignored",
+      "source": "homie-5:convention.md#integer (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:-2"
+      },
+      "expect": {
+        "valid": true,
+        "value": "5"
+      }
+    }
+  ]
+}

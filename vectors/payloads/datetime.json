@@ -1,0 +1,764 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/datetime",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "datetime-calendar",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01"
+      }
+    },
+    {
+      "id": "datetime-leap-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-02-29"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-02-29"
+      }
+    },
+    {
+      "id": "datetime-not-leap-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2023-02-29"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-century-not-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "1900-02-29"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-quad-century-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2000-02-29"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2000-02-29"
+      }
+    },
+    {
+      "id": "datetime-day-30-feb",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-02-30"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-month-13",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-13-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-month-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-00-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-day-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-day-31-apr",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-04-31"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-year-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024"
+      }
+    },
+    {
+      "id": "datetime-year-month",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03"
+      }
+    },
+    {
+      "id": "datetime-basic-calendar",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240301"
+      },
+      "expect": {
+        "valid": true,
+        "value": "20240301"
+      }
+    },
+    {
+      "id": "datetime-basic-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240229"
+      },
+      "expect": {
+        "valid": true,
+        "value": "20240229"
+      }
+    },
+    {
+      "id": "datetime-basic-not-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20230229"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-060"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-060"
+      }
+    },
+    {
+      "id": "datetime-ordinal-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024060"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024060"
+      }
+    },
+    {
+      "id": "datetime-ordinal-366",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-366"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-366"
+      }
+    },
+    {
+      "id": "datetime-ordinal-366-non-leap",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2023-366"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2023-366"
+      }
+    },
+    {
+      "id": "datetime-ordinal-000",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-000"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-ordinal-367",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-367"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-W01"
+      }
+    },
+    {
+      "id": "datetime-week-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W53-7"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-W53-7"
+      }
+    },
+    {
+      "id": "datetime-week-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024W537"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024W537"
+      }
+    },
+    {
+      "id": "datetime-week-00",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-week-54",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W54"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-weekday-8",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-8"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-weekday-0",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-0"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-hour",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12"
+      }
+    },
+    {
+      "id": "datetime-hour-minute",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30"
+      }
+    },
+    {
+      "id": "datetime-hms",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45"
+      }
+    },
+    {
+      "id": "datetime-fraction-dot",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45.123"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45.123"
+      }
+    },
+    {
+      "id": "datetime-fraction-comma",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45,5"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45,5"
+      }
+    },
+    {
+      "id": "datetime-fraction-nanos-z",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45.123456789Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45.123456789Z"
+      }
+    },
+    {
+      "id": "datetime-zulu",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45Z"
+      }
+    },
+    {
+      "id": "datetime-offset",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45+05:30"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45+05:30"
+      }
+    },
+    {
+      "id": "datetime-offset-basic",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45-0800"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45-0800"
+      }
+    },
+    {
+      "id": "datetime-offset-hours",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:45+05"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T12:30:45+05"
+      }
+    },
+    {
+      "id": "datetime-basic-datetime",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "20240301T123045Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "20240301T123045Z"
+      }
+    },
+    {
+      "id": "datetime-basic-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T123045"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T123045"
+      }
+    },
+    {
+      "id": "datetime-ordinal-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-060T08:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-060T08:00Z"
+      }
+    },
+    {
+      "id": "datetime-week-time",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01-1T08:00"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-W01-1T08:00"
+      }
+    },
+    {
+      "id": "datetime-midnight-24",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T24:00"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2024-03-01T24:00"
+      }
+    },
+    {
+      "id": "datetime-hour-25",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T25:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-minute-60",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:60"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-leap-second",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2016-12-31T23:59:60Z"
+      },
+      "expect": {
+        "valid": true,
+        "value": "2016-12-31T23:59:60Z"
+      }
+    },
+    {
+      "id": "datetime-second-61",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:30:61"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-hour-24",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+24:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-minute-60",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+05:60"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeRange"
+      }
+    },
+    {
+      "id": "datetime-zone-one-digit",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00+5"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-needs-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-on-year",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024T12"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-on-week-no-day",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-W01T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-dangling-t",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-lowercase-t",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01t12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-lowercase-z",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00z"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-space-separator",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01 12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-short-month",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-3-1"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-two-digit-year",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "24-03-01"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-dangling-fraction",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-03-01T12:00:00."
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-zero-length",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-fullwidth-digits",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "２０２４"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "datetime-time-only",
+      "source": "homie-5:convention.md#datetime (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "T12:00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    }
+  ]
+}

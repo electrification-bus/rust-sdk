@@ -1,0 +1,296 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/duration",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "duration-zero-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT0S"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT0S"
+      }
+    },
+    {
+      "id": "duration-hours",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT1H"
+      }
+    },
+    {
+      "id": "duration-minutes",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT5M"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT5M"
+      }
+    },
+    {
+      "id": "duration-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT1S"
+      }
+    },
+    {
+      "id": "duration-example",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT12H5M46S"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT12H5M46S"
+      }
+    },
+    {
+      "id": "duration-fraction-seconds",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H2M3.5S"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT1H2M3.5S"
+      }
+    },
+    {
+      "id": "duration-half-second",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT0.5S"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT0.5S"
+      }
+    },
+    {
+      "id": "duration-hours-over-24",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT36H"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT36H"
+      }
+    },
+    {
+      "id": "duration-leading-zeros",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT00001H"
+      },
+      "expect": {
+        "valid": true,
+        "value": "PT00001H"
+      }
+    },
+    {
+      "id": "duration-bare-pt",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-days",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "P1D"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-pt-days",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1D"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-date-and-time",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "P1DT1H"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-dangling-dot",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1.S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-leading-dot",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT.5S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-repeat-unit",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H1H"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-wrong-order",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S1M"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-lowercase",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "pt1s"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-negative",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT-1S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-comma-fraction",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1,5S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-fraction-minutes",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1.5M"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-zero-length",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-no-p",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "T1S"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "duration-trailing-space",
+      "source": "homie-5:convention.md#duration (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1S "
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    }
+  ]
+}

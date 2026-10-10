@@ -1,0 +1,450 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "empty-string",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "empty-value-zero-length-deletes",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-61), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload_hex": ""
+      },
+      "expect": {
+        "deleted": true
+      }
+    },
+    {
+      "id": "empty-value-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "deleted": false,
+        "value": ""
+      }
+    },
+    {
+      "id": "empty-value-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload": "A"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "A"
+      }
+    },
+    {
+      "id": "empty-value-two-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload_hex": "0000"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000\u0000"
+      }
+    },
+    {
+      "id": "empty-value-nul-then-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload_hex": "0061"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000a"
+      }
+    },
+    {
+      "id": "empty-value-space",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload": " "
+      },
+      "expect": {
+        "deleted": false,
+        "value": " "
+      }
+    },
+    {
+      "id": "empty-set-zero-length-deletes",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-61), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload_hex": ""
+      },
+      "expect": {
+        "deleted": true
+      }
+    },
+    {
+      "id": "empty-set-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "deleted": false,
+        "value": ""
+      }
+    },
+    {
+      "id": "empty-set-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload": "A"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "A"
+      }
+    },
+    {
+      "id": "empty-set-two-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload_hex": "0000"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000\u0000"
+      }
+    },
+    {
+      "id": "empty-set-nul-then-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload_hex": "0061"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000a"
+      }
+    },
+    {
+      "id": "empty-set-space",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload": " "
+      },
+      "expect": {
+        "deleted": false,
+        "value": " "
+      }
+    },
+    {
+      "id": "empty-target-zero-length-deletes",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-61), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload_hex": ""
+      },
+      "expect": {
+        "deleted": true
+      }
+    },
+    {
+      "id": "empty-target-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "deleted": false,
+        "value": ""
+      }
+    },
+    {
+      "id": "empty-target-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload": "A"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "A"
+      }
+    },
+    {
+      "id": "empty-target-two-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload_hex": "0000"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000\u0000"
+      }
+    },
+    {
+      "id": "empty-target-nul-then-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload_hex": "0061"
+      },
+      "expect": {
+        "deleted": false,
+        "value": "\u0000a"
+      }
+    },
+    {
+      "id": "empty-target-space",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload": " "
+      },
+      "expect": {
+        "deleted": false,
+        "value": " "
+      }
+    },
+    {
+      "id": "empty-value-invalid-utf8",
+      "source": "homie-5:convention.md#payloads (convention.md:76), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "value",
+        "datatype": "string",
+        "payload_hex": "ff"
+      },
+      "expect": {
+        "error": "invalidUtf8"
+      }
+    },
+    {
+      "id": "empty-set-invalid-utf8",
+      "source": "homie-5:convention.md#payloads (convention.md:76), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "set",
+        "datatype": "string",
+        "payload_hex": "ff"
+      },
+      "expect": {
+        "error": "invalidUtf8"
+      }
+    },
+    {
+      "id": "empty-target-invalid-utf8",
+      "source": "homie-5:convention.md#payloads (convention.md:76), derived from the convention",
+      "input": {
+        "direction": "decode",
+        "topic_kind": "target",
+        "datatype": "string",
+        "payload_hex": "ff"
+      },
+      "expect": {
+        "error": "invalidUtf8"
+      }
+    },
+    {
+      "id": "empty-encode-empty",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "encode",
+        "datatype": "string",
+        "value": ""
+      },
+      "expect": {
+        "payload_hex": "00"
+      }
+    },
+    {
+      "id": "empty-encode-text",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "encode",
+        "datatype": "string",
+        "value": "A"
+      },
+      "expect": {
+        "payload_hex": "41"
+      }
+    },
+    {
+      "id": "empty-encode-space",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "encode",
+        "datatype": "string",
+        "value": " "
+      },
+      "expect": {
+        "payload_hex": "20"
+      }
+    },
+    {
+      "id": "empty-encode-nul",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:60-72); python-sdk:homie.py decode_empty_string/encode_empty_string",
+      "input": {
+        "direction": "encode",
+        "datatype": "string",
+        "value": "\u0000"
+      },
+      "expect": {
+        "payload_hex": "00"
+      }
+    },
+    {
+      "id": "empty-set-nul-integer-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "integer",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "empty-set-nul-float-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "float",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "empty-set-nul-boolean-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "boolean",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "booleanGrammar"
+      }
+    },
+    {
+      "id": "empty-set-nul-enum-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "enum",
+        "payload_hex": "00",
+        "format": "a,b"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "empty-set-nul-color-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "color",
+        "payload_hex": "00",
+        "format": "rgb"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "colorType"
+      }
+    },
+    {
+      "id": "empty-set-nul-datetime-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "datetime",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "datetimeGrammar"
+      }
+    },
+    {
+      "id": "empty-set-nul-duration-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "duration",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "durationGrammar"
+      }
+    },
+    {
+      "id": "empty-set-nul-json-rejected",
+      "source": "homie-5:convention.md#empty-string-values (convention.md:65-67); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "direction": "set",
+        "datatype": "json",
+        "payload_hex": "00"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "jsonInvalid"
+      }
+    }
+  ]
+}

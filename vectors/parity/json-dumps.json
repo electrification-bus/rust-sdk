@@ -1,0 +1,308 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/json-dumps",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "json-dumps-empty-object",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{}"
+      },
+      "expect": {
+        "text": "{}"
+      }
+    },
+    {
+      "id": "json-dumps-empty-array",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[]"
+      },
+      "expect": {
+        "text": "[]"
+      }
+    },
+    {
+      "id": "json-dumps-null-in-array",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[null]"
+      },
+      "expect": {
+        "text": "[null]"
+      }
+    },
+    {
+      "id": "json-dumps-bools",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[true, false]"
+      },
+      "expect": {
+        "text": "[true, false]"
+      }
+    },
+    {
+      "id": "json-dumps-ints",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[0, 1, -1, 9223372036854775807, -9223372036854775808, 18446744073709551615]"
+      },
+      "expect": {
+        "text": "[0, 1, -1, 9223372036854775807, -9223372036854775808, 18446744073709551615]"
+      }
+    },
+    {
+      "id": "json-dumps-floats",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[0.0, -0.0, 1.0, 0.1, 1e+16, 1e-05, 1.5e+300, 5e-324, 100.0, 1e+22]"
+      },
+      "expect": {
+        "text": "[0.0, -0.0, 1.0, 0.1, 1e+16, 1e-05, 1.5e+300, 5e-324, 100.0, 1e+22]"
+      }
+    },
+    {
+      "id": "json-dumps-float-third",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[0.3333333333333333]"
+      },
+      "expect": {
+        "text": "[0.3333333333333333]"
+      }
+    },
+    {
+      "id": "json-dumps-sorted-keys",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"b\": 1, \"a\": 2, \"c\": {\"z\": 1, \"y\": 2}}"
+      },
+      "expect": {
+        "text": "{\"a\": 2, \"b\": 1, \"c\": {\"y\": 2, \"z\": 1}}"
+      }
+    },
+    {
+      "id": "json-dumps-key-code-point-order",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"é\": 1, \"z\": 2, \"Z\": 3, \"😀\": 4, \"￿\": 5, \"\": 6}"
+      },
+      "expect": {
+        "text": "{\"\": 6, \"Z\": 3, \"z\": 2, \"\\u00e9\": 1, \"\\uffff\": 5, \"\\ud83d\\ude00\": 4}"
+      }
+    },
+    {
+      "id": "json-dumps-nested",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"a\": [{\"b\": [[], {}]}, [1, [2, [3]]]]}"
+      },
+      "expect": {
+        "text": "{\"a\": [{\"b\": [[], {}]}, [1, [2, [3]]]]}"
+      }
+    },
+    {
+      "id": "json-dumps-ascii-string",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"hello world\"]"
+      },
+      "expect": {
+        "text": "[\"hello world\"]"
+      }
+    },
+    {
+      "id": "json-dumps-quote-backslash",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"a\\\"b\\\\c\"]"
+      },
+      "expect": {
+        "text": "[\"a\\\"b\\\\c\"]"
+      }
+    },
+    {
+      "id": "json-dumps-slash",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"a/b</script>\"]"
+      },
+      "expect": {
+        "text": "[\"a/b</script>\"]"
+      }
+    },
+    {
+      "id": "json-dumps-controls",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"\\u0000\\u0001\\u0007\\b\\t\\n\\u000b\\f\\r\\u001b\\u001f\"]"
+      },
+      "expect": {
+        "text": "[\"\\u0000\\u0001\\u0007\\b\\t\\n\\u000b\\f\\r\\u001b\\u001f\"]"
+      }
+    },
+    {
+      "id": "json-dumps-del",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"\"]"
+      },
+      "expect": {
+        "text": "[\"\\u007f\"]"
+      }
+    },
+    {
+      "id": "json-dumps-latin1",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"café °C ÿ\"]"
+      },
+      "expect": {
+        "text": "[\"caf\\u00e9 \\u00b0C \\u00ff\"]"
+      }
+    },
+    {
+      "id": "json-dumps-bmp",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"€  ﻿￿\"]"
+      },
+      "expect": {
+        "text": "[\"\\u20ac\\u2028\\u2029\\ufeff\\uffff\"]"
+      }
+    },
+    {
+      "id": "json-dumps-astral",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"😀 𐀀 􏿿\"]"
+      },
+      "expect": {
+        "text": "[\"\\ud83d\\ude00 \\ud800\\udc00 \\udbff\\udfff\"]"
+      }
+    },
+    {
+      "id": "json-dumps-cjk",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"中文\"]"
+      },
+      "expect": {
+        "text": "[\"\\u4e2d\\u6587\"]"
+      }
+    },
+    {
+      "id": "json-dumps-unicode-keys",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"°C\": \"µs\"}"
+      },
+      "expect": {
+        "text": "{\"\\u00b0C\": \"\\u00b5s\"}"
+      }
+    },
+    {
+      "id": "json-dumps-empty-string",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[\"\"]"
+      },
+      "expect": {
+        "text": "[\"\"]"
+      }
+    },
+    {
+      "id": "json-dumps-deep",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[[[[[[[[[\"x\"]]]]]]]]]"
+      },
+      "expect": {
+        "text": "[[[[[[[[[\"x\"]]]]]]]]]"
+      }
+    },
+    {
+      "id": "json-dumps-mixed",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"k\": [1, 1.5, \"s\", null, true, {\"n\": []}]}"
+      },
+      "expect": {
+        "text": "{\"k\": [1, 1.5, \"s\", null, true, {\"n\": []}]}"
+      }
+    },
+    {
+      "id": "json-dumps-description-like",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "{\"homie\": \"5.0\", \"name\": \"Café\", \"nodes\": {\"n\": {\"properties\": {\"p\": {\"datatype\": \"float\", \"unit\": \"°C\"}}}}}"
+      },
+      "expect": {
+        "text": "{\"homie\": \"5.0\", \"name\": \"Caf\\u00e9\", \"nodes\": {\"n\": {\"properties\": {\"p\": {\"datatype\": \"float\", \"unit\": \"\\u00b0C\"}}}}}"
+      }
+    },
+    {
+      "id": "json-dumps-float-big-int",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[1000000000000000.0, 1e+16, 1.2345678901234567e+19]"
+      },
+      "expect": {
+        "text": "[1000000000000000.0, 1e+16, 1.2345678901234567e+19]"
+      }
+    },
+    {
+      "id": "json-dumps-float-small",
+      "source": "python-sdk:homie.py json.dumps(value, sort_keys=True) as used by Device._description_content_hash",
+      "input": {
+        "json": "[0.0001, 9.9e-05, 0.0001234]"
+      },
+      "expect": {
+        "text": "[0.0001, 9.9e-05, 0.0001234]"
+      }
+    },
+    {
+      "id": "json-dumps-escaped-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": "[\"\\u00e9\\ud83d\\ude00\\/\\n\"]"
+      },
+      "expect": {
+        "text": "[\"\\u00e9\\ud83d\\ude00/\\n\"]"
+      }
+    },
+    {
+      "id": "json-dumps-whitespace-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": " { \"b\" : [ 1 , 2 ] ,\n \"a\" : null } "
+      },
+      "expect": {
+        "text": "{\"a\": null, \"b\": [1, 2]}"
+      }
+    },
+    {
+      "id": "json-dumps-exponent-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": "[1e2, 1E-7, 2.50, 0.10]"
+      },
+      "expect": {
+        "text": "[100.0, 1e-07, 2.5, 0.1]"
+      }
+    },
+    {
+      "id": "json-dumps-int-vs-float-input",
+      "source": "python-sdk:homie.py json.dumps(json.loads(text), sort_keys=True)",
+      "input": {
+        "json": "[1, 1.0, -1, -1.0]"
+      },
+      "expect": {
+        "text": "[1, 1.0, -1, -1.0]"
+      }
+    }
+  ]
+}

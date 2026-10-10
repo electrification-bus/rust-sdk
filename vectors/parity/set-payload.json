@@ -1,0 +1,1035 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/set-payload",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "set-int-no-format",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-min-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "6"
+      }
+    },
+    {
+      "id": "set-int-max-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": ":10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "6"
+      }
+    },
+    {
+      "id": "set-int-max-base-ignores-current",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": ":10:2",
+        "current": 1
+      },
+      "expect": {
+        "ok": "6"
+      }
+    },
+    {
+      "id": "set-int-current-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "::2",
+        "current": 1
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-current-base-even",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "::2",
+        "current": 0
+      },
+      "expect": {
+        "ok": "6"
+      }
+    },
+    {
+      "id": "set-int-current-null-no-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "::2",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-current-float-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "::2",
+        "current": 0.5,
+        "current_f64_bits": "3fe0000000000000"
+      },
+      "expect": {
+        "problem": "integerStepNotWhole"
+      }
+    },
+    {
+      "id": "set-int-current-float-base-whole",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "6",
+        "format": "::3",
+        "current": 1.5,
+        "current_f64_bits": "3ff8000000000000"
+      },
+      "expect": {
+        "problem": "integerStepNotWhole"
+      }
+    },
+    {
+      "id": "set-int-negative-step-ignored",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:-2",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-zero-step-ignored",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0:10:0",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-step-not-dividing-top",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "10",
+        "format": "0:10:3",
+        "current": null
+      },
+      "expect": {
+        "ok": "9"
+      }
+    },
+    {
+      "id": "set-int-step-not-dividing-mid",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "8",
+        "format": "0:10:3",
+        "current": null
+      },
+      "expect": {
+        "ok": "9"
+      }
+    },
+    {
+      "id": "set-int-step-fraction-not-whole",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "3",
+        "format": "0:10:2.5",
+        "current": null
+      },
+      "expect": {
+        "problem": "integerStepNotWhole"
+      }
+    },
+    {
+      "id": "set-int-step-fraction-whole",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "4",
+        "format": "0:10:2.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-step-decimal-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "3",
+        "format": "0.5:10:1",
+        "current": null
+      },
+      "expect": {
+        "problem": "integerStepNotWhole"
+      }
+    },
+    {
+      "id": "set-int-below-min-after-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-3",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "set-int-rounds-into-range",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-1",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "0"
+      }
+    },
+    {
+      "id": "set-int-above-max-after-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "11",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "set-int-negative-values",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-7",
+        "format": "-10:-2:4",
+        "current": null
+      },
+      "expect": {
+        "ok": "-6"
+      }
+    },
+    {
+      "id": "set-int-negative-tie",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-8",
+        "format": "-10:10:4",
+        "current": null
+      },
+      "expect": {
+        "ok": "-6"
+      }
+    },
+    {
+      "id": "set-int-leading-zero-unchanged",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "004",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "004"
+      }
+    },
+    {
+      "id": "set-int-leading-zero-changed",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "005",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "6"
+      }
+    },
+    {
+      "id": "set-int-neg-zero-unchanged",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "-0",
+        "format": "0:10:2",
+        "current": null
+      },
+      "expect": {
+        "ok": "-0"
+      }
+    },
+    {
+      "id": "set-int-max",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807",
+        "format": "::1",
+        "current": 0
+      },
+      "expect": {
+        "ok": "9223372036854775807"
+      }
+    },
+    {
+      "id": "set-int-max-step-overflow",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775807",
+        "format": "0::2",
+        "current": null
+      },
+      "expect": {
+        "ok": "9223372036854775808"
+      }
+    },
+    {
+      "id": "set-int-format-float-bounds",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0.5:5.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-int-format-exponent-bounds",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "500",
+        "format": "1e2:1e3:1e2",
+        "current": null
+      },
+      "expect": {
+        "ok": "500"
+      }
+    },
+    {
+      "id": "set-int-huge-step",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "5",
+        "format": "0::1e30",
+        "current": null
+      },
+      "expect": {
+        "ok": "0"
+      }
+    },
+    {
+      "id": "set-float-no-format",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.25",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "1.25"
+      }
+    },
+    {
+      "id": "set-float-step-half",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.5"
+      }
+    },
+    {
+      "id": "set-float-step-tie-up",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.25",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.5"
+      }
+    },
+    {
+      "id": "set-float-step-negative-tie-up",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.25",
+        "format": "-10:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.0"
+      }
+    },
+    {
+      "id": "set-float-step-tenth-reformat",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.29",
+        "format": "0:1:0.1",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.3"
+      }
+    },
+    {
+      "id": "set-float-step-tenth-0-7",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.66",
+        "format": "0:1:0.1",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.7"
+      }
+    },
+    {
+      "id": "set-float-step-third",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.5",
+        "format": "0:1:0.333",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.666"
+      }
+    },
+    {
+      "id": "set-float-step-exact-unchanged",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.5",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "1.5"
+      }
+    },
+    {
+      "id": "set-float-step-unchanged-text-kept",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.50",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "1.50"
+      }
+    },
+    {
+      "id": "set-float-step-exponent-text-kept",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "15e-1",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "15e-1"
+      }
+    },
+    {
+      "id": "set-float-step-changes-exponent-text",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "16e-1",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "1.5"
+      }
+    },
+    {
+      "id": "set-float-max-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": ":1:0.25",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.25"
+      }
+    },
+    {
+      "id": "set-float-current-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.3",
+        "format": "::0.25",
+        "current": 0.1,
+        "current_f64_bits": "3fb999999999999a"
+      },
+      "expect": {
+        "ok": "0.35"
+      }
+    },
+    {
+      "id": "set-float-current-base-int",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "2.6",
+        "format": "::1",
+        "current": 1
+      },
+      "expect": {
+        "ok": "3.0"
+      }
+    },
+    {
+      "id": "set-float-current-binary-fraction",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1",
+        "format": "::0.5",
+        "current": 0.2,
+        "current_f64_bits": "3fc999999999999a"
+      },
+      "expect": {
+        "ok": "1.2"
+      }
+    },
+    {
+      "id": "set-float-current-third",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1",
+        "format": "::1",
+        "current": 0.3333333333333333,
+        "current_f64_bits": "3fd5555555555555"
+      },
+      "expect": {
+        "ok": "1.3333333333333333"
+      }
+    },
+    {
+      "id": "set-float-current-large",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e20",
+        "format": "::1",
+        "current": 0.1,
+        "current_f64_bits": "3fb999999999999a"
+      },
+      "expect": {
+        "ok": "1e20"
+      }
+    },
+    {
+      "id": "set-float-step-big-exponent",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1.5e300",
+        "format": "::1e300",
+        "current": 0
+      },
+      "expect": {
+        "ok": "2e300"
+      }
+    },
+    {
+      "id": "set-float-step-tiny",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "3e-300",
+        "format": "0::2e-300",
+        "current": null
+      },
+      "expect": {
+        "ok": "4e-300"
+      }
+    },
+    {
+      "id": "set-float-underflow-payload-rounds",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-400",
+        "format": "::1",
+        "current": 0
+      },
+      "expect": {
+        "ok": "0.0"
+      }
+    },
+    {
+      "id": "set-float-underflow-payload-kept",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e-400",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "1e-400"
+      }
+    },
+    {
+      "id": "set-float-below-min",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.1",
+        "format": "0:10",
+        "current": null
+      },
+      "expect": {
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "set-float-above-max",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "10.0001",
+        "format": "0:10",
+        "current": null
+      },
+      "expect": {
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "set-float-below-min-after-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.3",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "problem": "belowMin"
+      }
+    },
+    {
+      "id": "set-float-in-range-after-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.2",
+        "format": "0:10:0.5",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.0"
+      }
+    },
+    {
+      "id": "set-float-above-max-after-round",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "10.3",
+        "format": "0:10.2:0.5",
+        "current": null
+      },
+      "expect": {
+        "problem": "aboveMax"
+      }
+    },
+    {
+      "id": "set-float-bounds-exponent",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5",
+        "format": "1e-1:1e1",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-float-bounds-huge",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e308",
+        "format": "0:1e400",
+        "current": null
+      },
+      "expect": {
+        "ok": "1e308"
+      }
+    },
+    {
+      "id": "set-float-neg-zero-unchanged",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.0",
+        "format": "0:10:1",
+        "current": null
+      },
+      "expect": {
+        "ok": "-0.0"
+      }
+    },
+    {
+      "id": "set-float-step-result-zero",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "0.2",
+        "format": "-1:1:1",
+        "current": null
+      },
+      "expect": {
+        "ok": "0.0"
+      }
+    },
+    {
+      "id": "set-float-step-result-neg-zero-base",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "-0.2",
+        "format": "::1",
+        "current": -0.0,
+        "current_f64_bits": "8000000000000000"
+      },
+      "expect": {
+        "ok": "0.0"
+      }
+    },
+    {
+      "id": "set-float-format-unparseable",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5",
+        "format": "x:y:z",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-float-format-open",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5",
+        "format": ":",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-float-format-one-part",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "5",
+        "format": "5",
+        "current": null
+      },
+      "expect": {
+        "ok": "5"
+      }
+    },
+    {
+      "id": "set-float-grammar",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e+5",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "set-float-1e999",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "float",
+        "payload": "1e999",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "problem": "floatGrammar"
+      }
+    },
+    {
+      "id": "set-int-grammar",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "1.0",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "set-int-out-of-range",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "integer",
+        "payload": "9223372036854775808",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "problem": "integerGrammar"
+      }
+    },
+    {
+      "id": "set-boolean",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "boolean",
+        "payload": "true",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "true"
+      }
+    },
+    {
+      "id": "set-enum",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "b",
+        "format": "a,b",
+        "current": null
+      },
+      "expect": {
+        "ok": "b"
+      }
+    },
+    {
+      "id": "set-enum-miss",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "c",
+        "format": "a,b",
+        "current": null
+      },
+      "expect": {
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "set-color",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "color",
+        "payload": "rgb,1,2,3",
+        "format": "rgb",
+        "current": null
+      },
+      "expect": {
+        "ok": "rgb,1,2,3"
+      }
+    },
+    {
+      "id": "set-datetime",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "datetime",
+        "payload": "2024-02-29",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "2024-02-29"
+      }
+    },
+    {
+      "id": "set-duration",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "duration",
+        "payload": "PT1H",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": "PT1H"
+      }
+    },
+    {
+      "id": "set-string-nul",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload_hex": "00",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": ""
+      }
+    },
+    {
+      "id": "set-string-text",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "string",
+        "payload": "abc",
+        "format": null,
+        "current": 5
+      },
+      "expect": {
+        "ok": "abc"
+      }
+    },
+    {
+      "id": "set-json-object",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "{\"b\": 1, \"a\": [1.5, \"x\"]}",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": {
+          "b": 1,
+          "a": [
+            1.5,
+            "x"
+          ]
+        }
+      }
+    },
+    {
+      "id": "set-json-scalar",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "json",
+        "payload": "1",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "problem": "jsonNotArrayOrObject"
+      }
+    },
+    {
+      "id": "set-unknown-datatype-as-string",
+      "source": "python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "number",
+        "payload_hex": "00",
+        "format": null,
+        "current": null
+      },
+      "expect": {
+        "ok": ""
+      }
+    }
+  ]
+}

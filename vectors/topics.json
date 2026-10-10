@@ -1,0 +1,928 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "topics",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "topic-state",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$state"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceState"
+      }
+    },
+    {
+      "id": "topic-state-ebus-domain",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "ebus/5/panel-1/$state"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "ebus",
+        "device": "panel-1",
+        "kind": "DeviceState"
+      }
+    },
+    {
+      "id": "topic-description",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$description"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceDescription"
+      }
+    },
+    {
+      "id": "topic-device-id-digits",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/000010024176/$state"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "000010024176",
+        "kind": "DeviceState"
+      }
+    },
+    {
+      "id": "topic-device-id-hyphens",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/-a--b-/$state"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "-a--b-",
+        "kind": "DeviceState"
+      }
+    },
+    {
+      "id": "topic-custom-domain",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "my-domain-2/5/dev/$state"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "my-domain-2",
+        "device": "dev",
+        "kind": "DeviceState"
+      }
+    },
+    {
+      "id": "topic-property-value",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "PropertyValue",
+        "node": "node",
+        "property": "prop"
+      }
+    },
+    {
+      "id": "topic-property-set",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/set"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "PropertySet",
+        "node": "node",
+        "property": "prop"
+      }
+    },
+    {
+      "id": "topic-property-target",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/$target"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "PropertyTarget",
+        "node": "node",
+        "property": "prop"
+      }
+    },
+    {
+      "id": "topic-property-named-set",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/set"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "PropertyValue",
+        "node": "node",
+        "property": "set"
+      }
+    },
+    {
+      "id": "topic-node-named-set",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/set/prop/set"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "PropertySet",
+        "node": "set",
+        "property": "prop"
+      }
+    },
+    {
+      "id": "topic-alert",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/battery"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceAlert",
+        "alert_id": "battery"
+      }
+    },
+    {
+      "id": "topic-alert-digits",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/0"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceAlert",
+        "alert_id": "0"
+      }
+    },
+    {
+      "id": "topic-broadcast-one",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/alert"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": null,
+        "kind": "Broadcast",
+        "subtopic": "alert"
+      }
+    },
+    {
+      "id": "topic-broadcast-multi",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/security/alert"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": null,
+        "kind": "Broadcast",
+        "subtopic": "security/alert"
+      }
+    },
+    {
+      "id": "topic-broadcast-deep",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "ebus/5/$broadcast/a/b/c-1"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "ebus",
+        "device": null,
+        "kind": "Broadcast",
+        "subtopic": "a/b/c-1"
+      }
+    },
+    {
+      "id": "topic-log-debug",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/debug"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceLog",
+        "level": "debug"
+      }
+    },
+    {
+      "id": "topic-log-info",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/info"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceLog",
+        "level": "info"
+      }
+    },
+    {
+      "id": "topic-log-warn",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/warn"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceLog",
+        "level": "warn"
+      }
+    },
+    {
+      "id": "topic-log-error",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/error"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceLog",
+        "level": "error"
+      }
+    },
+    {
+      "id": "topic-log-fatal",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/fatal"
+      },
+      "expect": {
+        "valid": true,
+        "domain": "homie",
+        "device": "dev",
+        "kind": "DeviceLog",
+        "level": "fatal"
+      }
+    },
+    {
+      "id": "topic-bad-version-4",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie/4/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "badVersion"
+      }
+    },
+    {
+      "id": "topic-bad-version-50",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie/50/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "badVersion"
+      }
+    },
+    {
+      "id": "topic-bad-version-5-0",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie/5.0/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "badVersion"
+      }
+    },
+    {
+      "id": "topic-bad-version-missing",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie//dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "badVersion"
+      }
+    },
+    {
+      "id": "topic-bad-domain-upper",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "Homie/5/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-domain-empty",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "/5/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-domain-dollar",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "$homie/5/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-domain-underscore",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "my_domain/5/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-device-upper",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/Dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-underscore",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/my_dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-dot",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/my.dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-space",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/my dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-unicode",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dév/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-dollar",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/$dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-plus-wildcard",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/+/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-hash-wildcard",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/#"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-empty",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5//$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-too-short-root",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie/5"
+      },
+      "expect": {
+        "valid": false,
+        "error": "tooShort"
+      }
+    },
+    {
+      "id": "topic-bad-too-short-root-slash",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "homie/5/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDeviceId"
+      }
+    },
+    {
+      "id": "topic-bad-device-base-topic",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev"
+      },
+      "expect": {
+        "valid": false,
+        "error": "tooShort"
+      }
+    },
+    {
+      "id": "topic-bad-empty-topic",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": ""
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-leading-slash",
+      "source": "homie-5:convention.md#domain-and-root-topic (convention.md:152-157), derived from the convention",
+      "input": {
+        "topic": "/homie/5/dev/$state"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidDomain"
+      }
+    },
+    {
+      "id": "topic-bad-trailing-slash",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$state/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-unknown-attribute",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$name"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownAttribute"
+      }
+    },
+    {
+      "id": "topic-bad-unknown-attribute-homie3",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$homie"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownAttribute"
+      }
+    },
+    {
+      "id": "topic-bad-attribute-upper",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$STATE"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownAttribute"
+      }
+    },
+    {
+      "id": "topic-bad-state-extra-level",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$state/x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-description-extra-level",
+      "source": "homie-5:convention.md#device-attributes (convention.md:190-200), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$description/x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-log-no-level",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log"
+      },
+      "expect": {
+        "valid": false,
+        "error": "missingLogLevel"
+      }
+    },
+    {
+      "id": "topic-bad-log-unknown-level",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/trace"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownLogLevel"
+      }
+    },
+    {
+      "id": "topic-bad-log-level-upper",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/WARN"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownLogLevel"
+      }
+    },
+    {
+      "id": "topic-bad-log-subtopic",
+      "source": "homie-5:convention.md#logging (convention.md:549-562), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$log/warn/x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-alert-no-id",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert"
+      },
+      "expect": {
+        "valid": false,
+        "error": "missingAlertId"
+      }
+    },
+    {
+      "id": "topic-bad-alert-empty-id",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidAlertId"
+      }
+    },
+    {
+      "id": "topic-bad-alert-dollar-id",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/$x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidAlertId"
+      }
+    },
+    {
+      "id": "topic-bad-alert-upper-id",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/Battery"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidAlertId"
+      }
+    },
+    {
+      "id": "topic-bad-alert-subtopic",
+      "source": "homie-5:convention.md#alert-topic (convention.md:509-522), derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$alert/a/b"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-node-base-topic",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node"
+      },
+      "expect": {
+        "valid": false,
+        "error": "tooShort"
+      }
+    },
+    {
+      "id": "topic-bad-node-dollar",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/$node/prop"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unknownAttribute"
+      }
+    },
+    {
+      "id": "topic-bad-node-upper",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dev/Node/prop"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "topic-bad-node-empty",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dev//prop"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidNodeId"
+      }
+    },
+    {
+      "id": "topic-bad-property-upper",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dev/node/Prop"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidPropertyId"
+      }
+    },
+    {
+      "id": "topic-bad-property-dollar",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dev/node/$prop"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidPropertyId"
+      }
+    },
+    {
+      "id": "topic-bad-property-empty",
+      "source": "homie-5:convention.md#topic-ids (convention.md:36-42), derived from the convention: python-sdk has no topic parser",
+      "input": {
+        "topic": "homie/5/dev/node/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidPropertyId"
+      }
+    },
+    {
+      "id": "topic-bad-property-unknown-suffix",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/get"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-property-set-upper",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/SET"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-property-dollar-set",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/$set"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-property-unknown-attribute",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/$format"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-property-set-extra",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/set/x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-property-target-extra",
+      "source": "homie-5:convention.md#property-attributes, #property-command-topic, derived from the convention",
+      "input": {
+        "topic": "homie/5/dev/node/prop/$target/x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "unexpectedLevel"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-no-subtopic",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast"
+      },
+      "expect": {
+        "valid": false,
+        "error": "missingSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-empty-subtopic",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-empty-segment",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/a//b"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-trailing-slash",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/a/"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-upper",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/Alert"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-dollar-segment",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/$x"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    },
+    {
+      "id": "topic-bad-broadcast-wildcard",
+      "source": "homie-5:convention.md#broadcast-topic (convention.md:524-540), derived from the convention",
+      "input": {
+        "topic": "homie/5/$broadcast/#"
+      },
+      "expect": {
+        "valid": false,
+        "error": "invalidSubtopic"
+      }
+    }
+  ]
+}

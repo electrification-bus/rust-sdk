@@ -8,6 +8,16 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
+pub mod datatype;
+#[cfg(feature = "alloc")]
+pub mod description;
+pub mod id;
+pub mod payload;
+#[cfg(feature = "alloc")]
+pub mod pyfmt;
+pub mod state;
+pub mod topic;
+
 /// Homie convention major version, as it appears in topics (`{domain}/5/...`).
 pub const HOMIE_TOPIC_VERSION: &str = "5";
 

@@ -1,0 +1,368 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "effective-state",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "effective-no-root-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": false,
+        "root_state": null,
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-no-root-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": false,
+        "root_state": null,
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "ready"
+      }
+    },
+    {
+      "id": "effective-no-root-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": false,
+        "root_state": null,
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-no-root-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": false,
+        "root_state": null,
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-no-root-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": false,
+        "root_state": null,
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-init-own-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "init",
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-init-own-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "init",
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-init-own-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "init",
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-init-own-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "init",
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-init-own-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "init",
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-ready-own-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "ready",
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "init"
+      }
+    },
+    {
+      "id": "effective-root-ready-own-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "ready",
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "ready"
+      }
+    },
+    {
+      "id": "effective-root-ready-own-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "ready",
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-ready-own-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "ready",
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-ready-own-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "ready",
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-disconnected-own-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "disconnected",
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-disconnected-own-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "disconnected",
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-disconnected-own-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "disconnected",
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-disconnected-own-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "disconnected",
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-disconnected-own-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "disconnected",
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "disconnected"
+      }
+    },
+    {
+      "id": "effective-root-sleeping-own-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "sleeping",
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-sleeping-own-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "sleeping",
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-sleeping-own-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "sleeping",
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-sleeping-own-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "sleeping",
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-sleeping-own-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "sleeping",
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "sleeping"
+      }
+    },
+    {
+      "id": "effective-root-lost-own-init",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "lost",
+        "own_state": "init"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-lost-own-ready",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "lost",
+        "own_state": "ready"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-lost-own-disconnected",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "lost",
+        "own_state": "disconnected"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-lost-own-sleeping",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "lost",
+        "own_state": "sleeping"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    },
+    {
+      "id": "effective-root-lost-own-lost",
+      "source": "homie-5:convention.md#device-hierarchy (convention.md:262-267); python-sdk:homie.py HOMIE_EFFECTIVE_STATE_TABLE, which also propagates init, disconnected and sleeping from the root (the convention table names only lost)",
+      "input": {
+        "has_root": true,
+        "root_state": "lost",
+        "own_state": "lost"
+      },
+      "expect": {
+        "state": "lost"
+      }
+    }
+  ]
+}

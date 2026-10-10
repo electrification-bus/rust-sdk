@@ -1,0 +1,283 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "parity/encode-duration",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "encode-duration-0s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT0S"
+      }
+    },
+    {
+      "id": "encode-duration-0s-1us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 1
+      },
+      "expect": {
+        "payload": "PT0.000001S"
+      }
+    },
+    {
+      "id": "encode-duration-0s-500000us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 500000
+      },
+      "expect": {
+        "payload": "PT0.5S"
+      }
+    },
+    {
+      "id": "encode-duration-0s-999999us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 999999
+      },
+      "expect": {
+        "payload": "PT0.999999S"
+      }
+    },
+    {
+      "id": "encode-duration-1s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 1,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1S"
+      }
+    },
+    {
+      "id": "encode-duration-59s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 59,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT59S"
+      }
+    },
+    {
+      "id": "encode-duration-60s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 60,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1M"
+      }
+    },
+    {
+      "id": "encode-duration-61s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 61,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1M1S"
+      }
+    },
+    {
+      "id": "encode-duration-3599s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3599,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT59M59S"
+      }
+    },
+    {
+      "id": "encode-duration-3600s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3600,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1H"
+      }
+    },
+    {
+      "id": "encode-duration-3601s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3601,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1H1S"
+      }
+    },
+    {
+      "id": "encode-duration-3661s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3661,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1H1M1S"
+      }
+    },
+    {
+      "id": "encode-duration-3661s-500000us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3661,
+        "microseconds": 500000
+      },
+      "expect": {
+        "payload": "PT1H1M1.5S"
+      }
+    },
+    {
+      "id": "encode-duration-3600s-1us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3600,
+        "microseconds": 1
+      },
+      "expect": {
+        "payload": "PT1H0.000001S"
+      }
+    },
+    {
+      "id": "encode-duration-3720s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 3720,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT1H2M"
+      }
+    },
+    {
+      "id": "encode-duration-86399s-999999us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 86399,
+        "microseconds": 999999
+      },
+      "expect": {
+        "payload": "PT23H59M59.999999S"
+      }
+    },
+    {
+      "id": "encode-duration-86400s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 86400,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT24H"
+      }
+    },
+    {
+      "id": "encode-duration-90061s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 90061,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT25H1M1S"
+      }
+    },
+    {
+      "id": "encode-duration-90061s-120000us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 90061,
+        "microseconds": 120000
+      },
+      "expect": {
+        "payload": "PT25H1M1.12S"
+      }
+    },
+    {
+      "id": "encode-duration-43546s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 43546,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT12H5M46S"
+      }
+    },
+    {
+      "id": "encode-duration-1000000000s-0us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 1000000000,
+        "microseconds": 0
+      },
+      "expect": {
+        "payload": "PT277777H46M40S"
+      }
+    },
+    {
+      "id": "encode-duration-86399999999999s-999999us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 86399999999999,
+        "microseconds": 999999
+      },
+      "expect": {
+        "payload": "PT23999999999H59M59.999999S"
+      }
+    },
+    {
+      "id": "encode-duration-0s-100000us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 100000
+      },
+      "expect": {
+        "payload": "PT0.1S"
+      }
+    },
+    {
+      "id": "encode-duration-0s-10us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 0,
+        "microseconds": 10
+      },
+      "expect": {
+        "payload": "PT0.00001S"
+      }
+    },
+    {
+      "id": "encode-duration-7s-250000us",
+      "source": "python-sdk:homie.py _encode_duration(timedelta)",
+      "input": {
+        "total_seconds": 7,
+        "microseconds": 250000
+      },
+      "expect": {
+        "payload": "PT7.25S"
+      }
+    }
+  ]
+}

@@ -10,8 +10,15 @@ authors.workspace = true
 
 [features]
 default = ["std"]
-std = ["alloc"]
-alloc = []
+std = ["alloc", "serde_json/std"]
+alloc = ["dep:serde_json", "dep:sha2", "dep:num-bigint", "dep:num-traits", "dep:num-integer"]
+
+[dependencies]
+serde_json = { version = "1.0.100", default-features = false, features = ["alloc"], optional = true }
+sha2 = { version = "0.10", default-features = false, optional = true }
+num-bigint = { version = "0.4", default-features = false, optional = true }
+num-traits = { version = "0.2", default-features = false, optional = true }
+num-integer = { version = "0.1", default-features = false, optional = true }
 
 [lints]
 workspace = true

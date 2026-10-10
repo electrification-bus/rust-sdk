@@ -1,0 +1,162 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "payloads/enum",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-sdk 0.26.0",
+  "cases": [
+    {
+      "id": "enum-in-format",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "on",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": true,
+        "value": "on"
+      }
+    },
+    {
+      "id": "enum-second",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "off",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": true,
+        "value": "off"
+      }
+    },
+    {
+      "id": "enum-case",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "On",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-leading-space",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": " on",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-zero-length",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload_hex": "",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-whole-format",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "on,off",
+        "format": "on,off"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-space-significant-match",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": " b",
+        "format": "a, b"
+      },
+      "expect": {
+        "valid": true,
+        "value": " b"
+      }
+    },
+    {
+      "id": "enum-space-significant-miss",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "b",
+        "format": "a, b"
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-no-format-any",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "anything"
+      },
+      "expect": {
+        "valid": true,
+        "value": "anything"
+      }
+    },
+    {
+      "id": "enum-no-format-zero-length",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload_hex": ""
+      },
+      "expect": {
+        "valid": false,
+        "problem": "enumNotInFormat"
+      }
+    },
+    {
+      "id": "enum-empty-format-any",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "x",
+        "format": ""
+      },
+      "expect": {
+        "valid": true,
+        "value": "x"
+      }
+    },
+    {
+      "id": "enum-unicode",
+      "source": "homie-5:convention.md#enum (convention.md:74-151, :383-413); python-sdk:homie.py _parse_set_payload",
+      "input": {
+        "datatype": "enum",
+        "payload": "été",
+        "format": "été,hiver"
+      },
+      "expect": {
+        "valid": true,
+        "value": "été"
+      }
+    }
+  ]
+}
