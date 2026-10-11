@@ -176,9 +176,10 @@ async fn found<B: Backend>(b: &B, instance: &str) -> BrokerEndpoint {
         .unwrap()
 }
 
-/// Asserts that python's endpoint is `e`. python's IPv4 candidates, from
-/// the interfaces it browsed, are among `e`'s, and with `addressed` there is
-/// at least one.
+/// Asserts that python's endpoint is `e`. With `addressed`, python's IPv4
+/// candidates share at least one address with `e`'s: Avahi resolves one
+/// address per interface and protocol, so on an interface with two IPv4
+/// addresses each side may report a different one.
 fn assert_same(py: &serde_json::Value, e: &BrokerEndpoint, addressed: bool) {
     assert_eq!(py["service_type"], e.broker_type.as_str(), "{py}");
     assert_eq!(py["host"], e.host.as_str(), "{py}");
@@ -199,9 +200,13 @@ fn assert_same(py: &serde_json::Value, e: &BrokerEndpoint, addressed: bool) {
         .collect();
     let addrs = py["addresses"].as_array().expect("addresses");
     assert_eq!(!addrs.is_empty(), addressed, "{py}; ours {ours:?}");
-    for a in addrs {
-        let a = a.as_str().expect("address");
-        assert!(ours.iter().any(|o| o == a), "{py}; ours {ours:?}");
+    if addressed {
+        assert!(
+            addrs
+                .iter()
+                .any(|a| ours.iter().any(|o| Some(o.as_str()) == a.as_str())),
+            "{py}; ours {ours:?}"
+        );
     }
 }
 
