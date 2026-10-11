@@ -38,7 +38,13 @@ A device and a controller can share one connection (`ebus_rumqttc::pair`).
 
 ### Broker discovery (planned)
 
-Finds the MQTT broker over mDNS (DNS-SD), first through Avahi on Linux, for a host that has no configured broker. Advertising the host's own eBus services over mDNS is the host's job.
+A site has one MQTT broker, and every eBus host at the site connects to it. A host finds it in one of three ways:
+
+- discovers the brokers advertised over mDNS (DNS-SD) and picks one;
+- connects to a configured broker;
+- uses mDNS to find a particular broker, by its host, instance name or device id.
+
+The host also advertises its own eBus services over mDNS. Two backends are planned: Avahi on Linux, and the pure-Rust mdns-sd for hosts without Avahi and for macOS.
 
 ## Quick start
 

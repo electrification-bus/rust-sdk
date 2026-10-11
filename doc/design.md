@@ -8,7 +8,8 @@ rust-sdk implements the eBus device and controller roles in Rust: Homie 5 over M
 |---|---|---|---|
 | `ebus-homie` | Homie 5 codec (ids, topics, states, payloads, datatypes, `$description`) and the controller and device state machines | `ebus-mqtt`; `serde_json`, `sha2`, `rpds`, `num-*` (under `alloc`); `log` (under `log`) | yes, `alloc` optional |
 | `ebus-mqtt` | MQTT vocabulary, topic filters and filter ownership; the `Role` trait and `Pair` | nothing | yes, `alloc` optional |
-| `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, broker selection; mDNS backends behind features (planned) | nothing | yes, `alloc` optional |
+| `ebus-discovery` | eBus DNS-SD contract (planned): service types, TXT records, broker selection | nothing; `ebus-mqtt` (planned) | yes, `alloc` optional |
+| `ebus-discovery-tokio` (planned) | Avahi and mdns-sd backends, broker search and host advertisement on tokio | `ebus-discovery`, tokio; zbus (`avahi`), mdns-sd (`mdns-sd`) | no |
 | `ebus-homie-tokio` | Drives the core state machines on tokio over a host-owned or bundled MQTT connection | `ebus-homie`, `ebus-mqtt`, tokio 1 (`sync`, `time`, `macros`, `rt`), `rpds` | no |
 | `ebus-rumqttc` | Bundled rumqttc 0.25 adapter | `ebus-homie-tokio`, rumqttc 0.25 | no |
 
@@ -863,11 +864,296 @@ Inside `ebus-homie-tokio`, each command carries an origin tag. Under `link_up_di
 
 ## Broker discovery (planned)
 
-`ebus-discovery` holds the eBus DNS-SD contract (service types, TXT records, broker selection), sans-IO, with mDNS backends behind features; Avahi is the first backend.
+mDNS advertisement and broker discovery are host functions. The host advertises its `.local` hostname, `_ebus._tcp` listing every role it runs, `_device-info._tcp`, a broker it hosts itself, and its REST API (framework.md:76-79). `device()`, `pair()` and `controller()` connect where the caller's `MqttOptions` say; the host resolves its broker once, before building those options.
 
-mDNS advertisement is a host function. The eBus entity that advertises is the host, with the services it provides: its `.local` hostname, `_ebus._tcp` listing every role it runs, `_device-info._tcp`, a broker it hosts itself, and its REST API (framework.md:76-79, 238-248). The host advertises through `ebus-discovery`; `device()`, `pair()` and `controller()` advertise nothing.
+### Use cases
 
-`device()`, `pair()` and `controller()` take broker coordinates from the caller's `MqttOptions`, and `attach_*` from the host's own connection. The host gets them from its configuration (framework.md:93) or, when it has no configured broker, from broker discovery over mDNS (framework.md:80, 328-337), which `ebus-discovery` provides; its broker mode selects between them (framework.md:102).
+A site (a home or a building) has one MQTT broker, and every eBus host at the site connects to it. A host finds that broker in one of three ways:
+
+| Use case | What the host does | `mode` |
+|---|---|---|
+| Discover and pick | Lists the brokers advertised over mDNS and picks the first by the ranking in [Broker selection](#broker-selection) | `discovery-only` (the default) |
+| Configured broker | Connects to the configured URL | `configured-only`, or unset with a URL |
+| Find a particular broker | Uses mDNS to find the broker it wants: the one matching a configured URL's host or address (`match_configured`), falling back to the URL; or the one with a given instance name or device id (`wanted`) | `discovery-with-fallback` with a URL; `discovery-only` with `wanted` |
+
+A host that runs its own broker connects to it directly, since broker discovery is required only of an entity that does not self-host one (framework.md:80).
+
+Citations `ebus.py`, `_mdns_core.py`, `mdns.py`, `instance.py`, `record.py` and `resolver.py` are at [python-service-discovery](https://github.com/electrification-bus/python-service-discovery) `466cd6a`; `browser.py` at [python-mdns-discovery](https://github.com/electrification-bus/python-mdns-discovery) `4464074`; `txt_records.cpp` at cpp-sdk `cc73353`; `service_daemon.rs` and `service_info.rs` at mdns-sd 0.21.5; `defs.h`, `dbus-protocol.c` and `socket.c` at [avahi](https://github.com/avahi/avahi) `3ed8102`; `eventloop.rs` and `tls.rs` at rumqttc 0.25.1.
+
+### Shape
+
+| Crate | Additions |
+|---|---|
+| `ebus-discovery` (core, sans-IO) | Service types and the broker preference order; TXT decoding, checks and building; `Identity`, `HttpService`, `BrokerService`, `Advertisement`; `BrokerEndpoint`, `BrokerMode`, `BrokerConfig`; `rank_brokers`, `match_configured`, `select_broker`; `InstanceTable` (merges backend sightings into instances) and the `BrokerSearch` state machine. Service types, `BrokerType`, `BrokerMode` and address scopes without `alloc`, the rest under `alloc`; optional `log`. Depends on `ebus-mqtt` for `Instant` |
+| `ebus-discovery-tokio` (new) | The `Backend` trait; `Mdns`, the backend a host holds; `list_brokers`, `find_broker`; `advertise`, `Advertiser`. Features `avahi` and `mdns-sd`, `default = []` |
+
+The backends live in a runtime crate because core crates perform no I/O and depend on no runtime ([Core rules](#core-rules)): Avahi is D-Bus I/O on tokio, and mdns-sd runs its own thread and sockets. They are two features of one crate because both implement one seam and a host or example picks between them at run time. `ebus-discovery-tokio` is published apart from `ebus-homie-tokio` for the reason `ebus-rumqttc` is: feature unification would otherwise compile zbus or mdns-sd into every service of a host workspace that shares the crate.
+
+| Backend | Feature | Hosts | Dependency |
+|---|---|---|---|
+| Avahi | `avahi` | Linux with avahi-daemon | `zbus` 5.13 with `default-features = false, features = ["tokio"]`, under `[target.'cfg(target_os = "linux")'.dependencies]`, with hand-written proxies for `org.freedesktop.Avahi`; no C library. zbus 5.13 declares `rust-version` 1.85 and 5.14 onward 1.87, so `avahi` keeps the 1.85 floor only where the consumer's workspace resolves with an MSRV-aware resolver (resolver 3, as in [Cargo.toml](../Cargo.toml)) against a `rust-version` of 1.86 or lower |
+| mdns-sd | `mdns-sd` (`dep:mdns-sd`) | Linux without Avahi; macOS development machines | `mdns-sd` 0.21.4 or later (`rust-version` 1.71, `#![forbid(unsafe_code)]`); 0.21.4 keeps re-querying unresolved instances while browsing (mdns-sd #494) |
+
+### Public API
+
+```rust
+// ===== ebus-discovery (no alloc) =====
+pub enum BrokerType { SecureMqtt, MqttWss, MqttWs, Mqtt } // preference order, framework.md:330-335
+impl BrokerType {
+    pub fn as_str(self) -> &'static str;          // "_secure-mqtt._tcp", ...
+    pub fn parse(service_type: &str) -> Option<Self>;
+    pub fn default_port(self) -> u16;             // 8883, 9002, 9001, 1883 (ebus.py:57-62)
+    pub fn uses_tls(self) -> bool;                // SecureMqtt, MqttWss (ebus.py:64-69)
+}
+pub const TCP_BROKER_TYPES: [BrokerType; 2];      // SecureMqtt, Mqtt (ebus.py:54)
+pub enum BrokerMode { ConfiguredOnly, DiscoveryWithFallback, DiscoveryOnly } // parse(): ebus.py:110-127
+pub enum AddrScope { Global, Private, UniqueLocal, Other, LinkLocal, Loopback, Unspecified } // record.py:51-61, 93-108
+pub struct ScopedAddr { pub ip: core::net::IpAddr, pub ifindex: Option<u32> }
+
+// ===== ebus-discovery (alloc) =====
+pub struct TxtRecord { /* ordered (key, Option<Vec<u8>>) */ } // from_strings, get, to_strings
+pub fn check_txt(service_type: &str, txt: &TxtRecord) -> Result<TxtReport, TxtError>;
+pub fn parse_ebus_txt(txt: &TxtRecord) -> EbusTxt;   // missing(), is_broker_host()
+pub struct Identity { /* device_ids, roles, manufacturer, model, serial_number, ... */ }
+pub struct HttpService { /* tls, port, path, version, openapi */ }
+pub struct BrokerService { /* broker_type, port, protocol, broker, path, subprotocol */ }
+pub struct Advertisement { /* identity, instance, ebus_port, device_info_port, http, brokers */ }
+pub struct ServiceRecord { pub service_type: &'static str, pub port: u16, pub txt: TxtRecord }
+impl Advertisement {
+    /// Every record, all under one instance name; `server` is the SRV target.
+    pub fn records(&self, server: &str) -> Result<Vec<ServiceRecord>, TxtError>;
+    /// The instance name, then `-2` through `-99` (_mdns_core.py:937-939).
+    pub fn instance_names(&self) -> impl Iterator<Item = String>;
+}
+
+pub struct InstanceKey { pub service_type: String, pub name: String }
+pub enum Slot { Whole, Link { ifindex: u32, v6: bool } }
+pub enum Sighting {
+    Seen { key: InstanceKey, slot: Slot, server: String, port: u16, txt: TxtRecord, addrs: Vec<ScopedAddr> },
+    Gone { key: InstanceKey, slot: Option<Slot> }, // None: every slot
+}
+pub struct Instance { pub key: InstanceKey, pub server: String, pub port: u16, pub txt: TxtRecord, pub addrs: Vec<ScopedAddr> }
+pub struct InstanceTable { /* sans-IO */ }
+impl InstanceTable {
+    pub fn handle(&mut self, s: Sighting);
+    pub fn instances(&self) -> impl Iterator<Item = Instance> + '_;
+}
+
+#[derive(Clone, PartialEq, Eq)]
+pub struct BrokerEndpoint {
+    pub broker_type: BrokerType,
+    pub host: String,               // TXT `broker`, else the SRV target (ebus.py:599-614)
+    pub port: u16,
+    pub server: Option<String>,     // SRV target
+    pub device_id: Option<String>,
+    pub addrs: Vec<ScopedAddr>,     // candidate order
+    pub instance: Option<String>,   // None for a configured broker
+}
+impl BrokerEndpoint {
+    pub fn from_url(url: &str) -> Result<Self, UrlError>; // ebus.py:617-633
+    pub fn url(&self) -> String;
+    pub fn connect_host(&self) -> Cow<'_, str>;
+}
+
+pub enum Wanted { Instance(String), DeviceId(String) }
+#[non_exhaustive]
+pub struct BrokerConfig {
+    pub mode: Option<BrokerMode>,         // None: see Configuration and precedence
+    pub url: Option<BrokerEndpoint>,
+    pub wanted: Option<Wanted>,
+    pub tls: bool,                        // also implied by an mqtts:// URL
+    pub accept: Option<Vec<BrokerType>>,  // None: [SecureMqtt] with TLS, else TCP_BROKER_TYPES
+    pub allow_unmatched: bool,            // ebus.py:776-781
+    pub settle_ms: u64,                   // 3_000
+    pub fallback_after_ms: u64,           // 15_000
+}
+pub struct BrokerSearch { /* sans-IO, one search */ }
+impl BrokerSearch {
+    pub fn new(now: Instant, cfg: BrokerConfig) -> Result<Self, ConfigError>;
+    pub fn browses(&self) -> bool;                     // false in configured-only
+    pub fn handle(&mut self, now: Instant, s: Sighting);
+    pub fn handle_timeout(&mut self, now: Instant);
+    pub fn poll_requery(&mut self) -> bool;
+    pub fn poll_timeout(&self) -> Option<Instant>;
+    pub fn result(&self) -> Option<&BrokerEndpoint>;   // set once, then fixed
+    pub fn candidates(&self) -> Vec<BrokerEndpoint>;   // ranked, accepted only
+}
+
+// ===== ebus-discovery-tokio =====
+#[derive(Clone)]
+pub struct Mdns { /* Avahi or mdns-sd */ }
+impl Mdns {
+    /// Avahi when built with `avahi`, on Linux, with org.freedesktop.Avahi reachable;
+    /// else mdns-sd when built with `mdns-sd`; else Error::NoBackend.
+    pub async fn system() -> Result<Mdns, Error>;
+    #[cfg(all(feature = "avahi", target_os = "linux"))]
+    pub async fn avahi() -> Result<Mdns, Error>;
+    #[cfg(feature = "mdns-sd")] pub fn mdns_sd(opts: MdnsSdOptions) -> Result<Mdns, Error>; // port, loopback
+}
+
+/// Browses for `window` from the start and returns the accepted brokers, ranked;
+/// reads `tls`, `accept` and `wanted` from `cfg`.
+pub async fn list_brokers<B: Backend>(b: &B, cfg: &BrokerConfig, window: Duration) -> Result<Vec<BrokerEndpoint>, Error>;
+/// Runs a `BrokerSearch` to its result; a caller bounds it with `tokio::time::timeout`.
+pub async fn find_broker<B: Backend>(b: &B, cfg: BrokerConfig) -> Result<BrokerEndpoint, Error>;
+
+#[derive(Default)]
+pub enum HostName { #[default] Auto, Own(String) } // Own: "<label>.local."
+pub async fn advertise<B: Backend>(b: &B, ad: Advertisement, host: HostName) -> Result<Advertiser, Error>;
+impl Advertiser {                      // Drop withdraws from a spawned task
+    pub fn update(&self, ad: Advertisement) -> Result<(), Error>; // sends only what changed
+    pub fn state(&self) -> watch::Receiver<AdState>; // Registering, Established { instance, server }, Failed
+    pub async fn withdraw(self) -> Result<(), Error>;
+}
+
+pub trait Backend: Clone + Send + Sync + 'static {
+    type Browse: Browse;
+    type Group: Group;
+    fn browse(&self, service_type: &str) -> impl Future<Output = Result<Self::Browse, Error>> + Send;
+    fn server_name(&self, host: &HostName) -> impl Future<Output = Result<String, Error>> + Send;
+    fn publish(&self, host: &HostName, instance: &str, records: &[ServiceRecord])
+        -> impl Future<Output = Result<Self::Group, Error>> + Send;
+}
+// Browse: next() -> Option<Sighting>, requery(). Group: next_report() (Established, Collision,
+// HostRenamed, Failed, Reset), update_txt(), withdraw().
+```
+
+The trait methods return `impl Future + Send` (Rust 1.75) rather than using `async fn`, which on a public trait draws rustc's `async_fn_in_trait` warning, and CI denies warnings. `Mdns` implements `Backend` by dispatching to the backend compiled in, so a host picks one at run time without `dyn`.
+
+A service that discovers its broker:
+
+```rust
+let mdns = Mdns::system().await?;
+let mut cfg = BrokerConfig::default();
+cfg.mode = mode.as_deref().map(BrokerMode::parse).transpose()?;
+cfg.url = url.as_deref().map(BrokerEndpoint::from_url).transpose()?;
+let broker = find_broker(&mdns, cfg).await?;
+let options = options_for(&broker, &creds); // client id, credentials, TLS
+let run = ebus_rumqttc::controller(options, Config::wildcard(), AttachOptions::default())?;
+tokio::spawn(run.task.run());
+```
+
+A host that also runs a broker and a REST API advertises once at startup:
+
+```rust
+let ad = Advertisement::new(identity)
+    .http(HttpService::https(443, "/api/v1"))
+    .broker(BrokerService::new(BrokerType::SecureMqtt, 8883));
+let advertiser = advertise(&mdns, ad, HostName::Auto).await?;
+```
+
+### TXT records
+
+| Step | Rule |
+|---|---|
+| Input | Each string splits at its first `=`; a string without `=` is a key with no value; a string with an empty key is skipped |
+| Keys | Lowercased (ebus.py:136-153) |
+| Duplicates | The first occurrence wins, compared case-insensitively, as in RFC 6763 section 6.4, cpp-sdk `txt_find` (txt_records.cpp:34-40) and mdns-sd `decode_txt_unique` (service_info.rs:982-993); Avahi hands every string, so `TxtRecord` drops later duplicates itself. python keeps the last of keys that differ only in case (ebus.py:144-152) |
+| Values | Kept as bytes; `get` decodes UTF-8 with replacement, and a key with no value reads as `""` (ebus.py:136-153) |
+| Lists | `roles`, `device_id` and `auth_methods` split at commas, items trimmed, empty items dropped (ebus.py:156-159, 202-216) |
+| Missing keys | Listed by `EbusTxt::missing`, never a reason to drop a record (ebus.py:189-192) |
+| `protocol` | A value other than `mqtt-v5` or `mqtt-v3.1.1` is kept |
+| Building | Keys in python's order: `Identity` (ebus.py:400-438), `HttpService` (ebus.py:465-477), `BrokerService`: `txtvers` and `protocol`, then `broker` and `device_id` for `_secure-mqtt._tcp`, `path` and `subprotocol` for the WebSocket types (ebus.py:534-546; framework.md:301-326). `broker` defaults to the SRV target without its trailing dot. `ebus_version` is the `framework` value in [.ebus-spec.json](../.ebus-spec.json). `roles` is kept as given; with `brokers` not empty and no `broker-host` role (framework.md:106), building logs `reason=brokersWithoutBrokerHostRole`, as python does (_mdns_core.py:1062-1063) |
+| Checks | `check_txt` runs on every built record: an empty key, a key with `=`, a key that is not printable ASCII, or a `key=value` string over 255 bytes is an error; `TxtReport` lists strings over 200 bytes and a record over 1300 bytes, logged as warnings (ebus.py:282-311) |
+
+### Merging sightings
+
+The two stacks report differently, and `InstanceTable` turns both into one set of instances keyed by (service type, instance name):
+
+- Avahi resolves each `ItemNew` per (interface, protocol), and each `ServiceResolver.Found` carries one address. The backend sends `Seen` with `Slot::Link { ifindex, v6 }` and that address, and `ItemRemove` sends `Gone` with the same slot.
+- mdns-sd's `ServiceResolved` carries the whole address set, sent as `Slot::Whole`; `ServiceRemoved` sends `Gone` for every slot.
+- A slot holds the addresses of its latest report, so an address changed in place replaces the old one, as python-mdns-discovery assigns per (interface, protocol) (browser.py:135-145). An instance's addresses are the union of its slots; its server, port and TXT are the latest reported. An instance leaves the table with its last slot.
+
+### Broker selection
+
+`BrokerSearch` is python-service-discovery's sans-IO `BrokerSearch` (_mdns_core.py:216-295) with time made explicit, and `select_broker` and `rank_brokers` are python's functions.
+
+1. Browse all four broker types, so a WebSocket broker is logged with `reason=brokerTransportNotAccepted` (_mdns_core.py:259-260, 272-278).
+2. Turn each instance into a `BrokerEndpoint` (ebus.py:599-614): `host` is the TXT `broker` value, trimmed and with one trailing dot removed, else the SRV target; port 0 becomes the type's default port. `from_url` accepts only `mqtt://` and `mqtts://`, with ports 1883 and 8883 by default, and rejects a URL with no host (ebus.py:617-633).
+3. Keep the accept set: `_secure-mqtt._tcp` alone when TLS is configured, else `TCP_BROKER_TYPES` (_mdns_core.py:247-253). A TLS configuration therefore never selects a plain broker, and its credentials stay off a plaintext link. ebus-rumqttc has no WebSocket transport, so the WebSocket types are never in the default set.
+4. With `wanted`, keep only the brokers whose instance name, or one of whose TXT `device_id` items, equals it. This filter is a rust-sdk rule ([Configuration and precedence](#configuration-and-precedence)).
+5. Rank (`rank_brokers`, ebus.py:675-702): sort by preference, then lowercased host, then port. Endpoints sharing a normalized host, SRV target or `device_id` are one broker, which keeps its most-preferred transport (ebus.py:661-672), so a host advertising both `_secure-mqtt._tcp` and `_mqtt._tcp` is one candidate. `list_brokers` returns this list.
+6. Select (`select_broker`, ebus.py:745-795):
+
+| Mode | Result |
+|---|---|
+| `configured-only` | The configured broker, at once; no browse runs. `new` fails without one (_mdns_core.py:257-258) |
+| `discovery-only` | The first ranked broker |
+| `discovery-with-fallback`, URL configured | The discovered broker `match_configured` pairs with the URL; an unmatched broker only with `allow_unmatched`. With no match `fallback_after_ms` after the search starts, the configured broker |
+| `discovery-with-fallback`, no URL | The first ranked broker |
+
+`match_configured` matches when the configured host equals the TXT `broker` name or the SRV target (case-insensitive, trailing dot ignored), or when a configured IP equals an advertised address; a match by address keeps the configured IP as host on a plain transport and the discovered name on TLS, and every match uses the discovered port and transport (ebus.py:712-742). The spec leaves choosing among several brokers open and forbids consumers from assuming a rule (framework.md:337); the first-ranked rule is python's, so without `wanted` every SDK picks the same broker from the same advertisements.
+
+The result is set `settle_ms` (3 s, python's browse timeout, mdns.py:47) after the first accepted broker is seen, so each broker's every transport has been heard and an early `_mqtt._tcp` answer cannot win over the same broker's `_secure-mqtt._tcp`. `fallback_after_ms` is 15 s: python falls back after three 3 s browses separated by 3 s waits (_mdns_core.py:254-256, 288-294; ebus.py:814-818). While no broker is found, `poll_requery` asks for a requery after 3 s, 3 s, then every 30 s, python's schedule (ebus.py:801-825), which meets "SHOULD retry periodically" (framework.md:337). `find_broker` stops browsing once the result is set.
+
+With `log`, the search logs python's reason strings: `brokerDiscovered`, `brokerNotFound`, `brokerFallbackToConfigured`, `brokerTransportNotAccepted`, `brokerChosenAmongSeveral`, `brokerNotChosen` and `configuredBrokerNotDiscovered` (ebus.py:782-794; _mdns_core.py:274-293).
+
+### Configuration and precedence
+
+| `mode` | URL | Effective mode |
+|---|---|---|
+| set | any | `mode`; `configured-only` without a URL is a `ConfigError` |
+| unset | set | `configured-only` |
+| unset | unset | `discovery-only` (framework.md:102, 622) |
+
+With `mode` unset, a configured URL is used as configured (`configured-only`). `wanted` applies in `discovery-only` and in `discovery-with-fallback` without a URL; with a URL, `new` returns a `ConfigError`. framework.md:622 defines the default only for the case without a URL; python uses `discovery-only` whenever the mode is unset (ebus.py:130), which would ignore a configured URL. `BrokerMode::parse` accepts the spec's spellings case-insensitively and with `_` for `-`, and rejects other values (ebus.py:110-127). The host builds `BrokerConfig` from its baked-in defaults overridden by its REST "MQTT broker configuration" (framework.md:93, 607).
+
+### Addresses and host names
+
+- The host builds complete `MqttOptions` from the endpoint, with `connect_host()` and `port` as the broker address and its own client id, credentials and TLS settings. rumqttc resolves that address with tokio `lookup_host` on every connect (`eventloop.rs:150-153, 313, 325, 400, 407`), so a host name follows a change of the broker's address across reconnects.
+- `connect_host()` is `host` when that is not a `.local` name, else the first IPv4 candidate address, else `host`, for TLS and plain transports alike. The candidate address keeps a connection to a discovered `.local` broker independent of the system resolver. rumqttc uses the same string as the TLS server name (rustls `ServerName::try_from`, which accepts an IP address, `tls.rs:176`; native-tls, `tls.rs:184`), so the broker's certificate carries its `.local` name, its addresses and any FQDN in its SAN, as broker-quickstart's does ([laptop-quickstart.md:29](https://github.com/electrification-bus/broker-quickstart/blob/main/docs/laptop-quickstart.md)). A configured URL has no candidate addresses (ebus.py:633), so a configured `.local` broker connects by name. rumqttc joins host and port as `format!("{domain}:{port}")` (`eventloop.rs:400, 407`), so IPv6 addresses wait for an end-to-end test that shows one connecting.
+- `candidate_addresses` drops loopback and unspecified addresses, keeps an IPv6 link-local address only with an `ifindex`, and orders global, private or ULA, other, link-local (instance.py:41-56; record.py:51-61, 93-108). Ties sort by address, so the order does not depend on the backend.
+- Avahi's `Found` address has no zone, so the backend sets `ifindex` from the item's interface for an IPv6 link-local address; mdns-sd's `ScopedIp` carries it.
+- Every host name comparison is case-insensitive and ignores one trailing dot (ebus.py:661-662; instance.py:18-20).
+
+### Advertising
+
+All records share one instance name: the explicit name, else the first device id when it fits one DNS label with a `-99` suffix (60 octets), else the SRV target's host label, logged with `reason=deviceIdTooLongForInstanceName` (_mdns_core.py:104, 1136-1152). A collision on any record withdraws them all and registers them again under the next name, `-2` through `-99`, after which `state` reports `Failed` (_mdns_core.py:937-991). `update` sends `UpdateTxt` only for records whose TXT changed, re-registers on a changed port or record set, and sends nothing for an equal advertisement. A host name that changes after a collision changes the SRV target and the default TXT `broker`, which consumers connect to first; the advertiser then reads the new server name, rebuilds the records with `Advertisement::records(server)` and registers them again.
+
+| | Avahi | mdns-sd |
+|---|---|---|
+| Host name | `HostName::Auto` only (`Own` is an error): services are added with an empty host, so the SRV target is avahi-daemon's own name, read with `GetHostNameFqdn` for the `broker` TXT | mdns-sd announces a service only with addresses for a host name it publishes itself (service_daemon.rs:5088-5106). `HostName::Auto` is `<gethostname, first label>.local.` (_mdns_core.py:893-895) where no OS responder owns that name, and `<gethostname, first label>-ebus.local.` where one does: on macOS and Windows, and on Linux when an avahi-daemon socket exists (_mdns_core.py:870-883). python-zeroconf publishing addresses under the OS responder's name made mDNSResponder rename the host to `<name>-2.local` (_mdns_core.py:20-29) |
+| Addresses | avahi-daemon's | `enable_addr_auto`, loopback interfaces disabled except in tests |
+| Registration | One entry group with `AVAHI_PUBLISH_NO_COOKIE`, without which Avahi adds a cookie key to the TXT (defs.h:250); committed once the server is `RUNNING` (defs.h:125-128) | One `ServiceInfo` per record |
+| Collision | `EntryGroup.StateChanged` `COLLISION` | `DaemonEvent::NameChange` for the instance name (service_daemon.rs:4577-4600) |
+| Host rename | `Server.StateChanged` to `COLLISION` or `REGISTERING` withdraws the group, and `RUNNING` re-reads `GetHostNameFqdn` and registers again (defs.h:125-133) | `NameChange` with an A or AAAA `rr_type`, emitted per interface (service_daemon.rs:4586-4602, 5360-5376) |
+| Established | `StateChanged` `ESTABLISHED` | After `register`, revised by a later `NameChange` or `DaemonEvent::Error` |
+| TXT change | `UpdateServiceTxt` | `register` again under the same name |
+| Withdraw | `Free` on the group | `unregister`, which sends goodbyes |
+
+### Backends
+
+**Avahi** uses the system bus name `org.freedesktop.Avahi`. Browsing uses domain `local` and `AVAHI_LOOKUP_USE_MULTICAST`, and keeps results flagged `AVAHI_LOOKUP_RESULT_LOCAL` (defs.h:274), so a service finds a broker on its own host; python-mdns-discovery skips them (browser.py:382).
+
+- Signals: a browser made with `ServiceBrowserNew` starts by itself 10 ms after creation (dbus-protocol.c:1073), so its first signals can precede a subscription made after the call. For each browser and resolver the backend opens a `zbus::MessageStream` match on the Avahi sender and interface first, calls `Server2.ServiceBrowserPrepare` (or `ServiceResolverPrepare`) and then `Start`, falls back to `ServiceBrowserNew` on `UnknownMethod`, and filters signals by object path.
+- Restart: `NameOwnerChanged` for the bus name means every browser, resolver and entry group is gone. The backend sends a `Reset` report, then recreates the browsers and re-commits the groups.
+- Absence: no system bus gives `Error::NoSystemBus`; `org.freedesktop.DBus.Error.ServiceUnknown` gives `Error::AvahiUnavailable`, and `Mdns::system()` then tries mdns-sd.
+- Requery frees and recreates the browser.
+
+**mdns-sd** runs one daemon thread per `Mdns`.
+
+- Each browse channel holds 10 events (service_daemon.rs:444), and the daemon thread delivers with a blocking send (service_daemon.rs:2927, 2940), so every receiver is drained by its own task.
+- Requery stops and restarts the browse for that type.
+- Port 5353: mdns-sd sets `SO_REUSEADDR` and `SO_REUSEPORT` (service_daemon.rs:936-941), and avahi-daemon retries its bind with both when the port is taken (socket.c:188-223), so the two stacks share the port in either start order. `MdnsSdOptions::port` moves a test daemon off 5353 (`new_with_port`, service_daemon.rs:355).
+
+### Discovery-bus records
+
+A later backend implements `browse` over the retained records ebus-mdns-discovery publishes at `local/mdns/discovery/v1/{service_type}/{interface}/{instance}` (record.py:24, 159-163). It maps each record to `Seen` as `Record.to_instance()` does (record.py:187-202), an empty payload or `state=removed` to `Gone` (resolver.py:137-156), and keeps the records while `{base}/$state` is not `ready`, marking them untrusted as python's `bus_ready` does (resolver.py:193-203). ebus-mdns-discovery skips services on its own host (browser.py:382), so a broker there is absent from the bus.
+
+### Testing
+
+| Layer | What |
+|---|---|
+| Core unit, virtual `Instant` | `InstanceTable`: Avahi per-slot sightings merged into one instance, an address replaced in its slot, mdns-sd whole-set reports, slot and whole removal. `BrokerSearch`: each mode row, the settle window, preference, host and port order, the `_secure-mqtt` and `_mqtt` merge, the `device_id` merge, TLS narrowing `accept`, `wanted` by instance name and by device id, fallback at `fallback_after_ms`, `allow_unmatched`, address matches with plain and TLS hosts, the requery schedule, a result that stays fixed after later sightings. `connect_host` for a DNS name, a `.local` name with an IPv4 candidate and without one, on TLS and plain transports. `wanted` with a URL rejected by `new`. Advertising: one name across records, renames through `-99`, a device id too long for the instance name, TXT updates only for changed records, `brokers` without `broker-host` logged and `roles` unchanged |
+| python-service-discovery vectors | Generated by [tools/gen_vectors.py](../tools/gen_vectors.py) into `vectors/python-service-discovery/`: `decode_txt`, `parse_ebus_txt`, `check_txt`; `Identity`, `HttpService` and `BrokerService` TXT as ordered pairs; `BrokerEndpoint.from_instance`, `from_url` and `url`; `rank_brokers`; `match_configured` and `select_broker` for every mode; `BrokerMode.parse`; `RetrySchedule.delays`; address scope and `candidate_addresses`. Duplicate TXT keys are rust-sdk cases |
+| mdns-sd to mdns-sd, Linux and macOS | Two daemons on a private port: one advertises under `HostName::Own`, the other lists brokers and finds one; then a TXT update, withdrawal, an instance-name collision and a host-name collision that rebuilds the TXT `broker` |
+| Cross-backend, Linux CI | avahi-daemon installed and started beside mosquitto; skipped when the system bus or `org.freedesktop.Avahi` is absent. mdns-sd advertises under `HostName::Own("ebus-test-<random>.local.")` and Avahi browses and resolves it; Avahi advertises and mdns-sd browses it; Avahi to Avahi; an avahi-daemon restart re-commits the advertisement |
+| python interop | With `EBUS_PYTHON`: a python-service-discovery advertisement found by each backend, and each backend's advertisement found by python's `find_broker` as the same endpoint |
+| mosquitto e2e | Two brokers advertised as `_mqtt._tcp`: `list_brokers` returns both in rank order; `find_broker` in `discovery-only` picks the first and `controller()` syncs a rust device through it; `wanted` picks the other; `discovery-with-fallback` with an unadvertised URL falls back to the configured broker; a TLS configuration ignores a plaintext advertisement |
+
+CI builds `ebus-discovery-tokio` with each feature alone and with both; on macOS `avahi` compiles nothing, since its code and dependency are Linux-only. `ebus-discovery` builds for `thumbv7em-none-eabihf` with and without `alloc`, like the other core crates.
+
+The examples gain `EBUS_BROKER_MODE` and `EBUS_MDNS_BACKEND` (`auto`, `avahi`, `mdns-sd`), and `EBUS_MQTT_HOST` and `EBUS_MQTT_PORT` become the configured URL, so with neither set they run in `discovery-only`. They call `find_broker` once before building their options. `ebus-discovery-tokio` is a dev-dependency of `ebus-rumqttc` with `mdns-sd`, and with `avahi` under `[target.'cfg(target_os = "linux")'.dev-dependencies]`.
 
 ## ESP32 (planned)
 
