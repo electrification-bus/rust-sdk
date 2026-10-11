@@ -219,6 +219,7 @@ dependencies = [
  "ebus-homie-tokio",
  "log",
  "rumqttc 0.25.1",
+ "serde_json",
  "tokio",
 ]
 

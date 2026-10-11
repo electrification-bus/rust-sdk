@@ -15,6 +15,8 @@ use alloc::vec::Vec;
 #[cfg(feature = "alloc")]
 use core::cmp::Ordering;
 #[cfg(feature = "alloc")]
+use core::fmt::Write as _;
+#[cfg(feature = "alloc")]
 use num_bigint::{BigInt, BigUint, Sign};
 #[cfg(feature = "alloc")]
 use num_integer::Integer;
@@ -1102,14 +1104,34 @@ pub fn parse_set_payload(
     format: Option<&str>,
     current: Option<Current>,
 ) -> Result<SetValue, Problem> {
+    let numeric = match datatype {
+        Datatype::Integer | Datatype::Float => NumericFormat::parse(format),
+        _ => NumericFormat::default(),
+    };
+    parse_set_payload_with(text, datatype, format, &numeric, current)
+}
+
+/// [`parse_set_payload`] with the numeric `$format` already parsed:
+/// `numeric` must be [`NumericFormat::parse`] of `format` for an `integer` or
+/// `float` property, and is ignored otherwise, where `format` is read
+/// instead. A caller that checks many payloads for one property parses the
+/// format once.
+#[cfg(feature = "alloc")]
+pub fn parse_set_payload_with(
+    text: &str,
+    datatype: Datatype,
+    format: Option<&str>,
+    numeric: &NumericFormat,
+    current: Option<Current>,
+) -> Result<SetValue, Problem> {
     let unchanged = || Ok(SetValue::Text(text.to_string()));
     match datatype {
         Datatype::Json => decode_json(text).map(SetValue::Json),
         Datatype::Integer => {
             let number = Decimal::from_i64(integer_value(text)?);
-            let format = NumericFormat::parse(format);
-            let base = step_base(&format, current);
-            let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
+            let format = numeric;
+            let base = step_base(format, current);
+            let rounded = round_and_range_check(number.clone(), format, base.as_ref())?;
             let whole = rounded.to_integer().ok_or(Problem::IntegerStepNotWhole)?;
             if rounded == number {
                 unchanged()
@@ -1123,13 +1145,13 @@ pub fn parse_set_payload(
             if !is_float_payload(text) {
                 return Err(Problem::FloatGrammar);
             }
-            let format = NumericFormat::parse(format);
-            let base = step_base(&format, current);
+            let format = numeric;
+            let base = step_base(format, current);
             if format.min.is_none() && format.max.is_none() && base.is_none() {
                 return unchanged();
             }
             let number = float_value(text, &[&format.min, &format.max, &format.step, &base])?;
-            let rounded = round_and_range_check(number.clone(), &format, base.as_ref())?;
+            let rounded = round_and_range_check(number.clone(), format, base.as_ref())?;
             if rounded == number {
                 unchanged()
             } else {
@@ -1195,7 +1217,15 @@ pub fn check_value(text: &str, prop: &PropertyDescription) -> Result<(), Problem
 /// `integer` payload for `value` (convention.md: Integer).
 #[cfg(feature = "alloc")]
 pub fn encode_integer(value: i64) -> String {
-    value.to_string()
+    let mut out = String::new();
+    write_integer(&mut out, value);
+    out
+}
+
+/// Appends [`encode_integer`]'s payload to `out`.
+#[cfg(feature = "alloc")]
+pub fn write_integer(out: &mut String, value: i64) {
+    let _ = write!(out, "{value}");
 }
 
 /// `float` payload for `value`, in the Python SDK form (`1.0`, `1e16`,
@@ -1206,6 +1236,16 @@ pub fn encode_float(value: f64) -> Result<String, Problem> {
     crate::pyfmt::format_float(value).ok_or(Problem::FloatNotFinite)
 }
 
+/// Appends [`encode_float`]'s payload to `out`; on error `out` is unchanged.
+#[cfg(feature = "alloc")]
+pub fn write_float(out: &mut String, value: f64) -> Result<(), Problem> {
+    if crate::pyfmt::write_float(out, value) {
+        Ok(())
+    } else {
+        Err(Problem::FloatNotFinite)
+    }
+}
+
 /// [`encode_float`] for an `f32`: the shortest decimal that reads back as the
 /// same `f32` (`21.4`, not `21.399999618530273`), in the same layout.
 #[cfg(feature = "alloc")]
@@ -1213,10 +1253,28 @@ pub fn encode_float32(value: f32) -> Result<String, Problem> {
     crate::pyfmt::format_float32(value).ok_or(Problem::FloatNotFinite)
 }
 
+/// Appends [`encode_float32`]'s payload to `out`; on error `out` is unchanged.
+#[cfg(feature = "alloc")]
+pub fn write_float32(out: &mut String, value: f32) -> Result<(), Problem> {
+    if crate::pyfmt::write_float32(out, value) {
+        Ok(())
+    } else {
+        Err(Problem::FloatNotFinite)
+    }
+}
+
 /// `boolean` payload for `value` (convention.md: Boolean).
 #[cfg(feature = "alloc")]
 pub fn encode_boolean(value: bool) -> String {
-    String::from(if value { "true" } else { "false" })
+    let mut out = String::new();
+    write_boolean(&mut out, value);
+    out
+}
+
+/// Appends [`encode_boolean`]'s payload to `out`.
+#[cfg(feature = "alloc")]
+pub fn write_boolean(out: &mut String, value: bool) {
+    out.push_str(if value { "true" } else { "false" });
 }
 
 /// `duration` payload `PTxHxMxS` for a non-negative duration (convention.md:
@@ -1225,34 +1283,54 @@ pub fn encode_boolean(value: bool) -> String {
 /// `micros` of a million or more carry into the seconds.
 #[cfg(feature = "alloc")]
 pub fn encode_duration(total_seconds: u64, micros: u32) -> String {
+    let mut out = String::new();
+    write_duration(&mut out, total_seconds, micros);
+    out
+}
+
+/// Appends [`encode_duration`]'s payload to `out`.
+#[cfg(feature = "alloc")]
+pub fn write_duration(out: &mut String, total_seconds: u64, micros: u32) {
     let total = total_seconds.saturating_add(u64::from(micros / 1_000_000));
     let micros = micros % 1_000_000;
     let hours = total / 3600;
     let minutes = total % 3600 / 60;
     let seconds = total % 60;
-    let mut out = String::from("PT");
+    out.push_str("PT");
     if hours != 0 {
-        out.push_str(&alloc::format!("{hours}H"));
+        let _ = write!(out, "{hours}H");
     }
     if minutes != 0 {
-        out.push_str(&alloc::format!("{minutes}M"));
+        let _ = write!(out, "{minutes}M");
     }
     if micros != 0 {
-        let text = alloc::format!("{seconds}.{micros:06}");
-        out.push_str(text.trim_end_matches('0'));
-        out.push('S');
-    } else if seconds != 0 || out == "PT" {
-        out.push_str(&alloc::format!("{seconds}S"));
+        let mut fraction = micros;
+        let mut width = 6;
+        while fraction % 10 == 0 {
+            fraction /= 10;
+            width -= 1;
+        }
+        let _ = write!(out, "{seconds}.{fraction:0width$}S");
+    } else if seconds != 0 || (hours == 0 && minutes == 0) {
+        let _ = write!(out, "{seconds}S");
     }
-    out
 }
 
 /// `json` payload for `value`, as Python `json.dumps(value, allow_nan=False)`
 /// (convention.md: JSON). The top level must be an array or object.
 #[cfg(feature = "alloc")]
 pub fn encode_json(value: &Value) -> Result<String, Problem> {
+    let mut out = String::new();
+    write_json(&mut out, value)?;
+    Ok(out)
+}
+
+/// Appends [`encode_json`]'s payload to `out`; on error `out` is unchanged.
+#[cfg(feature = "alloc")]
+pub fn write_json(out: &mut String, value: &Value) -> Result<(), Problem> {
     if value.is_array() || value.is_object() {
-        Ok(crate::pyfmt::to_json(value, false))
+        crate::pyfmt::write_value(out, value, false);
+        Ok(())
     } else {
         Err(Problem::JsonNotArrayOrObject)
     }
@@ -2038,6 +2116,58 @@ mod tests {
                 Err(Problem::JsonNotArrayOrObject)
             );
             assert_eq!(encode_json(&serde_json::json!([])).as_deref(), Ok("[]"));
+        }
+
+        #[test]
+        fn writers_append_and_leave_out_unchanged_on_error() {
+            let mut out = String::from(">");
+            write_integer(&mut out, -7);
+            write_boolean(&mut out, true);
+            write_duration(&mut out, 61, 250_000);
+            assert_eq!(write_float(&mut out, 0.5), Ok(()));
+            assert_eq!(write_float32(&mut out, 21.4), Ok(()));
+            assert_eq!(write_json(&mut out, &serde_json::json!([1])), Ok(()));
+            assert_eq!(out, ">-7truePT1M1.25S0.521.4[1]");
+            assert_eq!(
+                write_float(&mut out, f64::NAN),
+                Err(Problem::FloatNotFinite)
+            );
+            assert_eq!(
+                write_float32(&mut out, f32::NEG_INFINITY),
+                Err(Problem::FloatNotFinite)
+            );
+            assert_eq!(
+                write_json(&mut out, &serde_json::json!("s")),
+                Err(Problem::JsonNotArrayOrObject)
+            );
+            assert_eq!(out, ">-7truePT1M1.25S0.521.4[1]");
+        }
+
+        #[test]
+        fn parse_set_payload_with_matches_parse_set_payload() {
+            let cases: &[(&str, Datatype, Option<&str>, Option<Current>)] = &[
+                ("5", Datatype::Integer, Some("0:10:2"), None),
+                ("11", Datatype::Integer, Some("0:10"), None),
+                (
+                    "2.26",
+                    Datatype::Float,
+                    Some("::0.5"),
+                    Some(Current::Float(0.25)),
+                ),
+                ("1.5", Datatype::Float, Some("0:1"), None),
+                ("b", Datatype::Enum, Some("a,b"), None),
+                ("c", Datatype::Enum, Some("a,b"), None),
+                ("hsv,1,2,3", Datatype::Color, Some("rgb"), None),
+                ("\0", Datatype::String, None, None),
+            ];
+            for (text, datatype, format, current) in cases.iter().copied() {
+                let numeric = NumericFormat::parse(format);
+                assert_eq!(
+                    parse_set_payload_with(text, datatype, format, &numeric, current),
+                    parse_set_payload(text, datatype, format, current),
+                    "{text:?}"
+                );
+            }
         }
     }
 }

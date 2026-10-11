@@ -1,6 +1,6 @@
 [package]
 name = "ebus-rumqttc"
-description = "Bundled rumqttc 0.25 connection for the eBus Homie 5 controller on tokio."
+description = "Bundled rumqttc 0.25 connection for the eBus Homie 5 controller and device on tokio."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -22,6 +22,7 @@ rumqttc = { version = "0.25", default-features = false }
 tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros"] }
 
 [dev-dependencies]
+serde_json = "1.0.100"
 tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt", "rt-multi-thread", "signal", "net", "io-util"] }
 
 [lints]

@@ -394,20 +394,7 @@ fn python_sdk_set_payload() {
     run("python-sdk/set-payload", |input, expect| {
         let text = payload_text(input)?;
         let format = opt_str(input, "format")?;
-        let current = match field(input, "current")? {
-            Value::Null => None,
-            Value::Number(n) => {
-                if let Some(bits) = input.get("current_f64_bits") {
-                    let bits = bits.as_str().ok_or("current_f64_bits not a string")?;
-                    Some(Current::Float(f64_from_bits_hex(bits)?))
-                } else if let Some(i) = n.as_i64() {
-                    Some(Current::Integer(i))
-                } else {
-                    return Err(format!("current {n} has no exact form"));
-                }
-            }
-            other => return Err(format!("current is not a number: {other}")),
-        };
+        let current = current_of(input)?;
         let got =
             datatype::parse_set_payload(&text, datatype_of(input)?, format.as_deref(), current);
         match (got, expect.get("ok"), expect.get("problem")) {
@@ -416,6 +403,96 @@ fn python_sdk_set_payload() {
             (got, _, _) => Err(format!("got {got:?}, want {expect}")),
         }
     });
+}
+
+/// The `current` of a `/set` vector: an exact integer, or a float by its bits.
+fn current_of(input: &Value) -> Result<Option<Current>, String> {
+    match field(input, "current")? {
+        Value::Null => Ok(None),
+        Value::Number(n) => {
+            if let Some(bits) = input.get("current_f64_bits") {
+                let bits = bits.as_str().ok_or("current_f64_bits not a string")?;
+                Ok(Some(Current::Float(f64_from_bits_hex(bits)?)))
+            } else if let Some(i) = n.as_i64() {
+                Ok(Some(Current::Integer(i)))
+            } else {
+                Err(format!("current {n} has no exact form"))
+            }
+        }
+        other => Err(format!("current is not a number: {other}")),
+    }
+}
+
+/// The `/set` verdict suite through `Tree::handle_message`: a settable
+/// property with the case's datatype and format, holding its current value,
+/// receives the payload. Cases a device cannot express are skipped: a format
+/// the description round trip refuses, a current value outside the format,
+/// and a zero-length payload (which deletes, so it never reaches a `/set`
+/// parser as text).
+#[test]
+fn python_sdk_set_payload_through_tree() {
+    use ebus_homie::device::{
+        DeviceEvent, DeviceSpec, NodeSpec, PropSpec, Tree, TreeConfig, ValueRef,
+    };
+    use ebus_mqtt::{Instant, Link, Message};
+    let ran = std::cell::Cell::new(0usize);
+    run("python-sdk/set-payload", |input, expect| {
+        let payload = payload_bytes(input)?;
+        let datatype = datatype_of(input)?;
+        if payload.is_empty() || str_field(input, "datatype")? != datatype.as_str() {
+            return Ok(());
+        }
+        let format = opt_str(input, "format")?;
+        let mut spec = PropSpec::new().settable(true);
+        spec.format = format;
+        let mut tree = Tree::new(TreeConfig::default(), "d", DeviceSpec::default())
+            .map_err(|e| e.to_string())?;
+        let Ok(slot) = tree.reconfigure(|r| {
+            let n = r.add_node(r.root(), "n", NodeSpec::default())?;
+            r.add_property(n, "p", datatype, None, spec)
+        }) else {
+            return Ok(());
+        };
+        let set = match current_of(input)? {
+            Some(Current::Integer(i)) => tree.set_value(slot, ValueRef::Integer(i)),
+            Some(Current::Float(f)) => tree.set_value(slot, ValueRef::Float(f)),
+            None => Ok(ebus_homie::device::Change::Unchanged),
+        };
+        if set.is_err() {
+            return Ok(());
+        }
+        tree.handle_link(
+            Instant(0),
+            Link::Up {
+                session_present: false,
+            },
+        );
+        while tree.poll_command().is_some() {}
+        while tree.poll_event().is_some() {}
+        tree.handle_message(
+            Instant(0),
+            Message {
+                topic: "ebus/5/d/n/p/set",
+                payload: &payload,
+                retain: Some(false),
+            },
+        );
+        ran.set(ran.get() + 1);
+        let event = tree.poll_event();
+        if tree.poll_command().is_some() {
+            return Err("a /set published something".to_string());
+        }
+        match (event, expect.get("ok"), expect.get("problem")) {
+            (Some(DeviceEvent::Set { value, raw, .. }), Some(want), None) => {
+                expect_eq(&*raw, payload.as_slice())?;
+                compare_set_value(&value, want)
+            }
+            (None, None, Some(_)) => expect_eq(tree.rejected_sets(), 1),
+            (got, _, _) => Err(format!("got {got:?}, want {expect}")),
+        }
+    });
+    println!("set-payload through Tree: {} cases ran", ran.get());
+    assert!(ran.get() >= 70, "only {} cases ran", ran.get());
 }
 
 #[test]

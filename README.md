@@ -4,9 +4,9 @@
 [![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)](#rust-version)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS discovery. It targets Linux single-board computers first and microcontrollers later.
+Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS broker discovery. It targets Linux single-board computers first and microcontrollers later.
 
-**Status:** pre-alpha. The controller role is implemented; the device role and mDNS discovery are planned. Nothing is published to crates.io yet.
+**Status:** pre-alpha. The controller and device roles are implemented; mDNS broker discovery is planned. Nothing is published to crates.io yet.
 
 ## What it does
 
@@ -14,7 +14,7 @@ Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/sp
 
 A controller watches the devices on a broker and sends them commands. It:
 
-- discovers every device in the `ebus` domain, the devices of one tree (a root and its children), or a single device;
+- discovers devices from their Homie topics on the broker: every device in the `ebus` domain, the devices of one tree (a root and its children), or a single device;
 - applies each device's `$description` and checks every value against its property's datatype and format;
 - tracks each device's `$state` and its effective state (a child of a `lost` root is `lost`);
 - reports when a device has received all its retained values (`DeviceSynced`), when its values do not arrive (`DeviceStuck`), and when it goes quiet after a reconnect (`DeviceAbsent`);
@@ -24,13 +24,21 @@ A controller watches the devices on a broker and sends them commands. It:
 
 The application reads the latest state as cheap snapshots and receives changes as events.
 
-### Device (planned)
+### Device
 
-Publishes a device's `$state`, `$description` and values, handles `/set`, and publishes a value only when it changes.
+A device publishes a tree of Homie devices (a root and its children) and takes commands for them. It:
 
-### Discovery (planned)
+- builds each device's `$description` from typed properties (`property::<f64>`, `settable::<bool>`, `event::<i64>`) and publishes `init`, the description, the values and `ready`, the root's `$state` last;
+- publishes a value only when it changes, and never publishes events while disconnected;
+- delivers each valid `/set` to the application, which accepts it, accepts it with the value the device reached, or rejects it; `$target` properties report progress toward the target;
+- republishes the whole tree after a reconnect, and installs the root's `lost` state as the connection's last will;
+- raises and clears alerts, changes the tree while running, and shuts down by announcing `disconnected`, by letting the will fire, or by removing every topic.
 
-Finds eBus brokers over mDNS (DNS-SD), first through Avahi on Linux.
+A device and a controller can share one connection (`ebus_rumqttc::pair`).
+
+### Broker discovery (planned)
+
+Finds the MQTT broker over mDNS (DNS-SD), first through Avahi on Linux, for a host that has no configured broker. Advertising the host's own eBus services over mDNS is the host's job.
 
 ## Quick start
 
@@ -74,18 +82,55 @@ EBUS_MQTT_HOST=broker.local EBUS_MQTT_CA=ca.pem cargo run -p ebus-rumqttc --exam
 
 Its source lists every setting: [crates/ebus-rumqttc/examples/watch.rs](crates/ebus-rumqttc/examples/watch.rs).
 
+Publish a device:
+
+```rust
+use ebus_rumqttc::ebus_homie_tokio::device::{
+    DeviceOptions, DeviceSpec, NodeSpec, PropSpec, TreeBuilder, TreeConfig,
+};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mqtt = rumqttc::MqttOptions::new("my-device", "localhost", 1883);
+
+    let mut b = TreeBuilder::new(TreeConfig::default(), "my-device", DeviceSpec::default())?;
+    let node = b.node(b.root(), "sensor", NodeSpec::typed("example.sensor"))?;
+    let temperature = b.property::<f64>(node, "temperature", PropSpec::new().unit("°C"))?;
+    let mut led = b.settable::<bool>(node, "led", PropSpec::new())?;
+    temperature.set(21.5)?;
+    led.set(false)?;
+
+    let run = ebus_rumqttc::device(mqtt, b, DeviceOptions::default())?;
+    tokio::spawn(run.task.run());
+
+    while let Some(req) = led.next_set().await {
+        println!("led -> {}", req.value());
+        req.accept();
+    }
+    Ok(())
+}
+```
+
+The `device` example adds a duration, an event and a clean shutdown on Ctrl-C:
+
+```sh
+cargo run -p ebus-rumqttc --example device -- my-device
+```
+
 ### Inside a service that already has an MQTT connection
 
 A service can share its own MQTT client with the controller instead of opening a second connection: `ebus_homie_tokio::attach` returns an inbox the client's reader feeds and a command stream the client sends. The host keeps its client version, TLS, last will and reconnect loop. The contract is in the [`ebus-homie-tokio` crate docs](crates/ebus-homie-tokio/src/lib.rs).
+
+A device can share the connection the same way (`ebus_homie_tokio::device::attach_device`, or `attach_pair` with a controller), provided the host installs the device's last will on it. The contract is in the [`device` module docs](crates/ebus-homie-tokio/src/device/mod.rs).
 
 ## Crates
 
 | Crate | Role | `no_std` |
 |---|---|---|
-| `ebus-rumqttc` | The controller with its own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature | no |
-| `ebus-homie-tokio` | Runs the controller on tokio over a host-owned MQTT connection | no |
-| `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller state machine. Performs no I/O | yes, with optional `alloc` |
-| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership | yes, with optional `alloc` |
+| `ebus-rumqttc` | The controller, the device, or both, with their own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature | no |
+| `ebus-homie-tokio` | Runs the controller and the device on tokio over a host-owned MQTT connection, with typed property handles | no |
+| `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller and device state machines. Performs no I/O | yes, with optional `alloc` |
+| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership, and pairing two roles on one connection | yes, with optional `alloc` |
 | `ebus-discovery` | eBus DNS-SD contract (placeholder) | yes, with optional `alloc` |
 
 The core crates take `std` (the default), `alloc`, or neither as cargo features, and are driven by the caller: they receive messages and the current time and return the MQTT commands to send. The design, including subscription pacing, reconnect handling and the Homie state rules, is in [doc/design.md](doc/design.md).

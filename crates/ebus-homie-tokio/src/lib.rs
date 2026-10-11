@@ -1,7 +1,9 @@
-//! Tokio runtime for the eBus Homie 5 controller.
+//! Tokio runtime for the eBus Homie 5 controller and device.
 //!
 //! Drives the sans-IO [`Controller`] over an MQTT connection the host owns, or
-//! one the `ebus-rumqttc` crate bundles. [`attach`] returns the pieces:
+//! one the `ebus-rumqttc` crate bundles; the [`device`] module does the same
+//! for a device tree, alone or with a controller on one connection.
+//! [`attach`] returns the controller's pieces:
 //!
 //! | Piece | Who uses it |
 //! |---|---|
@@ -120,6 +122,7 @@
 //! ```
 
 mod commands;
+pub mod device;
 mod driver;
 mod events;
 mod handle;
@@ -204,19 +207,15 @@ pub fn attach(config: Config, opts: AttachOptions) -> Result<Attached, ConfigErr
             shared: Arc::clone(&shared),
             skip_stale,
             received: 0,
+            last_device: false,
         },
         events: ev_rx,
         driver: ControllerDriver {
             core,
             inbound: in_rx,
             shared,
-            requests: req_rx,
-            commands: cmd_tx,
-            events: ev_tx,
-            snap: snap_tx,
-            lost: inbox::Dropped::default(),
-            sent: 0,
-            closed: false,
+            side: driver::ControllerSide::new(req_rx, ev_tx, snap_tx),
+            out: driver::Out::new(cmd_tx),
         },
     })
 }

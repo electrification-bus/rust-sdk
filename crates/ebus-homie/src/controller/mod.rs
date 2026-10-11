@@ -824,3 +824,70 @@ fn current_of(datatype: Datatype, text: &str) -> Option<Current> {
         _ => None,
     }
 }
+
+/// A `/set` topic or filter: the device role's, never the controller's
+/// subscriptions.
+fn is_set_level(s: &str) -> bool {
+    s.ends_with("/set")
+}
+
+impl ebus_mqtt::Role for Controller {
+    fn handle_link(&mut self, now: Instant, link: ebus_mqtt::Link) {
+        Controller::handle_link(self, now, link);
+    }
+
+    fn handle_message(&mut self, now: Instant, msg: ebus_mqtt::Message<'_>) -> Handled {
+        Controller::handle_message(self, now, msg)
+    }
+
+    fn handle_command_failed(&mut self, now: Instant, cmd: Command) {
+        Controller::handle_command_failed(self, now, cmd);
+    }
+
+    fn handle_timeout(&mut self, now: Instant) {
+        Controller::handle_timeout(self, now);
+    }
+
+    fn handle_dropped(&mut self, now: Instant, topic: &str) {
+        Controller::handle_dropped(self, now, topic);
+    }
+
+    fn handle_lost(&mut self, topic: &str) {
+        Controller::handle_lost(self, topic);
+    }
+
+    fn poll_command(&mut self) -> Option<Command> {
+        Controller::poll_command(self)
+    }
+
+    fn poll_timeout(&self) -> Option<Instant> {
+        Controller::poll_timeout(self)
+    }
+
+    fn wants(&self, topic: &str) -> bool {
+        Controller::wants(self, topic)
+    }
+
+    /// The controller's commands are `/set` and `$broadcast` publishes in its
+    /// domain, and subscriptions to filters in its domain other than `/set`
+    /// filters.
+    fn owns(&self, cmd: &Command) -> bool {
+        match cmd {
+            Command::Publish { topic, .. } => {
+                self.wants(topic)
+                    && (is_set_level(topic) || topic.split('/').nth(2) == Some("$broadcast"))
+            }
+            Command::Subscribe { filters } => filters
+                .iter()
+                .any(|(f, _)| self.wants(f) && !is_set_level(f)),
+            Command::Unsubscribe { filters } => {
+                filters.iter().any(|f| self.wants(f) && !is_set_level(f))
+            }
+            _ => false,
+        }
+    }
+
+    fn holds(&self, filter: &str) -> bool {
+        self.ledger.count(filter) > 0
+    }
+}

@@ -2,7 +2,9 @@
 //!
 //! The messages and commands the Homie state machines exchange with an MQTT
 //! client, topic filter matching, and, with `alloc`, the `FilterLedger` that
-//! tracks which subscriptions the client holds and who may remove them.
+//! tracks which subscriptions the client holds and who may remove them, the
+//! [`Role`] trait those state machines implement, and [`Pair`], which runs two
+//! of them on one link.
 //!
 //! The crate performs no I/O and reads no clock: time arrives as an [`Instant`]
 //! the caller supplies, received messages arrive as [`Message`]s, and work for
@@ -19,9 +21,22 @@ use alloc::{string::String, vec::Vec};
 pub mod filter;
 #[cfg(feature = "alloc")]
 mod ledger;
+#[cfg(feature = "alloc")]
+mod role;
 
 #[cfg(feature = "alloc")]
 pub use ledger::FilterLedger;
+#[cfg(feature = "alloc")]
+pub use role::{Pair, Receipt, Role};
+
+/// Whether a role took a received message.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Handled {
+    /// The message addressed something the role tracks.
+    Consumed,
+    /// Not for the role.
+    Ignored,
+}
 
 /// MQTT quality of service level.
 ///

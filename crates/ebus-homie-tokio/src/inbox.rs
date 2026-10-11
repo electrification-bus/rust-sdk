@@ -6,7 +6,9 @@ use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use bytes::Bytes;
-use ebus_mqtt::{Command, Link};
+use ebus_homie::device::Shutdown;
+use ebus_mqtt::{Command, Link, Receipt};
+use tokio::sync::Notify;
 use tokio::sync::mpsc::UnboundedSender;
 
 /// Most devices remembered as having lost messages between two drains; past
@@ -25,6 +27,7 @@ pub(crate) enum Inbound {
     },
     Link(Link),
     CommandFailed(Command),
+    Receipt(Receipt),
     /// Messages were dropped; the dropped set is not empty.
     Wake,
 }
@@ -74,6 +77,14 @@ pub(crate) struct Shared {
     pub(crate) link_ups: AtomicU64,
     /// Commands the driver had sent when it handled the last of them.
     pub(crate) boundary: AtomicU64,
+    /// Commands the host's executor received, skipped ones included.
+    pub(crate) received: AtomicU64,
+    /// The driver stopped polling commands for lack of credit.
+    pub(crate) starved: AtomicBool,
+    /// Wakes a starved driver once a command is received.
+    pub(crate) credit: Notify,
+    /// How the driver ended: the device's shutdown mode.
+    pub(crate) ending: Mutex<Option<Shutdown>>,
     /// Times the driver recomputed tree completeness.
     #[cfg(test)]
     pub(crate) tree_scans: AtomicU64,
@@ -89,6 +100,10 @@ impl Shared {
             connacks: AtomicU64::new(0),
             link_ups: AtomicU64::new(0),
             boundary: AtomicU64::new(0),
+            received: AtomicU64::new(0),
+            starved: AtomicBool::new(false),
+            credit: Notify::new(),
+            ending: Mutex::new(None),
             #[cfg(test)]
             tree_scans: AtomicU64::new(0),
         }
@@ -99,6 +114,28 @@ impl Shared {
     pub(crate) fn link_up(&self, sent: u64) {
         self.boundary.store(sent, Ordering::Release);
         self.link_ups.fetch_add(1, Ordering::AcqRel);
+    }
+
+    /// The driver delivered a link-up for a message received while down,
+    /// after sending `sent` commands. No CONNACK is counted for it.
+    pub(crate) fn implicit_link_up(&self, sent: u64) {
+        self.boundary.store(sent, Ordering::Release);
+    }
+
+    /// Records how the driver ended.
+    pub(crate) fn set_ending(&self, mode: Shutdown) {
+        *self
+            .ending
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(mode);
+    }
+
+    /// How the driver ended, when it ended through a device shutdown.
+    pub(crate) fn ending(&self) -> Option<Shutdown> {
+        *self
+            .ending
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     /// True when the command the driver sent as number `n` (from 1) was
@@ -143,10 +180,16 @@ impl Shared {
 ///    for a client that was already connected when the controller attached
 ///    (`session_present: false`);
 /// 2. every lost connection, through [`disconnected`](Self::disconnected);
-/// 3. every received PUBLISH in the controller's domain, through
-///    [`message`](Self::message);
+/// 3. every received PUBLISH in the controller's domain, or matching the
+///    device's filters, through [`message`](Self::message);
 /// 4. every command the host could not hand to its client, through
-///    [`command_failed`](Self::command_failed).
+///    [`command_failed`](Self::command_failed);
+/// 5. for a device built with
+///    [`TreeConfig::receipts`](ebus_homie::device::TreeConfig::receipts),
+///    every delivery report, through [`receipt`](Self::receipt).
+///
+/// A dropped `/set` is logged with `reason=setInboxDropped` and resubscribes
+/// nothing.
 ///
 /// The driver stops once every clone of the inbox is dropped.
 #[derive(Clone)]
@@ -198,7 +241,13 @@ impl Inbox {
             }
         };
         if !admitted {
-            self.note_dropped(&topic);
+            if topic.ends_with("/set") {
+                // A device's command, not a controller's message: nothing
+                // to resubscribe, and QoS 0 is never replayed.
+                log::warn!("reason=setInboxDropped,topic={topic}");
+            } else {
+                self.note_dropped(&topic);
+            }
             return false;
         }
         let sent = self.tx.send(Inbound::Message {
@@ -234,6 +283,14 @@ impl Inbox {
     /// since QoS 0 is never held. Never dropped.
     pub fn command_failed(&self, cmd: Command) {
         let _ = self.tx.send(Inbound::CommandFailed(cmd));
+    }
+
+    /// Reports a broker or client delivery report on a command already
+    /// sent, for a device built with
+    /// [`TreeConfig::receipts`](ebus_homie::device::TreeConfig::receipts).
+    /// Never dropped.
+    pub fn receipt(&self, r: Receipt) {
+        let _ = self.tx.send(Inbound::Receipt(r));
     }
 
     /// Remembers the device `topic` addresses and wakes the driver.

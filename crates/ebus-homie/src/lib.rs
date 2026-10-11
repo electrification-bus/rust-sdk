@@ -9,10 +9,14 @@
 extern crate alloc;
 
 #[cfg(feature = "alloc")]
+mod addr;
+#[cfg(feature = "alloc")]
 pub mod controller;
 pub mod datatype;
 #[cfg(feature = "alloc")]
 pub mod description;
+#[cfg(feature = "alloc")]
+pub mod device;
 pub mod id;
 mod log;
 pub mod payload;
@@ -20,6 +24,9 @@ pub mod payload;
 pub mod pyfmt;
 pub mod state;
 pub mod topic;
+
+#[cfg(feature = "alloc")]
+pub use addr::{Id, PropertyAddr};
 
 /// Homie convention major version, as it appears in topics (`{domain}/5/...`).
 pub const HOMIE_TOPIC_VERSION: &str = "5";

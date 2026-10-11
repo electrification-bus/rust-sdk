@@ -1,8 +1,12 @@
-//! A throwaway mosquitto per test, a python-sdk device process, a proxy that
-//! can cut and mute connections, and rumqttc helpers that seed and observe
-//! the broker.
+//! A throwaway mosquitto per test, python-sdk device and controller
+//! processes, a proxy that can cut and mute connections and counts what the
+//! client sends, and rumqttc helpers that seed and observe the broker.
 
-use std::io::{BufRead, BufReader};
+// Each test binary uses part of this module.
+#![allow(dead_code)]
+
+use std::collections::BTreeMap;
+use std::io::{BufRead, BufReader, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::PathBuf;
 use std::process::{Child, ChildStdin, Command, Stdio};
@@ -130,6 +134,12 @@ struct ProxyState {
     tasks: Vec<tokio::task::AbortHandle>,
     /// SUBSCRIBE packets the client sent, per connection since the last cut.
     subscribes: Vec<Arc<AtomicUsize>>,
+    /// PUBLISH packets the clients sent, over every connection.
+    publishes: Arc<AtomicUsize>,
+    /// Connections accepted.
+    connections: usize,
+    /// UNSUBACK packets the broker sent, over every connection.
+    unsubacks: Arc<AtomicUsize>,
 }
 
 impl Proxy {
@@ -150,10 +160,13 @@ impl Proxy {
                 let subs = Arc::new(AtomicUsize::new(0));
                 let mut s = st.lock().expect("proxy state");
                 s.subscribes.push(Arc::clone(&subs));
+                s.connections += 1;
+                let pubs = Arc::clone(&s.publishes);
+                let unsubacks = Arc::clone(&s.unsubacks);
                 let (cr, cw) = client.into_split();
                 let (br, bw) = broker.into_split();
-                let up = tokio::spawn(upstream(cr, bw, subs));
-                let down = tokio::spawn(downstream(br, cw, s.mute));
+                let up = tokio::spawn(upstream(cr, bw, subs, pubs));
+                let down = tokio::spawn(downstream(br, cw, s.mute, unsubacks));
                 s.tasks.push(up.abort_handle());
                 s.tasks.push(down.abort_handle());
             }
@@ -173,6 +186,44 @@ impl Proxy {
             t.abort();
         }
         s.subscribes.clear();
+    }
+
+    /// PUBLISH packets the clients sent so far, over every connection.
+    pub fn publishes(&self) -> usize {
+        self.state
+            .lock()
+            .expect("proxy state")
+            .publishes
+            .load(Ordering::Acquire)
+    }
+
+    /// Connections accepted so far.
+    pub fn connections(&self) -> usize {
+        self.state.lock().expect("proxy state").connections
+    }
+
+    /// UNSUBACK packets the broker sent so far, over every connection.
+    pub fn unsubacks(&self) -> usize {
+        self.state
+            .lock()
+            .expect("proxy state")
+            .unsubacks
+            .load(Ordering::Acquire)
+    }
+
+    /// Waits until the broker sent `n` UNSUBACK packets, over every
+    /// connection: it has then removed those subscriptions.
+    pub async fn wait_unsubacks(&self, n: usize, secs: u64) {
+        let deadline = Instant::now() + Duration::from_secs(secs);
+        let unsubacks = Arc::clone(&self.state.lock().expect("proxy state").unsubacks);
+        loop {
+            let seen = unsubacks.load(Ordering::Acquire);
+            if seen >= n {
+                return;
+            }
+            assert!(Instant::now() < deadline, "{seen} of {n} UNSUBACKs sent");
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
     }
 
     /// Waits until the client sent `n` SUBSCRIBE packets on one connection
@@ -211,11 +262,13 @@ fn frame(b: &[u8]) -> Option<(usize, usize)> {
     None
 }
 
-/// Client to broker, counting SUBSCRIBE packets.
+/// Client to broker, counting PUBLISH packets before they are forwarded and
+/// SUBSCRIBE packets after.
 async fn upstream(
     mut from: tokio::net::tcp::OwnedReadHalf,
     mut to: tokio::net::tcp::OwnedWriteHalf,
     subs: Arc<AtomicUsize>,
+    pubs: Arc<AtomicUsize>,
 ) {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     let mut buf = vec![0u8; 8192];
@@ -225,39 +278,84 @@ async fn upstream(
             Ok(0) | Err(_) => return,
             Ok(n) => n,
         };
-        if to.write_all(&buf[..n]).await.is_err() {
-            return;
-        }
         pending.extend_from_slice(&buf[..n]);
+        let mut subscribes = 0;
         while let Some((len, hdr)) = frame(&pending) {
-            if pending[0] >> 4 == 8 {
-                subs.fetch_add(1, Ordering::AcqRel);
+            match pending[0] >> 4 {
+                3 => {
+                    pubs.fetch_add(1, Ordering::AcqRel);
+                }
+                8 => subscribes += 1,
+                _ => {}
             }
             pending.drain(..hdr + len);
         }
+        if to.write_all(&buf[..n]).await.is_err() {
+            return;
+        }
+        subs.fetch_add(subscribes, Ordering::AcqRel);
     }
 }
 
-/// Broker to client; muted, only the first four bytes pass.
+/// Broker to client, counting UNSUBACK packets; muted, only the first four
+/// bytes pass.
 async fn downstream(
     mut from: tokio::net::tcp::OwnedReadHalf,
     mut to: tokio::net::tcp::OwnedWriteHalf,
     mute: bool,
+    unsubacks: Arc<AtomicUsize>,
 ) {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     let mut buf = vec![0u8; 8192];
+    let mut pending: Vec<u8> = Vec::new();
     let mut passed = 0usize;
     loop {
         let n = match from.read(&mut buf).await {
             Ok(0) | Err(_) => return,
             Ok(n) => n,
         };
+        pending.extend_from_slice(&buf[..n]);
+        while let Some((len, hdr)) = frame(&pending) {
+            if pending[0] >> 4 == 11 {
+                unsubacks.fetch_add(1, Ordering::AcqRel);
+            }
+            pending.drain(..hdr + len);
+        }
         let pass = if mute { n.min(4 - passed) } else { n };
         if to.write_all(&buf[..pass]).await.is_err() {
             return;
         }
         passed += pass;
     }
+}
+
+/// The interpreter (`EBUS_PYTHON`, else `python3`) and a `PYTHONPATH` that
+/// adds sibling `python-sdk` and `ebus-mqtt-client` checkouts when present,
+/// or `None` (with a message) when python-sdk cannot be imported.
+fn python_env(test: &str) -> Option<(std::ffi::OsString, std::ffi::OsString)> {
+    let python = std::env::var_os("EBUS_PYTHON").unwrap_or_else(|| "python3".into());
+    let workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut path: Vec<PathBuf> = std::env::var_os("PYTHONPATH")
+        .map(|p| std::env::split_paths(&p).collect())
+        .unwrap_or_default();
+    for sibling in ["../python-sdk/src", "../ebus-mqtt-client/src"] {
+        let dir = workspace.join(sibling);
+        if dir.is_dir() {
+            path.push(dir);
+        }
+    }
+    let path = std::env::join_paths(path).expect("PYTHONPATH");
+    let probe = Command::new(&python)
+        .args(["-c", "import ebus_sdk.homie"])
+        .env("PYTHONPATH", &path)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+    if !probe.is_ok_and(|s| s.success()) {
+        eprintln!("skipped {test}: python-sdk not importable (set EBUS_PYTHON and PYTHONPATH)");
+        return None;
+    }
+    Some((python, path))
 }
 
 /// A python-sdk device tree (`support/py_device.py`); killed on drop.
@@ -271,32 +369,9 @@ pub struct PyDevice {
 impl PyDevice {
     /// Starts `py-root` with `children` children of `props` integer
     /// properties each, or `None` (with a message) when python-sdk cannot be
-    /// imported. The interpreter is `EBUS_PYTHON`, else `python3`; sibling
-    /// `python-sdk` and `ebus-mqtt-client` checkouts are added to
-    /// `PYTHONPATH` when present.
+    /// imported (see [`python_env`]).
     pub fn start(test: &str, port: u16, children: usize, props: usize) -> Option<PyDevice> {
-        let python = std::env::var_os("EBUS_PYTHON").unwrap_or_else(|| "python3".into());
-        let workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let mut path: Vec<PathBuf> = std::env::var_os("PYTHONPATH")
-            .map(|p| std::env::split_paths(&p).collect())
-            .unwrap_or_default();
-        for sibling in ["../python-sdk/src", "../ebus-mqtt-client/src"] {
-            let dir = workspace.join(sibling);
-            if dir.is_dir() {
-                path.push(dir);
-            }
-        }
-        let path = std::env::join_paths(path).expect("PYTHONPATH");
-        let probe = Command::new(&python)
-            .args(["-c", "import ebus_sdk.homie"])
-            .env("PYTHONPATH", &path)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .status();
-        if !probe.is_ok_and(|s| s.success()) {
-            eprintln!("skipped {test}: python-sdk not importable (set EBUS_PYTHON and PYTHONPATH)");
-            return None;
-        }
+        let (python, path) = python_env(test)?;
         let script = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/support/py_device.py");
         let mut child = Command::new(&python)
             .arg("-u")
@@ -341,6 +416,113 @@ impl PyDevice {
 impl Drop for PyDevice {
     fn drop(&mut self) {
         drop(self.stdin.take());
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
+/// A python-sdk controller in tree mode (`support/py_controller.py`); killed
+/// on drop.
+pub struct PyController {
+    child: Child,
+    stdin: ChildStdin,
+    lines: std::sync::mpsc::Receiver<String>,
+}
+
+impl PyController {
+    /// Starts a controller for the tree under `root`, or `None` (with a
+    /// message) when python-sdk cannot be imported.
+    pub fn start(test: &str, port: u16, root: &str) -> Option<PyController> {
+        let (python, path) = python_env(test)?;
+        let script =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/support/py_controller.py");
+        let mut child = Command::new(&python)
+            .arg("-u")
+            .arg(script)
+            .args(["--port", &port.to_string()])
+            .args(["--root", root])
+            .env("PYTHONPATH", &path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .expect("start python controller");
+        let stdin = child.stdin.take().expect("piped stdin");
+        let stdout = child.stdout.take().expect("piped stdout");
+        let (tx, lines) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            for line in BufReader::new(stdout).lines().map_while(Result::ok) {
+                if tx.send(line).is_err() {
+                    break;
+                }
+            }
+        });
+        let ctl = PyController {
+            child,
+            stdin,
+            lines,
+        };
+        assert_eq!(ctl.line(10), "ready");
+        Some(ctl)
+    }
+
+    fn line(&self, secs: u64) -> String {
+        tokio::task::block_in_place(|| {
+            self.lines
+                .recv_timeout(Duration::from_secs(secs))
+                .expect("a line from the python controller")
+        })
+    }
+
+    /// Sends one command and returns its JSON answer. Needs the
+    /// multi-thread runtime.
+    pub fn call(&mut self, cmd: serde_json::Value, secs: u64) -> serde_json::Value {
+        writeln!(self.stdin, "{cmd}").expect("write to the python controller");
+        self.stdin.flush().expect("flush to the python controller");
+        serde_json::from_str(&self.line(secs)).expect("a JSON answer")
+    }
+
+    /// Waits until `device` is ready with its description and at least
+    /// `values` values; returns its state, description and values.
+    pub fn await_device(&mut self, device: &str, values: usize) -> serde_json::Value {
+        let r = self.call(serde_json::json!(["await", device, values, 15]), 20);
+        assert_eq!(r["ok"], true, "{device} not complete: {r}");
+        r["device"].clone()
+    }
+
+    /// Waits until `device/node/property` holds `payload`.
+    pub fn await_value(&mut self, device: &str, node: &str, property: &str, payload: &str) {
+        let r = self.call(
+            serde_json::json!(["value", device, node, property, payload, 10]),
+            15,
+        );
+        assert_eq!(
+            r["ok"], true,
+            "{device}/{node}/{property} never {payload:?}: {r}"
+        );
+    }
+
+    /// The current value of `device/node/property`, or JSON `null`.
+    pub fn value(&mut self, device: &str, node: &str, property: &str) -> serde_json::Value {
+        self.call(
+            serde_json::json!(["value", device, node, property, "", 0]),
+            5,
+        )["value"]
+            .clone()
+    }
+
+    /// Publishes `payload` to the property's `/set` topic.
+    pub fn set(&mut self, device: &str, node: &str, property: &str, payload: &str) {
+        let r = self.call(
+            serde_json::json!(["set", device, node, property, payload]),
+            5,
+        );
+        assert_eq!(r["ok"], true, "set not sent: {r}");
+    }
+}
+
+impl Drop for PyController {
+    fn drop(&mut self) {
         let _ = self.child.kill();
         let _ = self.child.wait();
     }
@@ -483,6 +665,85 @@ pub async fn observe(
     rx
 }
 
+/// Receives from an [`observe`] receiver until a message on `topic` with
+/// `payload` arrives, within `secs` seconds; returns every message before it.
+pub async fn until_message(
+    rx: &mut mpsc::UnboundedReceiver<(String, Vec<u8>, bool)>,
+    secs: u64,
+    topic: &str,
+    payload: &[u8],
+) -> Vec<(String, Vec<u8>, bool)> {
+    let deadline = Instant::now() + Duration::from_secs(secs);
+    let mut before = Vec::new();
+    loop {
+        let m = timeout_at(deadline, rx.recv())
+            .await
+            .unwrap_or_else(|_| {
+                panic!(
+                    "timed out waiting for {topic} = {:?}",
+                    String::from_utf8_lossy(payload)
+                )
+            })
+            .expect("observer running");
+        if m.0 == topic && m.1 == payload {
+            return before;
+        }
+        before.push(m);
+    }
+}
+
+/// Every retained message under `filter`, as the broker holds it now: a
+/// fresh client subscribes, then publishes a marker to itself, and collects
+/// until the marker arrives, which the broker queues after the retained
+/// messages.
+pub async fn retained(port: u16, filter: &str) -> BTreeMap<String, Vec<u8>> {
+    static N: AtomicUsize = AtomicUsize::new(0);
+    let n = N.fetch_add(1, Ordering::AcqRel);
+    let id = format!("snapshot-{}-{n}", std::process::id());
+    let marker = format!("ebus-test/{id}");
+    let mut mqtt = MqttOptions::new(&id, "127.0.0.1", port);
+    mqtt.set_max_packet_size(1 << 20, 1 << 20);
+    let (client, mut el) = AsyncClient::new(mqtt, 64);
+    client
+        .subscribe(filter, QoS::AtMostOnce)
+        .await
+        .expect("snapshot subscribe");
+    client
+        .subscribe(&marker, QoS::AtMostOnce)
+        .await
+        .expect("snapshot subscribe");
+    let deadline = Instant::now() + Duration::from_secs(15);
+    let mut subacks = 0;
+    let mut out = BTreeMap::new();
+    loop {
+        let ev = timeout_at(deadline, el.poll())
+            .await
+            .expect("snapshot complete in time")
+            .expect("snapshot connection");
+        match ev {
+            rumqttc::Event::Incoming(Packet::SubAck(_)) => {
+                subacks += 1;
+                if subacks == 2 {
+                    client
+                        .publish(&marker, QoS::AtMostOnce, false, "end")
+                        .await
+                        .expect("snapshot marker");
+                }
+            }
+            rumqttc::Event::Incoming(Packet::Publish(p)) => {
+                if p.topic == marker {
+                    break;
+                }
+                assert!(p.retain, "a live message during the snapshot: {}", p.topic);
+                out.insert(p.topic, p.payload.to_vec());
+            }
+            _ => {}
+        }
+    }
+    let _ = client.disconnect().await;
+    out
+}
+
 /// A bundled controller on the broker at `port`, spawned.
 pub fn controller(port: u16, config: Config) -> Ctl {
     let mut mqtt = MqttOptions::new(ebus_rumqttc::client_id(), "127.0.0.1", port);
@@ -509,6 +770,20 @@ pub struct Ctl {
 }
 
 impl Ctl {
+    /// A controller whose task the caller already spawned, such as a pair's.
+    pub fn attached(
+        handle: ControllerHandle,
+        events: EventReceiver,
+        task: JoinHandle<Result<(), ebus_rumqttc::Error>>,
+    ) -> Ctl {
+        Ctl {
+            handle,
+            events,
+            task,
+            seen: Vec::new(),
+        }
+    }
+
     /// Receives events until `done` holds for one, within `secs` seconds;
     /// returns that event. An `Overflow` fails the test.
     pub async fn until(
@@ -595,6 +870,11 @@ impl Ctl {
 
     fn tail(&self) -> &[Event] {
         &self.seen[self.seen.len().saturating_sub(20)..]
+    }
+
+    /// Waits for the task without shutting the controller down.
+    pub async fn join(self) -> Result<(), ebus_rumqttc::Error> {
+        self.task.await.expect("task did not panic")
     }
 
     /// Shuts the controller down and waits for its task.

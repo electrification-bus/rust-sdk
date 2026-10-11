@@ -1,15 +1,15 @@
 # rust-sdk design
 
-rust-sdk implements the eBus device and controller roles in Rust: Homie 5 over MQTT 3.1.1 (MQTT 5 later, behind a feature) on TCP or TLS, with mDNS discovery. The protocol logic lives in sans-IO core crates that run unchanged on tokio services, on ESP32, and inside a host application that already owns an MQTT connection.
+rust-sdk implements the eBus device and controller roles in Rust: Homie 5 over MQTT 3.1.1 (MQTT 5 later, behind a feature) on TCP or TLS, with mDNS broker discovery. The protocol logic lives in sans-IO core crates that run unchanged on tokio services, on ESP32, and inside a host application that already owns an MQTT connection.
 
 ## Crates
 
 | Crate | Role | Depends on | `no_std` |
 |---|---|---|---|
-| `ebus-homie` | Homie 5 codec (ids, topics, states, payloads, datatypes, `$description`) and the controller state machine; the device state machine (planned) | `ebus-mqtt`; `serde_json`, `sha2`, `rpds`, `num-*` (under `alloc`); `log` (under `log`) | yes, `alloc` optional |
-| `ebus-mqtt` | MQTT vocabulary, topic filters and filter ownership | nothing | yes, `alloc` optional |
+| `ebus-homie` | Homie 5 codec (ids, topics, states, payloads, datatypes, `$description`) and the controller and device state machines | `ebus-mqtt`; `serde_json`, `sha2`, `rpds`, `num-*` (under `alloc`); `log` (under `log`) | yes, `alloc` optional |
+| `ebus-mqtt` | MQTT vocabulary, topic filters and filter ownership; the `Role` trait and `Pair` | nothing | yes, `alloc` optional |
 | `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, broker selection; mDNS backends behind features (planned) | nothing | yes, `alloc` optional |
-| `ebus-homie-tokio` | Drives the core state machines on tokio over a host-owned or bundled MQTT connection | `ebus-homie`, `ebus-mqtt`, tokio 1, `rpds` | no |
+| `ebus-homie-tokio` | Drives the core state machines on tokio over a host-owned or bundled MQTT connection | `ebus-homie`, `ebus-mqtt`, tokio 1 (`sync`, `time`, `macros`, `rt`), `rpds` | no |
 | `ebus-rumqttc` | Bundled rumqttc 0.25 adapter | `ebus-homie-tokio`, rumqttc 0.25 | no |
 
 ## Core rules
@@ -252,7 +252,7 @@ pub fn client_id() -> String;
 
 Snapshots are copy-on-write: the driver republishes `Arc<Snapshot>` through a `watch` channel once per inbox drain in which something changed, with new `Arc<DeviceSnapshot>`s only for devices that changed. Unless a link change, a timer or a shutdown touched every device, it compares only the devices the drain touched. Tree completeness, which walks every tree, is recomputed only after such a change, a `$state` or `$description` message, or a device-level event, never for value traffic alone. A device's properties and alerts are persistent maps (`rpds`, `Arc`-backed), and the controller writes one only when its content changes, so a device is unchanged when its scalar fields are equal, it holds the same description `Arc`, and it still shares both maps with its snapshot (`DeviceView::shares_values`); the comparison takes constant time. A changed device's new snapshot shares every property and alert entry that did not change, including the slots a description change leaves unchanged, and the snapshot's device map, also persistent, copies only the path to each changed id. The driver yields to the runtime after each batch of 256 inputs while a backlog remains.
 
-### Discovery
+### Device discovery
 
 | Mode | Subscriptions |
 |---|---|
@@ -351,7 +351,7 @@ The event channel is bounded and the core never blocks on it. When it is full, e
 
 ## Bring-your-own connection
 
-A host service keeps its own MQTT client, options, TLS, last will and reconnect loop. It depends on `ebus-homie-tokio` with `default-features = false` and feeds the `Inbox`. Example for a service on rumqttc 0.10, whose sync `Client` methods call `pollster::block_on` (rumqttc 0.10.0 `client.rs:224, 245, 276`), so the executor uses the non-blocking `try_*` calls:
+A host service keeps its own MQTT client, options, TLS, last will and reconnect loop; a host that also runs the device role installs the device's will (see [Device role](#device-role)). It depends on `ebus-homie-tokio` with `default-features = false` and feeds the `Inbox`. Example for a service on rumqttc 0.10, whose sync `Client` methods call `pollster::block_on` (rumqttc 0.10.0 `client.rs:224, 245, 276`), so the executor uses the non-blocking `try_*` calls:
 
 ```rust
 let mut cfg = Config::tree(&root_id)?;
@@ -434,19 +434,440 @@ The transport is MQTT over TCP, or TLS through rumqttc's rustls support (MQTTS);
 
 `ControllerTask::run` joins three futures: the driver; an `EventLoop::poll` loop feeding the `Inbox`, with 1-30 s backoff (client.py:155); and a command executor, separate so a full request channel cannot deadlock against `poll`. The executor hands `AsyncClient` nothing while the link is down, since rumqttc would queue it for the next connection, and uses the `try_*` calls, so a request handed over before a disconnect is either written or in the queue a clean-session CONNACK empties; a request that does not fit waits for the event loop to send something, and a filter or topic rumqttc refuses is reported through `command_failed`. After any wait the executor checks `Commands::last_is_stale` again, so no SUBSCRIBE queued before a clean link-up is sent after it, and `controller()` sets `link_up_discards_queued`. A `/set` already handed to the executor when the link drops is sent after the next link-up. After the shutdown's UNSUBSCRIBE the executor sends a DISCONNECT, and the task ends once it is written, or at once when the link is down, discarding the commands not yet written. `controller()` connects with the client id in the caller's `MqttOptions`; `ebus_rumqttc::client_id()` returns `ebus-controller-` plus 16 random hex digits, after python's `homie-controller-{uuid}` (homie.py:3870).
 
-## Device role (planned)
+`device()` and `pair()` run the same three futures around a `DeviceDriver` or `PairDriver`, with the connection settings and shutdown flush given under [Device role](#device-role).
 
-- `ebus_homie::device::Device` has the controller's shape (`handle_*`, `poll_*`, `poll_timeout`), plus `last_will()`, the root's retained `$state=lost` (convention.md:56-58), and a transition guard that publishes `init`, one `$description`, the values, then `ready` (homie.py:2897-2928).
-- `ebus_mqtt::Session` owns the shared `FilterLedger` (refcounts across roles), `PublishHold` and the reconnect order. On `Up`: flush the hold (newest retained publish per topic, QoS 1/2 non-retained in order, QoS 0 dropped, capped at 512; client.py:31, 526-557), then the device's tree refresh, then the controller's resubscribe, then the app notification. Until the device role exists, the controller owns a private ledger.
-- A `Role` trait lets one driver run a device and a controller over one link, the co-resident broker-host pattern (framework.md:20, 461).
-- Bring-your-own hazards: one connection carries one will (convention.md:56-58); rumqttc 0.10 exposes `EventLoop::pending` (eventloop.rs:56) and replays it after reconnect (eventloop.rs:115-116), the replay hazards of ebus-mqtt-client GH #20 and #21 (client.py:545-556).
-- A device skips publishing a retained value whose final wire payload equals the last one it published on that topic (homie.py:1368-1379), except in a whole-tree republish, such as the one after a reconnect, which publishes every value so that a broker whose retained store is empty is repopulated (homie.py:1299-1310, python-sdk's `force=True`); a `retained: false` property publishes every value.
-- Float payloads use the shortest digits that read back as the same value at the value's own width, `f64` (`datatype::encode_float`) or `f32` (`datatype::encode_float32`), in python-sdk's layout.
-- CPU levers for a device that replaces a Python one: borrowed `topic::parse` so the inbound path allocates nothing; one owner task with no locks; description work only when `content_hash` changes; deadlines instead of polling threads.
+## Device role
 
-## Discovery (planned)
+### Shape
+
+The device role is a sans-IO state machine, `ebus_homie::device::Tree` (alloc), with the controller's shape: `handle_*` in, `poll_*` out, time from the caller. One `Tree` owns one root device and its descendants, because one connection carries one will (convention.md:56-58) and children share the root's connection (framework.md:419). A process publishing several roots runs one `Tree` and one connection per root. In the first release a driver serves one `Tree`, so each root keeps its own driver, connection and will.
+
+| Crate | Additions |
+|---|---|
+| `ebus-mqtt` | `Role` trait and `Pair<A, B>` (two roles on one link); `Receipt`; `Handled` moves here, re-exported from `ebus_homie::controller` |
+| `ebus-homie` | `device` module (alloc): `Tree`, `Builder` (builds a tree with one description check per device, at `finish`), `ValueCheck` (a slot's checks, copied for another thread), `Reconfigure`, specs, `ValueRef`, `HomieValue`, `HomieEnum`, `DirtySet`, `DeviceEvent`, `AlertError`; `impl Role for Controller`; `Id` and `PropertyAddr` move to the crate root, re-exported from `controller`; `pyfmt::write_float`/`write_float32` and `datatype::write_*` encode into a caller buffer, with `format_float` (pyfmt.rs:160), `format_float32` and the existing encoders as wrappers; `datatype::parse_set_payload_with(text, datatype, format, &NumericFormat, current)`, which takes the numeric format pre-parsed (the format text still serves `enum` and `color`), with `parse_set_payload` (datatype.rs:1099) as a wrapper |
+| `ebus-homie-tokio` | `Inbox::receipt`; `Commands::ending`; `device` module: `TreeBuilder`, `ReconfigureHandles`, `Property<T>`, `Settable<T>`, `SetRequest<T>`, `Event<T>`, `DeviceHandle`, `DeviceOptions`, `attach_device`, `attach_pair`, `AttachError`, and re-exports of the core types they take; an internal `Driver<R>` with `DeviceDriver` and `PairDriver` as newtypes over it. `ControllerDriver` keeps its own loop and shares the controller's snapshot and event code with `PairDriver`; `ControllerDriver::run` is unchanged |
+| `ebus-rumqttc` | `device()`, `pair()`, `RunningDevice`, `RunningPair`, `DeviceTask`, `PairTask` |
+
+### Public API
+
+```rust
+// ===== ebus-mqtt =====
+pub enum Handled { Consumed, Ignored }
+pub trait Role {
+    fn handle_link(&mut self, now: Instant, link: Link);
+    fn handle_message(&mut self, now: Instant, msg: Message<'_>) -> Handled;
+    fn handle_command_failed(&mut self, now: Instant, cmd: Command);
+    fn handle_timeout(&mut self, now: Instant);
+    fn handle_dropped(&mut self, _now: Instant, _topic: &str) {} // controller healing
+    fn handle_lost(&mut self, _topic: &str) {}
+    fn handle_receipt(&mut self, _now: Instant, _r: &Receipt) {} // device delivery tracking
+    fn poll_command(&mut self) -> Option<Command>;
+    fn poll_timeout(&self) -> Option<Instant>;
+    fn wants(&self, topic: &str) -> bool;
+    fn owns(&self, cmd: &Command) -> bool; // routes handle_command_failed
+    fn holds(&self, filter: &str) -> bool; // this role's ledger count > 0
+}
+/// A broker or client report on a command already sent, from a host that sets `TreeConfig::receipts`.
+#[non_exhaustive]
+pub enum Receipt {
+    Subscribed { filters: Vec<String>, granted: bool }, // SUBACK; granted is false when any return code is 0x80
+    Written { topic: String },                           // a publish written to the connection
+    Acknowledged { topic: String, cleared: bool },       // PUBACK or PUBCOMP; cleared: zero-length payload
+}
+/// Link events and commands: a first, then b. Messages: every role that wants them. Receipts: both roles.
+/// A wanted message while down is an implicit link-up for both roles, so the pair keeps the link state.
+pub struct Pair<A: Role, B: Role> { pub a: A, pub b: B, /* private: up */ }
+impl<A: Role, B: Role> Pair<A, B> { pub fn new(a: A, b: B) -> Self; pub fn is_up(&self) -> bool; }
+impl<A: Role, B: Role> Role for Pair<A, B> {}
+
+// ===== ebus-homie::device =====
+#[non_exhaustive]
+pub struct TreeConfig {
+    pub domain: String,               // "ebus" (framework.md:85)
+    pub qos: QoS,                     // ExactlyOnce: retained publishes, the will, /set subscriptions (convention.md:45)
+    pub max_description_bytes: usize, // 256 KiB; a larger $description is refused
+    pub watch_own_state: bool,        // false; true re-asserts the root's $state over a stale `lost`
+    pub receipts: bool,               // false; set by ebus-rumqttc: the host reports SUBACKs, writes and acks
+    pub max_tombstones: usize,        // 4096 topics
+    pub broadcast: bool,              // false; true subscribes {domain}/5/$broadcast/#
+    pub host_filters: Vec<String>,
+}
+pub struct DevIdx(u16);
+pub struct NodeIdx(u32);
+pub struct SlotId { index: u32, gen: u32 } // a removed slot's id returns Gone
+pub struct DeviceSpec { pub name: Option<String>, pub r#type: Option<String>,
+    pub extensions: Vec<String>, pub extras: Vec<(String, serde_json::Value)> }
+pub struct NodeSpec { pub name: Option<String>, pub r#type: Option<String> }
+pub struct PropSpec { pub name: Option<String>, pub format: Option<String>, pub unit: Option<String>,
+    pub settable: bool, pub retained: bool /* true */, pub target: bool /* $target on every update, convention.md:333 */ }
+impl DeviceSpec { pub fn typed(r#type: &str) -> Self; }
+impl NodeSpec { pub fn typed(r#type: &str) -> Self; }
+impl PropSpec { pub fn new() -> Self; } // plus by-value setters: name, format, unit, retained, target
+#[non_exhaustive]
+pub enum BuildError { InvalidId, DuplicateId, NodeIdHasDot, FormatRequired, InvalidFormat(Problem),
+    Ignored(Ignored) /* parse_with_ignored pruned something */, CoreKeyInExtras, InvalidExtension,
+    DescriptionTooLarge { bytes: usize }, Gone, Capacity /* no device or node index left */ }
+
+/// Borrowed, so nothing is copied before the unchanged-value gate.
+pub enum ValueRef<'a> { Integer(i64), Float(f64), Float32(f32), Boolean(bool), String(&'a str),
+    Enum(u16 /* index into the format list */), Color(&'a str), Datetime(&'a str),
+    Duration { secs: u64, micros: u32 }, Json(&'a serde_json::Value) }
+pub trait HomieValue: Clone + 'static {
+    const DATATYPE: Datatype;
+    fn as_value(&self) -> ValueRef<'_>;
+    fn same(&self, other: &Self) -> bool;               // floats by to_bits
+    fn from_set(v: &SetValue) -> Option<Self>;
+    fn default_format() -> Option<Cow<'static, str>> { None } // u8 -> "0:255"; enum variants
+}
+// i64, i32, i16, i8, u32, u16, u8, f64, f32, bool, String, Arc<str>, core::time::Duration,
+// Color, Datetime, serde_json::Value, and every E: HomieEnum
+pub trait HomieEnum: Copy + 'static {
+    const VARIANTS: &'static [&'static str]; // becomes $format
+    fn index(self) -> u16;
+    fn from_index(i: u16) -> Option<Self>;
+}
+
+pub enum Presence { Ready, Sleeping, Disconnected, Lost } // Disconnected and Lost: non-root only; the root's `lost` comes from declare_lost
+pub enum Change { Unchanged, Queued, Cached /* link down */, Dropped /* event while down */ }
+#[non_exhaustive]
+pub enum ValueError { NotFinite, OutOfRange, NotInFormat, WrongDatatype, IsEvent, NotEvent, NotTarget, Gone,
+    NotForRoot /* set_presence(root, Disconnected | Lost) */ }
+#[non_exhaustive]
+pub enum AlertError { InvalidId /* convention.md:519 */, EmptyMessage, Gone }
+#[non_exhaustive]
+pub enum DeviceEvent {
+    Set { slot: SlotId, value: SetValue, raw: Box<[u8]> }, // validated and step-rounded; raw as received
+    Broadcast { subtopic: String, payload: Box<[u8]> },
+    StateReasserted { attempt: u8, gave_up: bool },
+    Link(Link),
+}
+pub enum Shutdown { Announce, Silent, Remove }
+
+impl Tree {
+    pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError>;
+    pub fn root(&self) -> DevIdx;
+    pub fn last_will(&self) -> LastWill; // {domain}/5/{root}/$state, "lost", cfg.qos, retained
+    /// One commit: add_child, add_node, add_property(node, id, datatype, implied_format, spec), add_typed::<T>,
+    /// remove_child (not the root: InvalidId), remove_node, remove_property, set_format, set_unit, set_name.
+    pub fn reconfigure<R>(&mut self, f: impl FnOnce(&mut Reconfigure<'_>) -> Result<R, BuildError>) -> Result<R, BuildError>;
+    pub fn set_value(&mut self, slot: SlotId, v: ValueRef<'_>) -> Result<Change, ValueError>; // target mode: $target first unless it already equals v
+    pub fn set_progress(&mut self, slot: SlotId, v: ValueRef<'_>) -> Result<Change, ValueError>; // target mode: value only; set_value while no $target is held
+    pub fn set_target(&mut self, slot: SlotId, v: ValueRef<'_>) -> Result<Change, ValueError>;
+    pub fn accept_set(&mut self, slot: SlotId, raw: &[u8]) -> Result<Change, ValueError>; // $target := raw bytes
+    pub fn clear_value(&mut self, slot: SlotId) -> Result<Change, ValueError>; // zero-length retained; target mode: then $target
+    pub fn emit(&mut self, slot: SlotId, v: ValueRef<'_>) -> Result<Change, ValueError>; // retained: false
+    pub fn set_presence(&mut self, dev: DevIdx, p: Presence) -> Result<(), ValueError>;
+    pub fn raise_alert(&mut self, dev: DevIdx, id: &str, msg: &str) -> Result<Change, AlertError>;
+    pub fn clear_alert(&mut self, dev: DevIdx, id: &str) -> Result<Change, AlertError>;
+    pub fn declare_lost(&mut self); // the root's state becomes `lost`, connected or not; set_presence(root, Ready) returns it
+    pub fn shutdown(&mut self, mode: Shutdown);
+    pub fn poll_event(&mut self) -> Option<DeviceEvent>;
+    pub fn current(&self, slot: SlotId) -> Option<Current>;
+    pub fn is_connected(&self) -> bool;
+    pub fn rejected_sets(&self) -> u64; // /set messages refused by the SDK
+    pub fn handle_receipt(&mut self, now: Instant, r: &Receipt); // also the Role method
+    pub fn value_check(&self, slot: SlotId) -> Option<ValueCheck>; // None once removed
+    // Reads: config, devices() (pre-order), device(id), description(dev), state(dev), topic(slot), tombstones()
+}
+impl Role for Tree {}
+/// Each change checked alone; descriptions built and checked once per device at finish. Tree::new is new + finish.
+pub struct Builder;
+impl Builder {
+    pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError>;
+    pub fn edit(&mut self) -> Reconfigure<'_>; // no rollback; a refused change changes nothing
+    pub fn set_receipts(&mut self, on: bool);
+    pub fn finish(self) -> Result<Tree, BuildError>;
+    // Reads: config, root, value_check(slot), topic(slot); Reconfigure also has value_check and topic
+}
+/// The checks set_value and emit run first, for a handle to run on its own thread.
+pub struct ValueCheck;
+impl ValueCheck {
+    pub fn check(&self, v: ValueRef<'_>) -> Result<(), ValueError>;
+    pub fn datatype(&self) -> Datatype; // also is_retained, is_target, is_settable, format
+}
+
+/// Lock-free dirty marks, set from any thread, drained by the owner.
+pub struct DirtySet; // Box<[AtomicU32]>
+impl DirtySet {
+    pub fn new(slots: usize) -> Self;
+    pub fn mark(&self, i: u32) -> bool;              // true when the bit was clear: wake the owner
+    pub fn drain(&self, f: impl FnMut(u32) -> bool); // rotating start; false stops, unvisited bits stay set
+}
+
+// ===== ebus-homie-tokio::device =====
+impl Inbox { pub fn receipt(&self, r: Receipt); } // never dropped
+impl Commands { pub fn ending(&self) -> Option<Shutdown>; } // after recv() returns None: the mode, Silent after abort()
+pub struct TreeBuilder; // over a core Builder; descriptions are checked by attach_*
+impl TreeBuilder {
+    pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError>;
+    pub fn root(&self) -> DevIdx;
+    pub fn config(&self) -> &TreeConfig;
+    pub fn set_receipts(&mut self, on: bool); // set by ebus-rumqttc
+    pub fn child(&mut self, parent: DevIdx, id: &str, spec: DeviceSpec) -> Result<DevIdx, BuildError>;
+    pub fn node(&mut self, dev: DevIdx, id: &str, spec: NodeSpec) -> Result<NodeIdx, BuildError>;
+    pub fn property<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Property<T>, BuildError>;
+    pub fn settable<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Settable<T>, BuildError>;
+    pub fn event<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Event<T>, BuildError>;
+}
+#[derive(Clone)] // Send + Sync
+pub struct Property<T>;
+impl<T: HomieValue + Send + Sync> Property<T> {
+    pub fn set(&self, v: T) -> Result<(), ValueError>; // sync, never blocks; validated on the caller's thread; target mode: as Settable::set
+    pub fn clear(&self) -> Result<(), ValueError>;     // target mode: also clears $target
+    pub fn get(&self) -> Option<T>;
+    pub fn subscribe(&self) -> watch::Receiver<Option<T>>;
+    pub fn slot(&self) -> SlotId; // for remove_property, set_format, set_unit, set_name; also on Settable and Event
+}
+pub struct Settable<T>;
+impl<T: HomieValue + Send + Sync> Settable<T> {
+    pub fn property(&self) -> Property<T>;
+    pub fn set(&self, v: T) -> Result<(), ValueError>;          // target mode: closes the transition
+    pub fn progress(&self, v: T) -> Result<(), ValueError>;     // target mode: value only
+    pub fn set_target(&self, v: T) -> Result<(), ValueError>;   // target mode: a local change of intent
+    pub fn clear(&self) -> Result<(), ValueError>;               // also get(), as on Property
+    pub async fn next_set(&mut self) -> Option<SetRequest<T>>;  // None once the tree stops
+    pub fn try_next_set(&mut self) -> Option<SetRequest<T>>;
+}
+#[must_use]
+pub struct SetRequest<T>;
+impl<T: HomieValue + Send + Sync> SetRequest<T> {
+    pub fn value(&self) -> &T;      // validated, step-rounded
+    pub fn raw(&self) -> &[u8];     // bytes as received
+    pub fn accept(self);            // target mode: $target := raw; otherwise set(value)
+    pub fn accept_as(self, v: T);   // reflect the value the device reached; target mode: $target := raw, then set(v)
+    pub fn reject(self, why: &str); // reason=propertySetRejected, nothing published
+}
+#[derive(Clone)]
+pub struct Event<T>;
+impl<T: HomieValue + Send + Sync> Event<T> { pub fn emit(&self, v: T) -> Result<(), EmitError>; }
+#[non_exhaustive]
+pub enum EmitError { Down, Full, Invalid(ValueError) }
+
+#[non_exhaustive]
+pub struct DeviceOptions { pub inbox_bytes: usize /* 4 MiB */, pub set_capacity: usize /* 16 per settable */,
+    pub event_capacity: usize /* 1024 */, pub max_outstanding: usize /* 1024 */,
+    pub flush_timeout_ms: u64 /* 2000 */, pub link_up_discards_queued: bool }
+#[derive(Clone)]
+pub struct DeviceHandle;
+impl DeviceHandle {
+    pub fn is_connected(&self) -> bool;
+    pub fn rejected_sets(&self) -> u64; // as Tree::rejected_sets
+    pub fn state(&self, dev: DevIdx) -> watch::Receiver<Option<DeviceState>>; // as Tree::state; None for no such device
+    pub async fn set_presence(&self, dev: DevIdx, p: Presence) -> Result<(), ValueError>;
+    pub async fn raise_alert(&self, dev: DevIdx, id: &str, msg: &str) -> Result<(), AlertError>;
+    pub async fn clear_alert(&self, dev: DevIdx, id: &str) -> Result<(), AlertError>;
+    /// One commit; typed handles created in the closure go live with it.
+    pub async fn reconfigure<R: Send + 'static>(&self,
+        f: impl FnOnce(&mut ReconfigureHandles<'_, '_>) -> Result<R, BuildError> + Send + 'static) -> Result<R, BuildError>;
+    pub async fn next_broadcast(&self) -> Option<(String, bytes::Bytes)>; // with TreeConfig::broadcast
+    pub async fn declare_lost(&self);
+    pub async fn shutdown(&self, mode: Shutdown);
+    pub fn abort(&self); // no `disconnected`, no DISCONNECT: the broker fires the will
+}
+/// Wraps the core `Reconfigure` and registers each typed handle with the driver at commit.
+pub struct ReconfigureHandles<'a, 'b>; // &'a mut Reconfigure<'b>: the core commit's lifetime is its own
+impl<'b> ReconfigureHandles<'_, 'b> {
+    pub fn core(&mut self) -> &mut Reconfigure<'b>; // add_child, add_node, remove_*, set_format, set_unit, set_name
+    pub fn property<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Property<T>, BuildError>;
+    pub fn settable<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Settable<T>, BuildError>;
+    pub fn event<T: HomieValue + Send + Sync>(&mut self, node: NodeIdx, id: &str, spec: PropSpec) -> Result<Event<T>, BuildError>;
+}
+#[non_exhaustive]
+pub enum AttachError { Build(BuildError), Config(ConfigError) }
+pub struct AttachedDevice { pub handle: DeviceHandle, pub last_will: LastWill, pub inbox: Inbox,
+    pub commands: Commands, pub driver: DeviceDriver }
+pub struct AttachedPair { pub device: DeviceHandle, pub controller: ControllerHandle, pub events: EventReceiver,
+    pub last_will: LastWill, pub inbox: Inbox, pub commands: Commands, pub driver: PairDriver }
+pub fn attach_device(tree: TreeBuilder, opts: DeviceOptions) -> Result<AttachedDevice, BuildError>;
+pub fn attach_pair(tree: TreeBuilder, config: Config, opts: DeviceOptions) -> Result<AttachedPair, AttachError>; // config.link_up_discards_queued := opts'
+impl DeviceDriver { pub async fn run(self) -> Result<(), DriverError>; } // Send; also PairDriver
+
+// ===== ebus-rumqttc =====
+pub fn device(mqtt: rumqttc::MqttOptions, tree: TreeBuilder, opts: DeviceOptions) -> Result<RunningDevice, BuildError>;
+pub fn pair(mqtt: rumqttc::MqttOptions, tree: TreeBuilder, config: Config, opts: DeviceOptions) -> Result<RunningPair, AttachError>;
+pub struct RunningDevice { pub handle: DeviceHandle, pub task: DeviceTask }
+pub struct RunningPair { pub device: DeviceHandle, pub controller: ControllerHandle, pub events: EventReceiver, pub task: PairTask }
+impl DeviceTask { pub async fn run(self) -> Result<(), Error>; } // Send; also PairTask
+```
+
+A typical service:
+
+```rust
+let mut b = TreeBuilder::new(TreeConfig::default(), "panel-1", DeviceSpec::typed("energy.ebus.device.distribution-enclosure"))?;
+let c3 = b.child(b.root(), "circuit-3", DeviceSpec::typed("energy.ebus.device.circuit"))?;
+let power = b.node(c3, "power", NodeSpec::typed("energy.ebus.capability.power"))?;
+let watts: Property<f64> = b.property(power, "active-power", PropSpec::new().unit("W"))?;
+let switch = b.node(c3, "switch", NodeSpec::typed("energy.ebus.capability.switch"))?;
+let mut relay: Settable<bool> = b.settable(switch, "relay", PropSpec::new())?;
+relay.set(false)?;
+
+let mqtt = rumqttc::MqttOptions::new("panel-1", "localhost", 1883);
+let run = ebus_rumqttc::device(mqtt, b, DeviceOptions::default())?;
+tokio::spawn(run.task.run());
+
+watts.set(1234.5)?; // any thread; an unchanged value costs one compare
+while let Some(req) = relay.next_set().await {
+    if drive_relay(*req.value()).await.is_ok() { req.accept() } else { req.reject("relayFault") }
+}
+```
+
+Handles work before the task runs: a value set before the first link-up is stored and goes out in the first refresh.
+
+### Values and the unchanged-value gate
+
+Each slot holds its preformatted value topic (and `$target` topic), its datatype, width and precomputed bounds, a fingerprint of the last value given to it, and that value's wire payload in a reused `Vec<u8>`.
+
+- `Property::set` validates on the caller's thread (finite, min/max, enum and color membership) with the slot's `ValueCheck`, which the driver refreshes after each commit, then calls `watch::Sender::send_if_modified` with `HomieValue::same`. An unchanged value notifies no observer and wakes nothing. A changed one marks the slot in a `DirtySet` (one per 256 slot indices, added as the tree grows), and only a clear-to-set transition wakes the driver.
+- On a target-mode slot every update (`set`, `progress`, `set_target`, `clear`, `accept`) instead goes to the driver in the order made, through the handles' request channel, since coalescing would merge a `progress` into a closing `set`. The core's gate still decides what is published. The handles record under the watch lock whether the last update left the slot settled (value and `$target` equal, no transition open) or cleared, so a `set` of the settled value, or a `clear` of a cleared slot, sends nothing and wakes nothing.
+- Requests from the handles are applied before a link-up is handled, so a value set before the driver runs is in the first refresh.
+- The driver drains dirty slots in batches of 256, reads each watch's latest value and calls `Tree::set_value`. Writes between drains coalesce. Values that come back (A, B, A) before a drain publish nothing.
+- The core compares fingerprints before encoding. Floats compare by `to_bits` at their own width: shortest round-trip digits are injective per width (pyfmt.rs:127-134), so equal bits mean an equal payload, and `-0.0` and `0.0` stay distinct. Integers, booleans and enum indices compare by value; strings, colors, datetimes and json compare the encoded bytes with the stored payload. A retained value equal to the last one publishes nothing (homie.py:1377); a `retained: false` property publishes every `emit`, non-retained at QoS 0 (convention.md:50).
+- The whole-tree refresh after each link-up is the one forced path (homie.py:1299-1310, python-sdk's `force=True`): it republishes every cached payload so a broker whose retained store is empty is repopulated.
+- A narrow integer type gets an implied range `$format` (`u8` is `0:255`), intersected with a declared one, so `/set` validation enforces it.
+- Floats use `write_float` (`f64`) or `write_float32` (`f32`): the shortest digits that read back as the same value at the value's own width, in python-sdk's layout.
+- An enum's fingerprint is its index. After `set_format` on an enum slot holding a value, the next value compares by payload, since an index may name another value; a typed handle hands its value to the core again at that commit.
+- A handle whose property was removed, whose tree was never attached, or whose driver ended or was dropped returns `Gone`.
+- `clear` publishes a zero-length retained payload and resets the fingerprint; a value never published publishes nothing (homie.py:1334-1336). On a target-mode slot it then clears `$target` and closes any open transition.
+
+### Lifecycle and publish order
+
+Nothing is published before the first `Link::Up`. Every `Up`, the first included, runs one refresh, generated lazily from the slots as `poll_command` is called:
+
+1. One SUBSCRIBE: `{d}/5/{dev}/+/+/set` for every device in the tree, whether or not it has a settable property, `{d}/5/{root}/$state` with `watch_own_state`, and `{d}/5/$broadcast/#` with `broadcast`, at `cfg.qos`.
+2. Tombstones under devices in the tree: zero-length clears of those topics in the tombstone set (below).
+3. Devices in pre-order, root first: `init` when the device's description differs from the last one published (the memo starts empty, so the first refresh sends `init` for every device), then `$description` (cached bytes), each target-mode slot's `$target` before its value (convention.md:466-468), every retained value, and every alert.
+4. `$state` for each device in post-order, root last: `ready`, `sleeping`, the root's `lost` after `declare_lost`, or a child's `disconnected` or `lost`. With `receipts`, no `$state` is polled until the SUBACK of step 1 is reported.
+5. Tombstones under devices no longer in the tree, so a child removed while down is cleared after its parent's new description and state, as while up (convention.md:633-641).
+
+The order follows python's (homie.py:3055-3074): `init`, `$description`, values, alerts, then states with the root last. It differs in two ways: python publishes each device's `$state` right after its own subtree (homie.py:3063-3074), where this design publishes every description and value first and then every `$state`; and python sends `init` only for a device that is `ready` or `sleeping` and whose description changed (homie.py:3055-3056), where this design sends it for any changed description in any state. `ready` follows everything it covers and the `/set` SUBSCRIBE (convention.md:279). With `receipts` (the bundled path), it follows the SUBACK of the `/set` filters: the states wait for a `Receipt::Subscribed` matching the refresh's SUBSCRIBE, and one with `granted: false` is retried as a failed SUBSCRIBE (1-30 s backoff) while the states keep waiting. Without `receipts` (a shared connection whose host does not report SUBACKs), the states follow the SUBSCRIBE directly, relying on the broker processing one connection's packets in order, as python-sdk does (homie.py:1648-1656). After the will, the children read as `lost` through the root until the root's final `$state` (convention.md:262-267). `$description` precedes the values, so a controller checks each value on arrival without buffering early values. `session_present` changes nothing: the refresh always runs. A message while down counts as `Up{session_present: false}` (`reason=implicitLinkUp`). The driver detects such a message before routing it and delivers the `Up` itself, recording the stale-command boundary there; the core's own check covers a caller driving `Tree` directly.
+
+On `Link::Down` the FIFO is emptied; the next refresh regenerates everything from the slots and the tombstone set. The driver stops draining dirty slots while down and drains them all into the core before handling the next `Up`, so the refresh carries the latest values and each goes out once. `emit` while down returns `Dropped` (QoS 0 is now-or-never, convention.md:695). The driver also discards the events still queued for the core on `Down` and before the next `Up`, so an event emitted on one connection is never published on another.
+
+Every zero-length clear the core issues (a removal while down or up, `clear`, `clear_alert`) enters the tombstone set, and every refresh resends the set. A tombstone leaves the set when its topic is published again or, with `receipts`, when the broker has acknowledged (`Receipt::Acknowledged{cleared: true}`) every clear of that topic polled on the current link. Without `receipts` the set shrinks only when a topic is published again. The set holds at most `max_tombstones` (4096) topics; past it the oldest leaves, logged as a warning with `reason=tombstonesOverflow`, and is no longer resent. A clear lost with a dropped connection, or discarded by a client that empties its queue on a clean-session CONNACK (rumqttc 0.25 `eventloop.rs:127-142, 160-163`), is therefore resent by the next refresh. With `receipts`, the description memo advances, in poll order, as each `$description` publish is reported written (`Receipt::Written`); without, when it is polled. Either way, a `Down` reported before a device's closing `$state` is polled resets that device's memo, so the next refresh wraps it in `init` again.
+
+Steady state, while up:
+
+| Input | Output |
+|---|---|
+| `set` to an equal value, `set_presence` to the current one, `raise_alert` with the same message | nothing |
+| `set` to a new value | the value, retained, at `cfg.qos` |
+| `emit` | the value, non-retained, QoS 0, every call |
+| `set_presence(Sleeping)` | `sleeping` (convention.md:282-283) |
+| `raise_alert` with an id that is not a valid id | `Err(InvalidId)`, nothing published (convention.md:519) |
+| `raise_alert` with an empty message | `Err(EmptyMessage)`, nothing published: a zero-length payload deletes the alert (convention.md:519, 527) |
+| `declare_lost` | the root's retained `lost`; while down, the root's state still becomes `lost` and the next refresh publishes it (homie.py:2538-2541, 2563-2564); `set_presence(root, Ready)` returns the root to `ready` |
+
+Reconfiguration is one commit. The core rebuilds each touched device's `DeviceDescription`, validates it by round trip (`to_json`, then `parse_with_ignored` must ignore nothing, description.rs:354, 702), and computes `content_hash` (description.rs:432) only then. An unchanged hash publishes nothing. A description over `max_description_bytes` is refused and the commit rolled back. A device, node or property given no name is described with its id as its name, as python-sdk writes it (homie.py:917-919, 2174). Otherwise, while up:
+
+| Change | Sequence |
+|---|---|
+| Property or node added or removed | `init` when the device is `ready` or `sleeping` (convention.md:207), `$description`, the new values, zero-length clears of removed values and `$target`s (convention.md:613-614), then the prior state |
+| Children added | One SUBSCRIBE of each new child's `/set` filter; each child `init`, description, values, state, the states waiting for that SUBACK with `receipts`; then the parent `init`, description, prior state, once per commit (convention.md:616, 620-629) |
+| Children removed | Parent `init`, description, prior state; then each removed subtree leaves first, `$state` cleared first, then values, `$target`s, alerts and `$description` (convention.md:287-289, 635-641), then one UNSUBSCRIBE of the removed devices' `/set` filters |
+
+While down, a commit changes the model only; the next refresh sends `init` for every changed device, the clears as tombstones (a removed device's after the states), and the `/set` filters of the devices then in the tree.
+
+Shutdown:
+
+- `Announce`: `disconnected` for every device, post-order, root last (convention.md:280-281; homie.py:2473-2498), then DISCONNECT.
+- `Silent`: nothing published and no DISCONNECT, so the broker fires the will (homie.py:2467-2472).
+- `Remove`: the removal sequence for the whole tree, every topic cleared with the root's `$state` first, then the flush `Announce` uses, then DISCONNECT. Without a clean DISCONNECT the will would publish `lost` and re-create the root (convention.md:272; homie.py:2448-2451, 2459-2466).
+
+A shutdown releases every SUBACK gate, since no retry runs after it: states a refresh held for a SUBACK go out with the shutdown's own. The driver first hands the dirty slots and queued events to the core, then stops once the core has nothing left to send, or at once when the link is down; `Commands::ending` then gives the mode. A `PairDriver` stops with its device; `ControllerHandle::shutdown` on a pair unsubscribes the controller's filters and leaves the device running.
+
+### `/set`
+
+One `{d}/5/{dev}/+/+/set` filter for every device, settable properties or not, at the tree QoS, held while the device is in the tree: adding or removing settability, the last settable included, needs no SUBSCRIBE or UNSUBSCRIBE, and `/set` for a non-settable property is rejected locally (convention.md:279, 481). A `$broadcast` topic is matched first, so a broadcast subtopic may end in `set` (convention.md:533). Routing is a suffix check, borrowed `topic::parse` (topic.rs:130), a device lookup and a binary search over the device's sorted (node, property) table, and allocates nothing. Parsing calls `parse_set_payload_with` with the slot's cached `NumericFormat`.
+
+| Case | Result |
+|---|---|
+| `retain == Some(true)` | ignored, `reason=propertySetRetainedIgnored` (homie.py:1563-1567; convention.md:48); `retain: None` is processed |
+| unknown device or property | ignored at debug |
+| property not settable | ignored, `reason=propertySetNotSettable` |
+| zero-length, not UTF-8, or `parse_set_payload_with(text, datatype, format, &numeric, current)` fails | `reason=propertySetRejected,problem=…`; nothing published |
+| settable's queue full | dropped, `reason=setDropped` |
+| otherwise | `DeviceEvent::Set`, delivered to the property's `next_set` |
+
+A `/set` refused with `propertySetNotSettable` or `propertySetRejected` is logged, as python-sdk logs it (homie.py:1587-1591), and counted in a counter read through `Tree::rejected_sets` and `DeviceHandle::rejected_sets`; it produces no event and wakes nothing.
+
+`parse_set_payload` applies step rounding from min, then max, then the current value, and checks min/max after rounding (convention.md:399-413); `current` comes from the slot. Every accepted `/set` is delivered, including one equal to the current value, and in any device state.
+
+Reflection (convention.md:485-486): without `$target`, `accept()` sets the property to the request's value. When that equals the current value, the gate publishes nothing and the retained value already reflects the command; a controller does not retry on a different value (convention.md:474-475). With `$target` (opt-in per property, used for every update, convention.md:333): `accept()` publishes the received bytes to `$target` byte for byte (convention.md:470); `progress(v)` publishes the value only, or, while no `$target` is held (none set yet, or cleared), `$target` and then the value, as `set(v)` does; `set(v)` closes the transition: when `v` differs from the open target, or no transition is open, it publishes `$target` and then the value; otherwise the value only. Every value update on a target-mode slot goes through this rule, from `Settable::set`, `Property::set` (including the handle from `Settable::property()` and a non-settable property built with `PropSpec::target`) or `Tree::set_value`, so the value ends matching `$target` (convention.md:333, 466-468). `clear` clears the value, then `$target`. `set_target(v)` opens a transition from a local command. A dropped `SetRequest` publishes nothing.
+
+### Own `$state`
+
+`watch_own_state` is off by default until a session takeover has been reproduced against mosquitto. With it, a `lost` payload on the root's `$state` is answered with one publish of the root's current state and `StateReasserted` when all of these hold: the link is up, this link-up's closing root `$state` has been polled, the root's current state is not `lost`, and the message is not retained (`retain == Some(false)`, or `None`). `lost` is the only payload a will writes, and the root publishes it only after `declare_lost`, when its state is `lost`; so the echoes of the device's own `init`, `ready`, `sleeping` and `disconnected` (MQTT 3.1.1 has no no-local option) are ignored, and so is everything received before the refresh completes. On a `retain: None` connection, the retained `lost` left by the will is ignored when it arrives during the refresh; arriving later, it draws one re-publish of the state the refresh already published. A will left by a replaced session can land after the new session's `ready`. After 3 re-asserts in one link-up the device stops, reports `gave_up: true` and logs `reason=stateOverwritten`, so two processes with the same root id do not fight forever.
+
+### Sharing a connection with a controller
+
+A device gets its own MQTT connection through `ebus_rumqttc::device()` by default. A host's connection is supported only when the host installs the device's will and leaves republishing after a reconnect to the SDK (the contract below).
+
+`Pair<Tree, Controller>` runs both roles over one link, driven by `PairDriver`:
+
+- Link: `Up` goes to the device, then the controller; the device's commands drain before the controller's, so the refresh precedes the controller's resubscribe. The driver records the stale-command boundary once for the pair. A message while down is an implicit link-up for both roles: `PairDriver` delivers `Up{session_present: false}` to the device and then the controller, and records the boundary, before routing the message, so neither role comes up alone.
+- Messages go to every role whose `wants` is true. The device wants its `/set` filters, `$broadcast` and its root `$state`; the controller already returns `Ignored` for `/set` and `$broadcast` (controller/inbound.rs:158-163). The inbox records a dropped `/set` (by its suffix, before admission) apart from other drops and logs it with `reason=setInboxDropped`; it is not routed to the controller. Other drop notices go to the controller only.
+- Each role keeps its private `FilterLedger`. `Pair` removes from one role's UNSUBSCRIBE every filter the other role `holds` (`FilterLedger::count`), so `Controller::shutdown`, which releases every filter (ledger.rs:154-162, controller/mod.rs:590), leaves the device's `/set` and `$state` filters in place, and the role that releases a shared filter last unsubscribes it.
+- Every receipt goes to both roles; each matches it against its own outstanding commands and ignores the rest.
+- `handle_command_failed` goes to the role that `owns` the command. A failed value publish re-marks its slot so the latest value retries; a failed `$state`, `$description`, alert or tombstone is requeued; a failed event is dropped.
+- The will is the device root's. One connection carries one will (convention.md:56-58); the controller needs none.
+
+Inside `ebus-homie-tokio`, each command carries an origin tag. Under `link_up_discards_queued`, `Commands` also skips every device command queued before a clean link-up, since the refresh regenerates it from the slots and the tombstone set; a controller `/set` handed over before a drop is still sent after the link-up.
+
+### Bring-your-own contract
+
+`attach_device` and `attach_pair` return the `last_will` with the driver. The host:
+
+1. Installs `last_will` (the root's `$state` = `lost`, retained, at the tree QoS) on the connection before CONNECT, as the connection's only will. A connection whose will is something else cannot host a device.
+2. Forwards ConnAck, every Publish matching the device's filters with its retain bit (or `None`), and every connection loss to the `Inbox`.
+3. Leaves subscribing `/set` and republishing after a reconnect to the SDK, and publishes nothing under the tree's topics.
+4. Sends a client-held replay of an earlier session before anything handed over after the CONNACK. rumqttc 0.10 replays `EventLoop::pending` first (eventloop.rs:115-116), so a stale replay precedes the refresh and the refresh's latest values win; this removes the replay hazards of ebus-mqtt-client GH #20 and #21 (client.py:545-556) without draining the client.
+5. Declares in `host_filters` any filter it subscribes that matches the device's `/set` topics.
+6. Sizes its client's outgoing packet limit to at least `max_description_bytes` plus 1 KiB.
+7. Reports executor failures through `command_failed`.
+8. Optionally sets `TreeConfig::receipts` and reports, through `Inbox::receipt`, every SUBACK of a device SUBSCRIBE, every device `$description` publish written, and every broker acknowledgment of a device zero-length publish. Without them the device relies on in-order processing for `ready` and keeps tombstones until their topics return.
+9. Ends the connection as each `Shutdown` mode needs, once `Commands::recv` returns `None` (the driver has stopped and every command it sent was received) and the host's client has delivered what it was handed: after `Announce` and `Remove`, a clean DISCONNECT, sent only after those publishes are acknowledged, since a lost connection lets the will overwrite `disconnected` with `lost` (convention.md:280-281) or re-create a removed root; after `Silent` or `abort()`, a drop without DISCONNECT, so the broker fires the will.
+
+### Bundled path
+
+`device()` and `pair()` configure the caller's `MqttOptions` before `AsyncClient::new`: the will from `last_will()` (rumqttc 0.25 `lib.rs:569`), a clean session, inflight capped at 20 (a lower value of the caller's is kept), since mosquitto's default receive quota of 20 discards excess QoS 2 messages from a 3.1.1 client (client.py:549-552), and an outgoing packet limit of `max_description_bytes` plus 1 KiB (`lib.rs:616`), since an oversized publish fails the connection and the refresh would resend it. The broker coordinates and the client id are the caller's (see [Broker discovery](#broker-discovery-planned)); the root id is the documented client id (homie.py:3379). `device()` and `pair()` set `TreeConfig::receipts` and `DeviceOptions::link_up_discards_queued`, and the connection reports through `Inbox::receipt` each SUBACK, each `$description` publish written (`Outgoing::Publish`), and each PUBACK or PUBCOMP of a zero-length retained publish; in a pair the controller ignores the receipts for its own SUBSCRIBEs. It matches rumqttc's packet ids in write order: a SUBSCRIBE and a tracked publish each keep one entry until written, and any other publish only advances a count. A connection error resets the tracking, since rumqttc discards every request of a clean session not yet acknowledged (eventloop.rs:127-142, 160-163), and drops every event rumqttc buffered for the lost connection except received publishes: rumqttc returns buffered events first (eventloop.rs:193) and never clears them, so an `Outgoing::Publish` queued before a failed write (state.rs:345) would otherwise be counted on the next connection. The executor moves `Command::Publish`'s topic and payload into `try_publish` and rebuilds the command from `ClientError::TryRequest` when it does not fit. For `Shutdown::Announce` and `Shutdown::Remove`, the executor counts the publishes it hands to `try_publish` and the poll loop counts the `Outgoing::Publish` events `poll` returns and records `EventLoop::state.inflight()` (rumqttc 0.25 `state.rs:132`) after each event; once `Commands::recv` returns `None`, the executor waits until every handed publish has been written and `inflight()` is zero, bounded by `flush_timeout_ms` and ended early by a lost link, and then sends DISCONNECT, so `poll` is never canceled mid-write. After `Shutdown::Silent` or `abort()`, the poll loop returns without DISCONNECT and drops the connection, so the broker publishes the will. `inflight()` alone is zero while publishes still wait in the request channel (`state.rs:333-334`, `eventloop.rs:78`), and rumqttc writes DISCONNECT without waiting for acks (`state.rs:449-456`).
+
+### Backpressure and CPU levers
+
+- Credit: the driver polls commands, and drains dirty slots and queued events into the core, only while commands sent minus commands received by the executor is below `max_outstanding` (1024); a pair's controller commands count against the same limit. `Commands` publishes its received count to an `AtomicU64` in `Shared`, and the first command received after the driver ran out wakes it through a `Notify`, which the driver always waits on, so a driver out of credit resumes even when the command arrives between its last credit check and its wait. Past it, slots stay dirty and coalesce, and the refresh waits, so a slow broker holds at most `max_outstanding` publishes in the unbounded command channel and none of them stale.
+- An unchanged value: one compare under the watch lock, no wake, no encoding, no allocation.
+- A changed value: no allocation to compare and encode (`write_float` into a reused buffer, copied into the slot's, which grows only for a payload longer than any it held and starts with room for any number), 2 to build the `Command` (topic and payload), none in the executor; rumqttc adds its topic clone (`client.rs:104`) and, at QoS 1 or 2, its inflight clone (`state.rs:333`).
+- A refresh copies cached topics and payloads; it encodes nothing.
+- `content_hash` and `to_json` run only at a reconfiguration commit; the serialized `$description` is cached.
+- Inbound `/set` routing is borrowed and allocates nothing; each slot caches its parsed `NumericFormat` for `parse_set_payload_with`.
+- rumqttc writes and flushes each request separately (`eventloop.rs:244-252`), a per-value floor outside the SDK.
+
+### ESP32
+
+`Tree`, `HomieValue`, `DirtySet`, `Role` and `Pair` are no_std + alloc. `ebus-homie-espidf` builds its handles on `DirtySet` and `std::sync` value cells and drives a `Tree` or a `Pair` from the loop described under ESP32. With `retain: None`, a retained `/set` cannot be told apart and is executed.
+
+### Testing
+
+| Layer | What |
+|---|---|
+| Core unit, virtual `Instant` | Each lifecycle sequence as an exact command list: boot, reconnect with and without a description change, `Down` mid-refresh and mid-reconfiguration (memo reset, tombstones kept), every reconfiguration row while ready, sleeping and down, child add and remove, each shutdown mode; the gate (`-0.0`/`0.0`, `f32` vs `f64`, enum index, A-B-A); events dropped while down; the `/set` table; `$target` before the value, a `set(v)` that differs from the open target, `Property::set` and `clear` on a target-mode slot, and a local `set_target`; alert id and empty-message refusal; `declare_lost` while down then `Up`; the first settable added and a child with settables added while up, `/set` SUBSCRIBE before `ready`; own-`$state` re-assert and its cap, with echoes of the device's own `init` and `ready` ignored, and off by default; with `receipts`, no `$state` before the `/set` SUBACK, a refused SUBACK retried with the states held, and without `receipts` the states right after the SUBSCRIBE; tombstones leaving on an acknowledgment of every clear polled, a clear-publish-clear sequence kept until the second acknowledgment, the cap of `max_tombstones` with the oldest dropped; the memo advancing on `Written` with `receipts` and on poll without; a rejected `/set` counted with no event; credit-limited `poll_command` with values changed mid-refresh; `progress` with no `$target` held; a `$broadcast` subtopic ending in `set`; a child removed while down cleared after its parent; an enum compared by payload after `set_format` |
+| `Pair` unit | Command order on `Up`; `owns` routing; receipts reaching both roles; UNSUBSCRIBE filtering, including a controller shutdown while the device holds the same `$state` filter; drop notices to the controller only, a dropped `/set` logged; a message while down brings both roles up |
+| Driver unit, paused tokio clock | Values set before the driver runs in the first refresh; an unchanged `set` notifies no watcher and publishes nothing; A-B-A before a drain; values set while down out once in the refresh; caller-thread refusals; events every call, `Down` and `Full`; `/set` delivery, `accept`, `accept_as`, `reject`, a full set queue, refused sets counted; target mode through the handles; credit never exceeded, with values changed while out of credit sent at their latest; dirty sets growing past 256 slots; presence, alerts and the state watch; reconfiguration handles live after a commit and `Gone` after removal or a refused commit; `Announce`, `abort` and shutdown while down with `Commands::ending`; implicit link-up; stale device commands skipped; `ready` after the SUBACK receipt; a failed publish retried at the latest value; `$broadcast`; a pair's command order, controller shutdown, implicit link-up, failure routing, and a dropped `/set` not routed to the controller; an event queued before a drop not sent after it; a stored credit permit waking the driver; an unchanged target-mode `set` or `clear` sending nothing; `slot()` ids for core changes; handles `Gone` after a refused attach or a dropped driver; an enum handle re-applied after `set_format` |
+| Connection unit | SUBACK, written `$description` and acknowledged clear receipts in write order; a refused SUBACK; the flush condition; a publish that does not fit comes back whole; the will, clean session and inflight cap; `abort` and `Announce` end the task while the broker is down; a publish whose write failed with its connection not counted on the next |
+| Vectors | `write_float`/`write_float32` against every float vector; the `/set` verdict suite through `Tree::handle_message` |
+| Panel-sim corpus | Every vendored capture rebuilt as a `Tree` from its descriptions and values and published to mosquitto: the retained topics equal the capture's, each `$description` as a parsed document without `version`, which each publisher computes, and each value byte for byte, except a `float` the capture wrote in integer layout (`0` is published `0.0`) and the key order of a `json` object, which a `serde_json::Value` sorts |
+| Property | Random set, clear, reconfigure and link schedules: after each completed refresh the retained topic set equals the model, and no unchanged retained value is published outside a refresh |
+| Allocation count | The `device_bench` example counts allocations when a host binary passes it a counting global allocator, which needs `unsafe` and so stays outside this workspace: an unchanged `set_value` allocates nothing; a changed `f64` allocates 2, to build its `Command`. Planned: the same end to end through the tokio handles |
+| mosquitto e2e | The rust controller syncs a rust device tree (`DeviceSynced{missing: 0}`), sees a value change and runs a `/set`; a python-sdk controller reads the tree (`ready`, each `$description`, every value) and sends `/set`: valid, step-rounded, two refused payloads and a non-settable property, the refusals counted and nothing republished; broker restart without persistence republishes the same retained set; unchanged values publish nothing, counted at a proxy; no retained topic under the root after `Remove`; `Announce` publishes `disconnected`, child first; a task dropped without shutdown leaves the will's `lost`; `pair()` on one connection, whose device keeps its `/set` filter once the broker has acknowledged the controller's UNSUBSCRIBE. Planned: byte-exact `$target` through python-sdk; kill the socket, then `lost`, then `ready` after reconnect; a QoS 2 refresh of 20 devices by 300 properties under `max_inflight_messages 20`; a description over 10 KiB; a session takeover with a stale `lost`; bring-your-own through the rumqttc 0.10 dev-dependency |
+| Load | `device_bench` on the core: 20 devices by 150 `float` properties, every value set once per tick and 1 in 10 changed, timing `set_value` for unchanged and changed values and `poll_command` per changed value. Planned: 20 devices by 300 properties at 1 Hz through the tokio handles, against the Python process being replaced |
+
+## Broker discovery (planned)
 
 `ebus-discovery` holds the eBus DNS-SD contract (service types, TXT records, broker selection), sans-IO, with mDNS backends behind features; Avahi is the first backend.
+
+mDNS advertisement is a host function. The eBus entity that advertises is the host, with the services it provides: its `.local` hostname, `_ebus._tcp` listing every role it runs, `_device-info._tcp`, a broker it hosts itself, and its REST API (framework.md:76-79, 238-248). The host advertises through `ebus-discovery`; `device()`, `pair()` and `controller()` advertise nothing.
+
+`device()`, `pair()` and `controller()` take broker coordinates from the caller's `MqttOptions`, and `attach_*` from the host's own connection. The host gets them from its configuration (framework.md:93) or, when it has no configured broker, from broker discovery over mDNS (framework.md:80, 328-337), which `ebus-discovery` provides; its broker mode selects between them (framework.md:102).
 
 ## ESP32 (planned)
 
@@ -464,14 +885,10 @@ The transport is MQTT over TCP, or TLS through rumqttc's rustls support (MQTTS);
 | python-sdk vectors | python-sdk's choices where the spec is open: float format (`f64`), `json.dumps`, `sanitize_id`, duration encoding, `/set` parsing, `$description` wire bytes and round trip. `float32-format.json` holds rust-sdk's own `f32` choice: the shortest digits that read back as the same `f32` (computed with numpy), in python-sdk's `f64` layout | [vectors/python-sdk/](../vectors/python-sdk/) |
 | Panel-sim captures | Masked panel trees from ebus-panel-sim: every `$description` parses and every non-string text value passes `parse_set_payload` for its datatype and format. Each capture is also replayed through the controller from a simulated broker, in wildcard mode and in tree mode from each root, each with the retain bit and with `retain: None`: the retained tree, broker restart with an empty retained store, `ready` before values, repeated `$description` (identical and changed), values before the description, removal and return, and values deleted while disconnected (cleared with the retain bit, kept without it); restart, values before the description and deletion also run in unpaced wildcard mode. A synthetic 50-device by 30-property tree runs the same baseline and node-by-node pacing | [fixtures/panel-sim/](../fixtures/panel-sim/), [tests/captures.rs](../crates/ebus-homie/tests/captures.rs), [tests/controller_replay.rs](../crates/ebus-homie/tests/controller_replay.rs) |
 | Local capture corpus | `EBUS_CAPTURE_CORPUS=<dir>` also runs the capture test and the controller replay over every `*.tree.json` below it, with value faults reported, and checks that every fully accepted `$description` line in each `ebus-retained-topics.txt` dump round-trips through `to_json` byte for byte | [tests/captures.rs](../crates/ebus-homie/tests/captures.rs), [tests/controller_replay.rs](../crates/ebus-homie/tests/controller_replay.rs) |
-| mosquitto e2e | Broker on a free port, skipped when the binary is absent: pacing that heals the drops of a broker with `max_queued_messages 30`; inbox-overflow drops healed by resubscribing; restart without persistence (`DeviceAbsent`, then healing); removal and return in wildcard and tree modes; discovery and sync of a python-sdk device tree; `/set` round trip against a python-sdk device with byte-exact `/set` payloads and the republished value; a host holding overlapping and identical filters; a re-sync lost with its connection, behind a proxy that passes the SUBSCRIBEs and blocks every broker reply but the CONNACK, followed by a value deleted at the broker and cleared after the reconnect; bring-your-own through a rumqttc 0.10 dev-dependency alongside the bundled 0.25 path | `ebus-homie-tokio/tests`, `ebus-rumqttc/tests` |
+| mosquitto e2e | Broker on a free port, skipped when the binary is absent: pacing that heals the drops of a broker with `max_queued_messages 30`; inbox-overflow drops healed by resubscribing; restart without persistence (`DeviceAbsent`, then healing); removal and return in wildcard and tree modes; discovery and sync of a python-sdk device tree; `/set` round trip against a python-sdk device with byte-exact `/set` payloads and the republished value; a host holding overlapping and identical filters; a re-sync lost with its connection, behind a proxy that passes the SUBSCRIBEs and blocks every broker reply but the CONNACK, followed by a value deleted at the broker and cleared after the reconnect; bring-your-own through a rumqttc 0.10 dev-dependency alongside the bundled 0.25 path; the device role's cases and the panel-sim corpus under [Device role: Testing](#testing) | `ebus-homie-tokio/tests`, `ebus-rumqttc/tests` |
 | Live panels (planned) | Read-only example binary in wildcard and tree modes, compared with an independent Homie client; time to `DeviceSynced` and CPU per message. `/set` only with the maintainer's go-ahead | manual |
 
 ## Embedding in an existing service
 
 - A host service that already owns an MQTT connection uses bring-your-own: the controller runs on the host's runtime (the host spawns the driver) and forces no MQTT client or version on it.
 - A host workspace that builds with `--locked` takes the `Cargo.lock` diff as the acceptance gate: `cargo tree -d` should show no new MQTT client, rustls or tokio version.
-
-## Open questions
-
-1. Bring-your-own device role: supported when the host installs `last_will()` and drains the client's pending replay, or does a device always need its own connection?

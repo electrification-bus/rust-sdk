@@ -1,6 +1,6 @@
 [package]
 name = "ebus-homie-tokio"
-description = "Tokio runtime for the eBus Homie 5 controller."
+description = "Tokio runtime for the eBus Homie 5 controller and device."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -17,7 +17,7 @@ ebus-mqtt = { workspace = true, features = ["std"] }
 bytes = "1"
 log = { version = "0.4", default-features = false }
 rpds.workspace = true
-tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros"] }
+tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt"] }
 
 [dev-dependencies]
 # The host's own MQTT client in the bring-your-own end-to-end tests.
