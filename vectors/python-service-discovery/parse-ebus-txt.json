@@ -1,0 +1,166 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/parse-ebus-txt",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "parse-ebus-txt-complete",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "txtvers=1",
+          "ebus_version=0.9",
+          "roles=device,broker-host",
+          "device_id=a,b",
+          "auth_methods=passphrase, mtls"
+        ]
+      },
+      "expect": {
+        "txtvers": "1",
+        "ebus_version": "0.9",
+        "roles": [
+          "device",
+          "broker-host"
+        ],
+        "device_ids": [
+          "a",
+          "b"
+        ],
+        "auth_methods": [
+          "passphrase",
+          "mtls"
+        ],
+        "missing": [],
+        "is_broker_host": true
+      }
+    },
+    {
+      "id": "parse-ebus-txt-missing-all",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "name=x"
+        ]
+      },
+      "expect": {
+        "txtvers": "",
+        "ebus_version": "",
+        "roles": [],
+        "device_ids": [],
+        "auth_methods": [],
+        "missing": [
+          "txtvers",
+          "ebus_version",
+          "roles",
+          "device_id"
+        ],
+        "is_broker_host": false
+      }
+    },
+    {
+      "id": "parse-ebus-txt-empty-values",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "txtvers=",
+          "ebus_version=0.9",
+          "roles",
+          "device_id=x"
+        ]
+      },
+      "expect": {
+        "txtvers": "",
+        "ebus_version": "0.9",
+        "roles": [],
+        "device_ids": [
+          "x"
+        ],
+        "auth_methods": [],
+        "missing": [
+          "txtvers",
+          "roles"
+        ],
+        "is_broker_host": false
+      }
+    },
+    {
+      "id": "parse-ebus-txt-list-trimming",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "roles= device , ,controller,",
+          "device_id=,a,"
+        ]
+      },
+      "expect": {
+        "txtvers": "",
+        "ebus_version": "",
+        "roles": [
+          "device",
+          "controller"
+        ],
+        "device_ids": [
+          "a"
+        ],
+        "auth_methods": [],
+        "missing": [
+          "txtvers",
+          "ebus_version"
+        ],
+        "is_broker_host": false
+      }
+    },
+    {
+      "id": "parse-ebus-txt-not-broker-host",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "roles=device,broker-hosts"
+        ]
+      },
+      "expect": {
+        "txtvers": "",
+        "ebus_version": "",
+        "roles": [
+          "device",
+          "broker-hosts"
+        ],
+        "device_ids": [],
+        "auth_methods": [],
+        "missing": [
+          "txtvers",
+          "ebus_version",
+          "device_id"
+        ],
+        "is_broker_host": false
+      }
+    },
+    {
+      "id": "parse-ebus-txt-upper-keys",
+      "source": "python-service-discovery:ebus.py parse_ebus_txt",
+      "input": {
+        "strings": [
+          "ROLES=broker-host",
+          "Device_ID=p1"
+        ]
+      },
+      "expect": {
+        "txtvers": "",
+        "ebus_version": "",
+        "roles": [
+          "broker-host"
+        ],
+        "device_ids": [
+          "p1"
+        ],
+        "auth_methods": [],
+        "missing": [
+          "txtvers",
+          "ebus_version"
+        ],
+        "is_broker_host": true
+      }
+    }
+  ]
+}

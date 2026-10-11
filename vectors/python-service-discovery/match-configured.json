@@ -1,0 +1,1335 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/match-configured",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "match-configured-transports-00",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://b.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://b.local:1883",
+          "instance": "b"
+        }
+      }
+    },
+    {
+      "id": "match-configured-transports-01",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://A.LOCAL.",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtts://a.local:8883",
+          "instance": "a"
+        }
+      }
+    },
+    {
+      "id": "match-configured-transports-02",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://c.example.com",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-03",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://192.168.1.7",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtts://a.local:8883",
+          "instance": "a"
+        }
+      }
+    },
+    {
+      "id": "match-configured-transports-04",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtts://192.168.1.8:9999",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-05",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://10.0.0.3",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-06",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://[fd00::8]",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-07",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://nowhere.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-08",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtts://q.example.com",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-transports-09",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://p.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-addresses-00",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://b.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-addresses-01",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://A.LOCAL.",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-addresses-02",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://c.example.com",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-addresses-03",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://192.168.1.7",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtts://s.local:8883",
+          "instance": "s"
+        }
+      }
+    },
+    {
+      "id": "match-configured-addresses-04",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtts://192.168.1.8:9999",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://192.168.1.8:1883",
+          "instance": "p"
+        }
+      }
+    },
+    {
+      "id": "match-configured-addresses-05",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://10.0.0.3",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://10.0.0.3:1883",
+          "instance": "q"
+        }
+      }
+    },
+    {
+      "id": "match-configured-addresses-06",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://[fd00::8]",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://[fd00::8]:1883",
+          "instance": "p"
+        }
+      }
+    },
+    {
+      "id": "match-configured-addresses-07",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://nowhere.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": null
+      }
+    },
+    {
+      "id": "match-configured-addresses-08",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtts://q.example.com",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://q.example.com:1883",
+          "instance": "q"
+        }
+      }
+    },
+    {
+      "id": "match-configured-addresses-09",
+      "source": "python-service-discovery:ebus.py match_configured",
+      "input": {
+        "url": "mqtt://p.local",
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "match": {
+          "url": "mqtt://p.local:1883",
+          "instance": "p"
+        }
+      }
+    }
+  ]
+}

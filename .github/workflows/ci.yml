@@ -51,6 +51,8 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y mosquitto
       - run: cargo test --workspace --locked
+      # The mdns-sd backend's tests, two daemons over loopback on port 5353.
+      - run: cargo test -p ebus-discovery-tokio --locked --features mdns-sd
 
   # The core crates must build without std, with and without alloc.
   no-std:
@@ -70,6 +72,66 @@ jobs:
           --features "${{ matrix.features }}"
           -p ebus-homie -p ebus-mqtt -p ebus-discovery
 
+  # ebus-discovery-tokio with each backend feature alone and with both.
+  discovery:
+    name: ebus-discovery-tokio (${{ matrix.features }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [avahi, mdns-sd, "avahi,mdns-sd"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: >
+          cargo clippy -p ebus-discovery-tokio --all-targets --locked
+          --no-default-features --features "${{ matrix.features }}" -- -D warnings
+
+  # The Avahi backend against avahi-daemon and against mdns-sd, interop with
+  # python-service-discovery, and brokers found over mDNS and connected to.
+  # Those brokers are advertised on ebus0, a dummy interface with two private
+  # IPv4 addresses and an IPv6 ULA, so nothing is advertised on the runner's
+  # network.
+  discovery-e2e:
+    name: discovery end-to-end
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/python-service-discovery/src
+      EBUS_TEST_MDNS_IFACE: ebus0
+      # A test whose resource is missing fails here instead of skipping.
+      EBUS_REQUIRE_E2E: "1"
+      # The Avahi restart test stops and starts avahi-daemon through these.
+      EBUS_AVAHI_STOP: sudo systemctl stop avahi-daemon.socket avahi-daemon.service
+      EBUS_AVAHI_START: sudo systemctl start avahi-daemon.service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: electrification-bus/python-service-discovery
+          ref: v0.5.1
+          path: python-service-discovery
+      - uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update && sudo apt-get install -y dbus avahi-daemon mosquitto
+      - run: sudo systemctl start dbus.service avahi-daemon.service && avahi-daemon --check
+      - name: ebus0
+        run: |
+          sudo ip link add ebus0 type dummy
+          sudo ip link set ebus0 multicast on
+          sudo ip addr add 10.99.0.1/24 dev ebus0
+          sudo ip addr add 10.99.0.2/24 dev ebus0
+          sudo ip -6 addr add fd00:99::1/64 dev ebus0 nodad
+          sudo ip link set ebus0 up
+      - name: python-service-discovery
+        run: |
+          python3 -m venv "$RUNNER_TEMP/py"
+          "$RUNNER_TEMP/py/bin/pip" install 'zeroconf>=0.131.0'
+          echo "EBUS_PYTHON=$RUNNER_TEMP/py/bin/python" >> "$GITHUB_ENV"
+      - run: cargo test -p ebus-discovery-tokio --locked --no-default-features --features avahi
+      - run: cargo test -p ebus-discovery-tokio --locked --features avahi,mdns-sd
+      - run: cargo test -p ebus-rumqttc --locked --test discovery
+
   docs:
     name: docs
     runs-on: ubuntu-latest
@@ -79,3 +141,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo doc --workspace --no-deps --locked
+      - run: cargo doc -p ebus-discovery-tokio --no-deps --locked --all-features

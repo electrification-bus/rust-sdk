@@ -7,7 +7,7 @@
 
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, Ipv4Addr, TcpListener, TcpStream};
 use std::path::PathBuf;
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -20,6 +20,16 @@ use rumqttc::{AsyncClient, MqttOptions, Packet, QoS};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tokio::time::{Instant, timeout_at};
+
+/// Skip `test`, whose resource is missing, with `why` on stderr; with
+/// `EBUS_REQUIRE_E2E` set (the CI job that provides every resource), fail
+/// instead.
+pub fn skip(test: &str, why: &str) {
+    if std::env::var_os("EBUS_REQUIRE_E2E").is_some() {
+        panic!("EBUS_REQUIRE_E2E is set, but {test} lacks a resource: {why}");
+    }
+    eprintln!("skipped {test}: {why}");
+}
 
 /// The mosquitto binary: `MOSQUITTO`, else the first on `PATH` or in the
 /// usual sbin directories.
@@ -45,6 +55,8 @@ pub struct Broker {
     bin: PathBuf,
     child: Option<Child>,
     conf: PathBuf,
+    /// The listener address.
+    pub ip: IpAddr,
     /// The listener port.
     pub port: u16,
 }
@@ -53,27 +65,36 @@ impl Broker {
     /// Starts a broker with `extra` appended to its configuration, or `None`
     /// (with a message) when no mosquitto binary is found.
     pub fn start(test: &str, extra: &str) -> Option<Broker> {
+        Broker::start_at(test, IpAddr::V4(Ipv4Addr::LOCALHOST), 0, extra)
+    }
+
+    /// [`Broker::start`] listening on `ip` and `port`, a free one when 0.
+    pub fn start_at(test: &str, ip: IpAddr, port: u16, extra: &str) -> Option<Broker> {
         let Some(bin) = mosquitto() else {
-            eprintln!("skipped {test}: no mosquitto binary (set MOSQUITTO to name one)");
+            skip(test, "no mosquitto binary (set MOSQUITTO to name one)");
             return None;
         };
-        let port = TcpListener::bind("127.0.0.1:0")
-            .and_then(|l| l.local_addr())
-            .expect("free port")
-            .port();
-        let conf =
-            std::env::temp_dir().join(format!("ebus-rumqttc-{}-{port}.conf", std::process::id()));
+        let port = match port {
+            0 => TcpListener::bind((ip, 0))
+                .and_then(|l| l.local_addr())
+                .expect("free port")
+                .port(),
+            p => p,
+        };
+        let conf = std::env::temp_dir().join(format!(
+            "ebus-rumqttc-{}-{ip}-{port}.conf",
+            std::process::id()
+        ));
         std::fs::write(
             &conf,
-            format!(
-                "listener {port} 127.0.0.1\nallow_anonymous true\npersistence false\n{extra}\n"
-            ),
+            format!("listener {port} {ip}\nallow_anonymous true\npersistence false\n{extra}\n"),
         )
         .expect("write config");
         let mut b = Broker {
             bin,
             child: None,
             conf,
+            ip,
             port,
         };
         b.spawn();
@@ -90,7 +111,7 @@ impl Broker {
             .expect("start mosquitto");
         self.child = Some(child);
         for _ in 0..200 {
-            if TcpStream::connect(("127.0.0.1", self.port)).is_ok() {
+            if TcpStream::connect((self.ip, self.port)).is_ok() {
                 return;
             }
             std::thread::sleep(Duration::from_millis(25));
@@ -624,7 +645,17 @@ pub async fn observe(
     id: &str,
     filters: &[&str],
 ) -> mpsc::UnboundedReceiver<(String, Vec<u8>, bool)> {
-    let (client, mut el) = AsyncClient::new(MqttOptions::new(id, "127.0.0.1", port), 64);
+    observe_at(IpAddr::V4(Ipv4Addr::LOCALHOST), port, id, filters).await
+}
+
+/// [`observe`] on the broker at `ip`.
+pub async fn observe_at(
+    ip: IpAddr,
+    port: u16,
+    id: &str,
+    filters: &[&str],
+) -> mpsc::UnboundedReceiver<(String, Vec<u8>, bool)> {
+    let (client, mut el) = AsyncClient::new(MqttOptions::new(id, ip.to_string(), port), 64);
     let (tx, rx) = mpsc::unbounded_channel();
     let (sub_tx, sub_rx) = tokio::sync::oneshot::channel();
     let n = filters.len();

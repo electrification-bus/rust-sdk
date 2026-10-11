@@ -17,6 +17,13 @@ calling python-sdk. float32-format is the exception: it records rust-sdk's f32
 choice, numpy's shortest float32 digits laid out by python-sdk's
 _format_float.
 
+python-service-discovery suites (vectors/python-service-discovery/) record
+python-service-discovery's behavior for the eBus DNS-SD contract, where the
+eBus specification leaves a choice open. Cases where rust-sdk follows its own
+rule from doc/design.md (DECODE_TXT_RUST, BROKER_MODE_RUST) carry rust-sdk's
+expect and a source naming the rule; the generator fails if
+python-service-discovery comes to agree with one.
+
 Run from the eBus repo root with the SDK on PYTHONPATH:
 
     PYTHONPATH=python-sdk/src:ebus-mqtt-client/src:python-service-discovery/src \
@@ -69,12 +76,12 @@ PYSDK = "python-sdk"  # directory and suite-name prefix of the python-sdk suites
 # ── helpers ────────────────────────────────────────────────────────────────
 
 
-def write_suite(rel_path: str, suite: str, cases: list) -> None:
+def write_suite(rel_path: str, suite: str, cases: list, generator: str = GENERATOR) -> None:
     ids = [c["id"] for c in cases]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     if dupes:
         raise SystemExit(f"{rel_path}: duplicate case ids {dupes}")
-    doc = {"$schema": SCHEMA, "suite": suite, "version": "0.1", "generator": GENERATOR, "cases": cases}
+    doc = {"$schema": SCHEMA, "suite": suite, "version": "0.1", "generator": generator, "cases": cases}
     path = os.path.join(OUT, rel_path)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -1303,6 +1310,512 @@ def gen_description_roundtrip() -> list:
     return cases
 
 
+# ── python-service-discovery ───────────────────────────────────────────────────
+#
+# The eBus DNS-SD contract as python-service-discovery implements it
+# (ebus.py, instance.py, record.py, _mdns_core.py). TXT strings are parsed by
+# python-zeroconf, as a direct browse receives them, then decoded by
+# decode_txt.
+
+import ast  # noqa: E402
+import ipaddress  # noqa: E402
+import re  # noqa: E402
+import warnings  # noqa: E402
+
+import ebus_service_discovery  # noqa: E402
+from ebus_service_discovery import ebus as sd  # noqa: E402
+from ebus_service_discovery._mdns_core import AdvertisementPlan, instance_candidates  # noqa: E402
+from ebus_service_discovery.instance import ServiceInstance  # noqa: E402
+from ebus_service_discovery.record import Address  # noqa: E402
+from zeroconf import ServiceInfo  # noqa: E402
+
+SD = "python-service-discovery"
+SD_GENERATOR = f"rust-sdk tools/gen_vectors.py from python-service-discovery {ebus_service_discovery.__version__}"
+SD_EBUS = f"{SD}:ebus.py"
+RUST_TXT = "rust-sdk doc/design.md#txt-records"
+
+
+def zeroconf_txt(strings: list) -> dict:
+    """The TXT properties python-zeroconf parses from these strings (bytes)."""
+    wire = b"".join(bytes([len(s)]) + s for s in strings)
+    return ServiceInfo("_x._tcp.local.", "a._x._tcp.local.", properties=wire).properties
+
+
+def txt_strings_field(strings: list) -> dict:
+    try:
+        return {"strings": [s.decode("utf-8") for s in strings]}
+    except UnicodeDecodeError:
+        return {"strings_hex": [s.hex() for s in strings]}
+
+
+def pairs(d: dict) -> list:
+    return [[k, v] for k, v in d.items()]
+
+
+# decode_txt: python's result, except where rust-sdk's TXT rule differs.
+DECODE_TXT_CASES = [
+    ("simple", [b"txtvers=1", b"roles=device,controller"]),
+    ("flag-key", [b"flag", b"k=v"]),
+    ("empty-value", [b"k="]),
+    ("value-with-equals", [b"k=a=b=c"]),
+    ("upper-key", [b"Roles=device", b"DEVICE_ID=x"]),
+    ("exact-duplicate-first-wins", [b"k=1", b"k=2"]),
+    ("invalid-utf8-value", [b"k=\xff\xfeok"]),
+    ("invalid-utf8-key", [b"k\xff=1"]),
+    ("truncated-utf8", [b"k=\xe2\x82"]),
+    ("utf8-value", ["name=Küche".encode()]),
+    ("spaces", [b" k = v "]),
+    ("empty", []),
+]
+# Cases where rust-sdk's rule (doc/design.md, TXT records) differs from python.
+DECODE_TXT_RUST = [
+    ("case-variant-first-wins", [b"Key=1", b"KEY=2"], [["key", "1"]],
+     f"{RUST_TXT}: the first of keys equal ignoring case wins (RFC 6763 section 6.4); python keeps the last (ebus.py:144-152)"),
+    ("empty-key-skipped", [b"=x", b"k=v"], [["k", "v"]],
+     f"{RUST_TXT}: a string with an empty key is skipped; python keeps it as key ''"),
+    ("zero-length-string-skipped", [b"", b"k=v"], [["k", "v"]],
+     f"{RUST_TXT}: a zero-length string has an empty key and is skipped"),
+]
+
+
+def gen_decode_txt() -> list:
+    cases = []
+    for name, strings in DECODE_TXT_CASES:
+        cases.append({
+            "id": f"decode-txt-{name}",
+            "source": f"{SD_EBUS} decode_txt over python-zeroconf's TXT parse",
+            "input": txt_strings_field(strings),
+            "expect": {"txt": pairs(sd.decode_txt(zeroconf_txt(strings)))},
+        })
+    for name, strings, expect, source in DECODE_TXT_RUST:
+        py = pairs(sd.decode_txt(zeroconf_txt(strings)))
+        if py == expect:
+            raise SystemExit(f"decode-txt-{name}: python now agrees with rust-sdk; move it to DECODE_TXT_CASES")
+        cases.append({"id": f"decode-txt-{name}", "source": source, "input": txt_strings_field(strings),
+                      "expect": {"txt": expect}})
+    return cases
+
+
+def gen_parse_ebus_txt() -> list:
+    inputs = [
+        ("complete", [b"txtvers=1", b"ebus_version=0.9", b"roles=device,broker-host", b"device_id=a,b",
+                      b"auth_methods=passphrase, mtls"]),
+        ("missing-all", [b"name=x"]),
+        ("empty-values", [b"txtvers=", b"ebus_version=0.9", b"roles", b"device_id=x"]),
+        ("list-trimming", [b"roles= device , ,controller,", b"device_id=,a,"]),
+        ("not-broker-host", [b"roles=device,broker-hosts"]),
+        ("upper-keys", [b"ROLES=broker-host", b"Device_ID=p1"]),
+    ]
+    cases = []
+    for name, strings in inputs:
+        e = sd.parse_ebus_txt(zeroconf_txt(strings))
+        cases.append({
+            "id": f"parse-ebus-txt-{name}",
+            "source": f"{SD_EBUS} parse_ebus_txt",
+            "input": txt_strings_field(strings),
+            "expect": {
+                "txtvers": e.txtvers, "ebus_version": e.ebus_version, "roles": list(e.roles),
+                "device_ids": list(e.device_ids), "auth_methods": list(e.auth_methods),
+                "missing": list(e.missing), "is_broker_host": e.is_broker_host,
+            },
+        })
+    return cases
+
+
+def check_txt_result(service_type: str, txt: dict) -> dict:
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        try:
+            sd.check_txt(service_type, txt)
+        except ValueError:
+            return {"valid": False}
+    long_keys, large = [], False
+    for w in caught:
+        msg = str(w.message)
+        if "near the" in msg:
+            m = re.match(r".*?: TXT (.*) is \d+ bytes, near the", msg)
+            long_keys.append(ast.literal_eval(m.group(1)))
+        elif "keep it under" in msg:
+            large = True
+    return {"valid": True, "long_keys": long_keys, "large": large}
+
+
+def gen_check_txt() -> list:
+    inputs = [
+        ("ok", {"txtvers": "1", "path": "/api"}),
+        ("space-in-key", {"a key": "v"}),
+        ("empty-key", {"": "v"}),
+        ("equals-in-key", {"a=b": "v"}),
+        ("non-ascii-key", {"café": "v"}),
+        ("control-in-key", {"k\t": "v"}),
+        ("tilde-key", {"~": "v"}),
+        ("string-200", {"k": "v" * 198}),
+        ("string-201", {"k": "v" * 199}),
+        ("string-255", {"k": "v" * 253}),
+        ("string-256", {"k": "v" * 254}),
+        ("multibyte-256", {"k": "é" * 127}),
+        ("total-1300", {f"k{i}": "v" * (183 if i < 6 else 174) for i in range(7)}),
+        ("total-1301", {f"k{i}": "v" * (183 if i < 6 else 175) for i in range(7)}),
+    ]
+    return [{
+        "id": f"check-txt-{name}",
+        "source": f"{SD_EBUS} check_txt",
+        "input": {"service_type": "_ebus._tcp", "txt": pairs(txt)},
+        "expect": check_txt_result("_ebus._tcp", txt),
+    } for name, txt in inputs]
+
+
+IDENTITY_FIELDS = ("device_ids", "roles", "manufacturer", "model", "serial_number", "ebus_version", "device_type",
+                   "name", "fw_version", "register", "broker_ca", "auth_methods", "hw_version", "os_version", "mac",
+                   "extra_ebus_txt", "extra_device_info_txt", "homie_domain", "homie_version")
+
+BASE_ID = {"device_ids": ["panel-1"], "roles": ["device"], "manufacturer": "Acme", "model": "P1",
+           "serial_number": "SN1"}
+
+
+def identity_input(fields: dict) -> dict:
+    out = {}
+    for k in IDENTITY_FIELDS:
+        if k in fields:
+            v = fields[k]
+            out[k] = pairs(v) if isinstance(v, dict) else v
+    return out
+
+
+def make_identity(fields: dict):
+    return sd.Identity(**fields)
+
+
+def gen_service_txt() -> list:
+    cases = []
+    identities = [
+        ("minimal", BASE_ID),
+        ("full", {**BASE_ID, "device_ids": ["panel-1", "meter-2"], "roles": ["device", "broker-host", "controller"],
+                  "ebus_version": "0.9", "device_type": "load-center", "name": "Main Panel", "fw_version": "1.2",
+                  "register": "/api/v1/auth/register", "broker_ca": "/api/v1/certificate/broker-ca",
+                  "auth_methods": ["passphrase", " mtls "], "hw_version": "2", "os_version": "linux", "mac": "a0b1c2",
+                  "extra_ebus_txt": {"roles": "ignored", "Custom": "1"}, "extra_device_info_txt": {"x": "y"}}),
+        ("homie", {**BASE_ID, "roles": ["broker-host", "controller", "device"], "homie_domain": "ebus"}),
+        ("homie-version", {**BASE_ID, "roles": ["broker-host"], "homie_domain": "homie", "homie_version": "5.0"}),
+        ("homie-version-without-domain", {**BASE_ID, "homie_version": "5.0"}),
+        ("empty-recommended", {**BASE_ID, "name": "", "auth_methods": []}),
+        ("trimmed-ids", {**BASE_ID, "device_ids": [" a ", "b"], "roles": [" device "]}),
+        ("no-device-id", {**BASE_ID, "device_ids": []}),
+        ("comma-device-id", {**BASE_ID, "device_ids": ["a,b"]}),
+        ("blank-device-id", {**BASE_ID, "device_ids": [" "]}),
+        ("no-role", {**BASE_ID, "roles": []}),
+        ("comma-role", {**BASE_ID, "roles": ["device,controller"]}),
+        ("unknown-role", {**BASE_ID, "roles": ["gateway"]}),
+        ("no-model", {**BASE_ID, "model": ""}),
+        ("no-ebus-version", {**BASE_ID, "ebus_version": ""}),
+        ("bad-homie-domain", {**BASE_ID, "homie_domain": "a/b"}),
+        ("long-name", {**BASE_ID, "name": "n" * 251}),
+    ]
+    for name, fields in identities:
+        try:
+            ident = make_identity(fields)
+            expect = {"ebus": pairs(ident.ebus_txt()), "device_info": pairs(ident.device_info_txt())}
+        except ValueError:
+            expect = {"error": True}
+        cases.append({"id": f"service-txt-identity-{name}", "source": f"{SD_EBUS} Identity.ebus_txt, device_info_txt",
+                      "input": {"record": "identity", "identity": identity_input(fields)}, "expect": expect})
+    ident_fields = {**BASE_ID, "device_ids": ["panel-1", "meter-2"], "device_type": "load-center"}
+    ident = make_identity(ident_fields)
+    https = [
+        ("https", {"port": 443, "path": "/api/v1", "tls": True, "openapi": "/api/v1/docs"}),
+        ("http", {"port": 80, "path": "/api", "version": "2.0", "extra_txt": {"path": "x", "zz": "1"}}),
+    ]
+    for name, h in https:
+        svc = sd.HttpService(**h)
+        hin = {k: (pairs(v) if isinstance(v, dict) else v) for k, v in h.items()}
+        cases.append({"id": f"service-txt-http-{name}", "source": f"{SD_EBUS} HttpService.txt",
+                      "input": {"record": "http", "identity": identity_input(ident_fields), "http": hin},
+                      "expect": {"service_type": svc.service_type, "txt": pairs(svc.txt(ident))}})
+    brokers = [
+        ("secure-default", {"service_type": "_secure-mqtt._tcp"}, "host.local."),
+        ("secure-broker-name", {"service_type": "_secure-mqtt._tcp", "broker": "cert.example.com."}, "host.local."),
+        ("secure-v311", {"service_type": "_secure-mqtt._tcp", "protocol": "mqtt-v3.1.1", "port": 8884}, "h.local"),
+        ("secure-unknown-protocol", {"service_type": "_secure-mqtt._tcp", "protocol": "mqtt-v4"}, "h.local."),
+        ("wss", {"service_type": "_mqtt-wss._tcp", "path": "/ws", "subprotocol": "mqttv3.1"}, "h.local."),
+        ("ws", {"service_type": "_mqtt-ws._tcp"}, "h.local."),
+        ("plain", {"service_type": "_mqtt._tcp", "extra_txt": {"protocol": "x", "note": "y"}}, "h.local."),
+        ("plain-broker-ignored", {"service_type": "_mqtt._tcp", "broker": "b.local"}, "h.local."),
+    ]
+    for name, b, server in brokers:
+        svc = sd.BrokerService(**b)
+        bin_ = {k: (pairs(v) if isinstance(v, dict) else v) for k, v in b.items()}
+        bin_["port"] = svc.port
+        cases.append({"id": f"service-txt-broker-{name}", "source": f"{SD_EBUS} BrokerService.txt",
+                      "input": {"record": "broker", "identity": identity_input(ident_fields), "broker": bin_,
+                                "server": server},
+                      "expect": {"txt": pairs(svc.txt(ident, server))}})
+    return cases
+
+
+def sort_key(addr: str):
+    ip = ipaddress.ip_address(addr.split("%", 1)[0])
+    zone = addr.split("%", 1)[1] if "%" in addr else None
+    return (ip.version, int(ip), zone is not None, int(zone) if zone else 0)
+
+
+def instance_input(service_type, name, server, port=0, txt=None, addresses=()) -> dict:
+    # rust-sdk breaks candidate preference ties by address, so addresses are
+    # listed in address order and python's stable sort keeps it.
+    return {"service_type": service_type, "instance_name": name, "server": server, "port": port,
+            "txt": pairs(txt or {}), "addresses": sorted(addresses, key=sort_key)}
+
+
+def to_instance(d: dict) -> ServiceInstance:
+    return ServiceInstance(service_type=d["service_type"], instance_name=d["instance_name"],
+                           server=d["server"].rstrip(".") if d["server"].endswith(".") else d["server"],
+                           port=d["port"], addresses=tuple(Address.parse(a) for a in d["addresses"]),
+                           txt=dict((k, v) for k, v in d["txt"]))
+
+
+def endpoint_out(ep) -> dict:
+    return {"url": ep.url, "instance": ep.instance_name}
+
+
+def gen_broker_endpoint() -> list:
+    inputs = [
+        ("secure-txt-broker", instance_input("_secure-mqtt._tcp", "panel", "panel.local.", 8883,
+                                             {"broker": " cert.example.com. ", "device_id": "p1", "protocol": "mqtt-v5"},
+                                             ["192.168.1.5", "fd00::5"])),
+        ("plain-srv-target", instance_input("_mqtt._tcp", "b", "B.local.", 1884, {}, ["10.0.0.2"])),
+        ("port-zero-default", instance_input("_mqtt-wss._tcp", "w", "w.local", 0, {"broker": ""})),
+        ("ws-default-port", instance_input("_mqtt-ws._tcp", "w", "w.local.", 0)),
+        ("txt-broker-on-plain", instance_input("_mqtt._tcp", "p", "p.local.", 1883, {"broker": "named.local."})),
+        ("empty-device-id", instance_input("_secure-mqtt._tcp", "s", "s.local.", 8883, {"device_id": ""})),
+        ("no-server", instance_input("_mqtt._tcp", "n", "", 1883, {"broker": "x.local"})),
+        ("ipv6-broker-host", instance_input("_mqtt._tcp", "v6", "v6.local.", 1883, {"broker": "fd00::1"})),
+        ("candidates", instance_input("_mqtt._tcp", "c", "c.local.", 1883, {},
+                                      ["127.0.0.1", "169.254.3.4", "fe80::1", "fe80::2%2", "100.64.0.1",
+                                       "fd00::1", "192.168.1.9", "8.8.8.8", "::", "0.0.0.0", "::1"])),
+    ]
+    cases = []
+    for name, d in inputs:
+        inst = to_instance(d)
+        ep = sd.BrokerEndpoint.from_instance(inst)
+        cands = [a.address for a in inst.candidate_addresses()]
+        cases.append({
+            "id": f"broker-endpoint-{name}",
+            "source": f"{SD_EBUS} BrokerEndpoint.from_instance, url; {SD}:instance.py candidate_addresses",
+            "input": d,
+            "expect": {"broker_type": ep.service_type, "host": ep.host, "port": ep.port, "server": ep.server,
+                       "device_id": ep.txt.get("device_id") or None, "url": ep.url, "instance": ep.instance_name,
+                       "addrs": cands},
+        })
+    return cases
+
+
+def gen_broker_url() -> list:
+    urls = ["mqtt://broker.local", "mqtts://broker.local", "MQTTS://Broker.Local:8884/path?q#f",
+            "mqtt://user:pw@b.example.com:1884", " mqtt://b.local ", "mqtt://192.168.1.5:1883",
+            "mqtt://[fd00::1]:1884", "mqtt://[FE80::1%25En0]", "mqtt://b.local:0", "mqtt://b.local:",
+            "mqtt://b.local:65535", "mqtt://b.local:65536", "mqtt://b.local:x", "mqtt://b.local:1:2",
+            "ws://b.local", "wss://b.local", "http://b.local", "b.local:1883", "b.local", "mqtt://", "mqtt://:1883",
+            "mqtt:b.local", "mqtt://user@", "mqtt:///path"]
+    cases = []
+    for i, u in enumerate(urls):
+        try:
+            ep = sd.BrokerEndpoint.from_url(u)
+            expect = {"broker_type": ep.service_type, "host": ep.host, "port": ep.port, "url": ep.url}
+        except ValueError:
+            expect = {"error": True}
+        cases.append({"id": f"broker-url-{i:02d}", "source": f"{SD_EBUS} BrokerEndpoint.from_url, url",
+                      "input": {"url": u}, "expect": expect})
+    return cases
+
+
+BROKER_SETS = {
+    "transports": [
+        instance_input("_mqtt._tcp", "b", "b.local.", 1883),
+        instance_input("_mqtt._tcp", "a", "A.local.", 1883, {}, ["192.168.1.7"]),
+        instance_input("_secure-mqtt._tcp", "a", "a.local.", 8883, {"device_id": "x"}, ["192.168.1.7"]),
+        instance_input("_secure-mqtt._tcp", "c", "c.local.", 8883, {"broker": "c.example.com", "device_id": "x"}),
+        instance_input("_mqtt-ws._tcp", "d", "d.local.", 9001),
+        instance_input("_mqtt-wss._tcp", "e", "e.local.", 9002, {}, ["192.168.1.9"]),
+    ],
+    "host-port": [
+        instance_input("_mqtt._tcp", "z", "z.local.", 1884, {"broker": "a.local"}),
+        instance_input("_mqtt._tcp", "y", "Y.local.", 1883),
+        instance_input("_mqtt._tcp", "x", "x.local.", 1883, {"broker": "a.local"}),
+    ],
+    "addresses": [
+        instance_input("_mqtt._tcp", "p", "p.local.", 1883, {}, ["192.168.1.8", "fd00::8"]),
+        instance_input("_secure-mqtt._tcp", "s", "s.local.", 8883, {}, ["192.168.1.7"]),
+        instance_input("_mqtt._tcp", "q", "q.local.", 1883, {"broker": "q.example.com"}, ["10.0.0.3"]),
+    ],
+    "empty": [],
+}
+
+ACCEPTS = {"all": None, "tcp": list(sd.TCP_BROKER_TYPES), "tls": ["_secure-mqtt._tcp"]}
+
+
+def ranked_for(set_name: str, accept):
+    eps = [sd.BrokerEndpoint.from_instance(to_instance(d)) for d in BROKER_SETS[set_name]]
+    return sd.rank_brokers(eps, accept=accept)
+
+
+def gen_rank_brokers() -> list:
+    cases = []
+    for set_name in BROKER_SETS:
+        for acc_name, accept in ACCEPTS.items():
+            ranked = ranked_for(set_name, accept)
+            cases.append({"id": f"rank-brokers-{set_name}-{acc_name}", "source": f"{SD_EBUS} rank_brokers",
+                          "input": {"instances": BROKER_SETS[set_name], "accept": accept},
+                          "expect": {"ranked": [endpoint_out(e) for e in ranked]}})
+    return cases
+
+
+CONFIGURED_URLS = ["mqtt://b.local", "mqtt://A.LOCAL.", "mqtt://c.example.com", "mqtt://192.168.1.7",
+                   "mqtts://192.168.1.8:9999", "mqtt://10.0.0.3", "mqtt://[fd00::8]", "mqtt://nowhere.local",
+                   "mqtts://q.example.com", "mqtt://p.local"]
+
+
+def gen_match_configured() -> list:
+    cases = []
+    for set_name in ("transports", "addresses"):
+        for i, u in enumerate(CONFIGURED_URLS):
+            ranked = ranked_for(set_name, None)
+            m = sd.match_configured(sd.BrokerEndpoint.from_url(u), ranked)
+            cases.append({"id": f"match-configured-{set_name}-{i:02d}", "source": f"{SD_EBUS} match_configured",
+                          "input": {"url": u, "instances": BROKER_SETS[set_name], "accept": None},
+                          "expect": {"match": endpoint_out(m) if m else None}})
+    return cases
+
+
+SELECT_URL_LABELS = {None: "no-url", "mqtt://p.local": "url-p", "mqtt://nowhere.local": "url-nowhere",
+                     "mqtts://192.168.1.7": "url-tls-ip"}
+
+
+def gen_select_broker() -> list:
+    cases = []
+    for mode in sd.BrokerMode:
+        for set_name in ("transports", "addresses", "empty"):
+            for u in SELECT_URL_LABELS:
+                for allow in (False, True):
+                    for acc_name, accept in (("tcp", ACCEPTS["tcp"]), ("tls", ACCEPTS["tls"])):
+                        ranked = ranked_for(set_name, accept)
+                        conf = sd.BrokerEndpoint.from_url(u) if u else None
+                        chosen = sd.select_broker(mode, conf, ranked, allow_unmatched=allow)
+                        url_label = SELECT_URL_LABELS[u]
+                        cases.append({
+                            "id": f"select-broker-{mode.value}-{set_name}-{url_label}-{'allow' if allow else 'strict'}-{acc_name}",
+                            "source": f"{SD_EBUS} select_broker",
+                            "input": {"mode": mode.value, "url": u, "instances": BROKER_SETS[set_name],
+                                      "accept": accept, "allow_unmatched": allow},
+                            "expect": {"chosen": endpoint_out(chosen) if chosen else None},
+                        })
+    return cases
+
+
+# BrokerMode.parse: rust-sdk rejects an empty value, so a host maps "unset"
+# to None and the URL precedence applies (doc/design.md#configuration-and-precedence).
+BROKER_MODE_RUST = {"": {"error": True}, "   ": {"error": True}}
+
+
+def gen_broker_mode() -> list:
+    cases = []
+    for i, text in enumerate(["configured-only", "discovery-with-fallback", "discovery-only", "Discovery_Only",
+                              " CONFIGURED_ONLY ", "discovery_with-fallback", "discovery", "auto", "", "   ",
+                              "configured only"]):
+        try:
+            expect = {"mode": sd.BrokerMode.parse(text).value}
+        except ValueError:
+            expect = {"error": True}
+        source = f"{SD_EBUS} BrokerMode.parse"
+        if text in BROKER_MODE_RUST:
+            if expect == BROKER_MODE_RUST[text]:
+                raise SystemExit(f"broker-mode {text!r}: python now agrees with rust-sdk")
+            expect = BROKER_MODE_RUST[text]
+            source = ("rust-sdk doc/design.md#configuration-and-precedence: an empty mode is an error, so the host "
+                      "treats it as unset; python parses it as discovery-only (ebus.py:120-121)")
+        cases.append({"id": f"broker-mode-{i:02d}", "source": source, "input": {"text": text}, "expect": expect})
+    return cases
+
+
+def gen_retry_schedule() -> list:
+    delays = sd.RetrySchedule(max_attempts=8).delays()
+    return [{"id": "retry-schedule-default", "source": f"{SD_EBUS} RetrySchedule.delays",
+             "input": {"attempts": 8}, "expect": {"delays_s": list(delays)}}]
+
+
+ADDRESSES = ["8.8.8.8", "1.1.1.1", "192.168.1.2", "10.1.2.3", "172.16.0.1", "172.32.0.1", "100.64.0.1",
+             "100.127.255.255", "169.254.1.1", "127.0.0.1", "0.0.0.0", "0.1.2.3", "192.0.0.9", "192.0.0.8",
+             "192.0.0.170", "192.0.2.1", "198.18.0.1", "198.51.100.1", "203.0.113.1", "224.0.0.251", "240.0.0.1",
+             "255.255.255.255", "2606:4700::1", "fd00::1", "fc00::1", "fe80::1", "febf::1", "fec0::1", "::1", "::",
+             "2001:db8::1", "2001::1", "2001:20::1", "2001:1::1", "2001:4:112::1", "2002::1", "3fff::1", "64:ff9b:1::1",
+             "64:ff9b::808:808", "100::1", "ff02::fb", "::ffff:10.0.0.1", "::ffff:8.8.8.8", "::ffff:127.0.0.1",
+             "::ffff:169.254.0.1", "::ffff:0.0.0.0"]
+
+CANDIDATE_SETS = [
+    ("mixed", ["fe80::1", "fe80::2%2", "169.254.0.5", "127.0.0.1", "fd00::1", "192.168.1.2", "192.168.1.9",
+               "8.8.8.8", "100.64.0.1", "::1", "0.0.0.0"]),
+    ("mapped-link-local", ["::ffff:169.254.0.1", "::ffff:169.254.0.2%3", "10.0.0.1"]),
+    ("only-unusable", ["127.0.0.1", "::", "fe80::9"]),
+]
+
+
+def gen_addresses() -> list:
+    cases = []
+    for a in ADDRESSES:
+        addr = Address.parse(a)
+        cases.append({"id": f"addresses-scope-{a}", "source": f"{SD}:record.py Address.scope, preference",
+                      "input": {"address": a}, "expect": {"scope": addr.scope.value, "preference": addr.preference}})
+    for name, addrs in CANDIDATE_SETS:
+        # rust-sdk breaks preference ties by address, so the input lists tied
+        # addresses in address order and python's stable sort keeps it.
+        ordered = sorted(addrs, key=sort_key)
+        inst = ServiceInstance("_mqtt._tcp", "c", "c.local", 1883, addresses=tuple(Address.parse(x) for x in ordered))
+        cases.append({"id": f"addresses-candidates-{name}", "source": f"{SD}:instance.py candidate_addresses",
+                      "input": {"addresses": ordered},
+                      "expect": {"candidates": [x.address for x in inst.candidate_addresses()]}})
+    return cases
+
+
+def gen_instance_name() -> list:
+    inputs = [
+        ("device-id", ["panel-1", "meter-2"], None, "host.local."),
+        ("explicit", ["panel-1"], "Main Panel", "host.local."),
+        ("explicit-empty", ["panel-1"], "", "host.local."),
+        ("id-60", ["d" * 60], None, "box.local."),
+        ("id-61", ["d" * 61], None, "box.local."),
+        ("id-61-multibyte", ["é" * 31], None, "box.local."),
+        ("long-id-fqdn-server", ["d" * 61], None, "box.example.com"),
+        ("long-id-localdomain", ["d" * 61], None, "box.localdomain."),
+        ("long-id-trimmed", [" " + "d" * 60 + " "], None, "box.local."),
+    ]
+    cases = []
+    for name, ids, inst, server in inputs:
+        ident = sd.Identity(device_ids=ids, roles=["device"], manufacturer="A", model="M", serial_number="S")
+        plan = AdvertisementPlan(ident, port=None, device_info_port=0, http=None, server=None, addresses=None,
+                                 instance_name=inst)
+        base = plan.base_instance_name(server)
+        names = instance_candidates(base)
+        cases.append({"id": f"instance-name-{name}", "source": f"{SD}:_mdns_core.py base_instance_name, instance_candidates",
+                      "input": {"device_ids": ids, "instance_name": inst, "server": server},
+                      "expect": {"names": names}})
+    return cases
+
+
+SD_SUITES = [
+    ("decode-txt", gen_decode_txt),
+    ("parse-ebus-txt", gen_parse_ebus_txt),
+    ("check-txt", gen_check_txt),
+    ("service-txt", gen_service_txt),
+    ("broker-endpoint", gen_broker_endpoint),
+    ("broker-url", gen_broker_url),
+    ("rank-brokers", gen_rank_brokers),
+    ("match-configured", gen_match_configured),
+    ("select-broker", gen_select_broker),
+    ("broker-mode", gen_broker_mode),
+    ("retry-schedule", gen_retry_schedule),
+    ("addresses", gen_addresses),
+    ("instance-name", gen_instance_name),
+]
+
+
 # ── main ───────────────────────────────────────────────────────────────────
 
 
@@ -1325,6 +1838,8 @@ def main() -> None:
         ("description-roundtrip", gen_description_roundtrip),
     ]:
         write_suite(f"{PYSDK}/{name}.json", f"{PYSDK}/{name}", gen())
+    for name, gen in SD_SUITES:
+        write_suite(f"{SD}/{name}.json", f"{SD}/{name}", gen(), SD_GENERATOR)
     for path, n in COUNTS:
         print(f"{n:5d}  vectors/{path}")
 

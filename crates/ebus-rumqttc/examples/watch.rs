@@ -9,11 +9,17 @@
 //!
 //! | Variable | Meaning | Default |
 //! |---|---|---|
-//! | `EBUS_MQTT_HOST` | Broker host | `localhost` |
-//! | `EBUS_MQTT_PORT` | Broker port | 1883, or 8883 with TLS |
+//! | `EBUS_MQTT_HOST` | Configured broker host | `localhost` when `EBUS_MQTT_PORT` is set, else none |
+//! | `EBUS_MQTT_PORT` | Configured broker port | 1883, or 8883 with TLS |
+//! | `EBUS_BROKER_MODE` | `discovery-only`, `discovery-with-fallback` or `configured-only` | `configured-only` with a configured broker, else `discovery-only` |
+//! | `EBUS_MDNS_BACKEND` | `auto`, `avahi` (Linux) or `mdns-sd` | `auto`: Avahi when avahi-daemon runs, else mdns-sd |
 //! | `EBUS_MQTT_USER`, `EBUS_MQTT_PASS` | Credentials | none |
 //! | `EBUS_MQTT_CA` | PEM CA file; enables TLS (`rustls` feature) | none |
 //! | `EBUS_MQTT_INSECURE` | `1` enables TLS without verifying the broker's certificate, for lab brokers with self-signed certificates | unset |
+//!
+//! With neither `EBUS_MQTT_HOST` nor `EBUS_MQTT_PORT` set, the watcher looks
+//! for a broker over mDNS until one is found, and looks it up again when
+//! connecting to it fails.
 //!
 //! Warnings from the controller and the connection go to stderr. Ctrl-C
 //! unsubscribes and disconnects.
@@ -27,7 +33,7 @@ use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event, Orig
 use ebus_rumqttc::ebus_homie_tokio::ebus_mqtt::Link;
 use ebus_rumqttc::ebus_homie_tokio::{AttachOptions, ControllerHandle, Delivered};
 
-use common::{Stderr, options};
+use common::{Stderr, connect};
 
 fn usage() -> String {
     "usage: watch wildcard | watch tree <root>".to_owned()
@@ -171,16 +177,22 @@ async fn main() -> ExitCode {
         log::set_max_level(log::LevelFilter::Warn);
     }
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let (config, mqtt) =
-        match config(&args).and_then(|c| Ok((c, options(ebus_rumqttc::client_id())?))) {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("{e}");
-                return ExitCode::from(2);
-            }
-        };
-    let broker = mqtt.broker_address();
-    let run = match ebus_rumqttc::controller(mqtt, config, AttachOptions::default()) {
+    let config = match config(&args) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{e}");
+            return ExitCode::from(2);
+        }
+    };
+    let conn = match connect(ebus_rumqttc::client_id()).await {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{e}");
+            return ExitCode::from(2);
+        }
+    };
+    let broker = conn.mqtt.broker_address();
+    let run = match ebus_rumqttc::controller(conn.mqtt, config, AttachOptions::default()) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("{e}");
@@ -191,7 +203,10 @@ async fn main() -> ExitCode {
     let started = Instant::now();
     let handle = run.handle;
     let mut events = run.events;
-    let mut task = tokio::spawn(run.task.run());
+    let mut task = match conn.reresolve {
+        Some(f) => tokio::spawn(run.task.reresolve(f).run()),
+        None => tokio::spawn(run.task.run()),
+    };
 
     loop {
         tokio::select! {

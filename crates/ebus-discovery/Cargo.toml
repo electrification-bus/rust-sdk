@@ -1,6 +1,6 @@
 [package]
 name = "ebus-discovery"
-description = "eBus DNS-SD contract: service types, TXT records and broker selection, with pluggable mDNS backends."
+description = "eBus DNS-SD contract: service types, TXT records, the advertisement model, merging mDNS sightings and broker selection, with no I/O."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,6 +12,14 @@ authors.workspace = true
 default = ["std"]
 std = ["alloc"]
 alloc = []
+log = ["dep:log"]
+
+[dependencies]
+ebus-mqtt.workspace = true
+log = { version = "0.4", default-features = false, optional = true }
+
+[dev-dependencies]
+serde_json = "1.0.100"
 
 [lints]
 workspace = true

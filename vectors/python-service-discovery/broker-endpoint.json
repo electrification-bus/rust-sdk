@@ -1,0 +1,273 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/broker-endpoint",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "broker-endpoint-secure-txt-broker",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_secure-mqtt._tcp",
+        "instance_name": "panel",
+        "server": "panel.local.",
+        "port": 8883,
+        "txt": [
+          [
+            "broker",
+            " cert.example.com. "
+          ],
+          [
+            "device_id",
+            "p1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ]
+        ],
+        "addresses": [
+          "192.168.1.5",
+          "fd00::5"
+        ]
+      },
+      "expect": {
+        "broker_type": "_secure-mqtt._tcp",
+        "host": "cert.example.com",
+        "port": 8883,
+        "server": "panel.local",
+        "device_id": "p1",
+        "url": "mqtts://cert.example.com:8883",
+        "instance": "panel",
+        "addrs": [
+          "192.168.1.5",
+          "fd00::5"
+        ]
+      }
+    },
+    {
+      "id": "broker-endpoint-plain-srv-target",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt._tcp",
+        "instance_name": "b",
+        "server": "B.local.",
+        "port": 1884,
+        "txt": [],
+        "addresses": [
+          "10.0.0.2"
+        ]
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "B.local",
+        "port": 1884,
+        "server": "B.local",
+        "device_id": null,
+        "url": "mqtt://B.local:1884",
+        "instance": "b",
+        "addrs": [
+          "10.0.0.2"
+        ]
+      }
+    },
+    {
+      "id": "broker-endpoint-port-zero-default",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt-wss._tcp",
+        "instance_name": "w",
+        "server": "w.local",
+        "port": 0,
+        "txt": [
+          [
+            "broker",
+            ""
+          ]
+        ],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_mqtt-wss._tcp",
+        "host": "w.local",
+        "port": 9002,
+        "server": "w.local",
+        "device_id": null,
+        "url": "wss://w.local:9002",
+        "instance": "w",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-ws-default-port",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt-ws._tcp",
+        "instance_name": "w",
+        "server": "w.local.",
+        "port": 0,
+        "txt": [],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_mqtt-ws._tcp",
+        "host": "w.local",
+        "port": 9001,
+        "server": "w.local",
+        "device_id": null,
+        "url": "ws://w.local:9001",
+        "instance": "w",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-txt-broker-on-plain",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt._tcp",
+        "instance_name": "p",
+        "server": "p.local.",
+        "port": 1883,
+        "txt": [
+          [
+            "broker",
+            "named.local."
+          ]
+        ],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "named.local",
+        "port": 1883,
+        "server": "p.local",
+        "device_id": null,
+        "url": "mqtt://named.local:1883",
+        "instance": "p",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-empty-device-id",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_secure-mqtt._tcp",
+        "instance_name": "s",
+        "server": "s.local.",
+        "port": 8883,
+        "txt": [
+          [
+            "device_id",
+            ""
+          ]
+        ],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_secure-mqtt._tcp",
+        "host": "s.local",
+        "port": 8883,
+        "server": "s.local",
+        "device_id": null,
+        "url": "mqtts://s.local:8883",
+        "instance": "s",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-no-server",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt._tcp",
+        "instance_name": "n",
+        "server": "",
+        "port": 1883,
+        "txt": [
+          [
+            "broker",
+            "x.local"
+          ]
+        ],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "x.local",
+        "port": 1883,
+        "server": null,
+        "device_id": null,
+        "url": "mqtt://x.local:1883",
+        "instance": "n",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-ipv6-broker-host",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt._tcp",
+        "instance_name": "v6",
+        "server": "v6.local.",
+        "port": 1883,
+        "txt": [
+          [
+            "broker",
+            "fd00::1"
+          ]
+        ],
+        "addresses": []
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "fd00::1",
+        "port": 1883,
+        "server": "v6.local",
+        "device_id": null,
+        "url": "mqtt://[fd00::1]:1883",
+        "instance": "v6",
+        "addrs": []
+      }
+    },
+    {
+      "id": "broker-endpoint-candidates",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_instance, url; python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "service_type": "_mqtt._tcp",
+        "instance_name": "c",
+        "server": "c.local.",
+        "port": 1883,
+        "txt": [],
+        "addresses": [
+          "0.0.0.0",
+          "8.8.8.8",
+          "100.64.0.1",
+          "127.0.0.1",
+          "169.254.3.4",
+          "192.168.1.9",
+          "::",
+          "::1",
+          "fd00::1",
+          "fe80::1",
+          "fe80::2%2"
+        ]
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "c.local",
+        "port": 1883,
+        "server": "c.local",
+        "device_id": null,
+        "url": "mqtt://c.local:1883",
+        "instance": "c",
+        "addrs": [
+          "8.8.8.8",
+          "192.168.1.9",
+          "fd00::1",
+          "100.64.0.1",
+          "169.254.3.4",
+          "fe80::2%2"
+        ]
+      }
+    }
+  ]
+}

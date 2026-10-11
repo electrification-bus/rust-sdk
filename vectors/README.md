@@ -12,6 +12,8 @@ Output is deterministic (fixed seeds, fixed corpus order).
 
 The spec suites express the Homie 5 convention and the eBus specification. Where python-sdk (`python-sdk/src/ebus_sdk/homie.py`) has a matching function, its result is the expect value, except where python-sdk deviates from the convention ([python-sdk#110](https://github.com/electrification-bus/python-sdk/issues/110)): those cases are listed in `CONVENTION_OVERRIDES` in the generator, each with the convention's expect and a `source` citing the convention line and python-sdk#110.
 
+The python-service-discovery suites (`python-service-discovery/`) record [python-service-discovery](https://github.com/electrification-bus/python-service-discovery)'s implementation of the eBus DNS-SD contract (framework.md, "Detail: mDNS Discovery"), where the spec leaves a choice open. The harness is `crates/ebus-discovery/tests/vectors.rs`.
+
 The python-sdk suites (`python-sdk/`) record python-sdk's behavior where the spec leaves a choice open, except `float32-format.json`, which records rust-sdk's `f32` choice: numpy's shortest `float32` digits in the layout of python-sdk's `_format_float`. They are not spec requirements: rust-sdk prefers python-sdk's choice but may differ where matching it is costly.
 
 ## File format
@@ -162,3 +164,23 @@ One case per device in each description-wire tree, plus trees whose node, proper
 
 - input: `{"payload": string}`: Python `json.dumps(Device.description())`.
 - expect: `{"wire": string}`, equal to `payload`. `description::parse_with_ignored(payload)` must accept it, leave nothing out, and `to_json()` must reproduce it byte for byte, so nodes, properties and top-level extras must be read in document order. Nested objects inside extras values have sorted keys, as in description-wire.
+
+## python-service-discovery suites (`python-service-discovery/`)
+
+TXT strings are given as `strings` (UTF-8) or `strings_hex` (hex of each string's bytes), in record order. Python's expect values come from python-zeroconf's TXT parse followed by `decode_txt`, as a direct browse receives them. A case whose `source` starts with `rust-sdk` records rust-sdk's rule from [doc/design.md](../doc/design.md) where it differs from python; the generator fails if python comes to agree. An instance is `{"service_type", "instance_name", "server", "port", "txt": [[key, value]], "addresses": [string]}`; an address may carry a numeric zone (`fe80::2%2`), the interface index. Addresses that tie on scope preference are listed in address order, since rust-sdk breaks ties by address and python's sort is stable. An endpoint in an expect is `{"url", "instance"}`.
+
+| Suite | Input | Expect | Maps to |
+|---|---|---|---|
+| `decode-txt` | TXT strings | `{"txt": [[key, value]]}` | `TxtRecord::from_strings`, then `get` per key in order. rust-sdk cases: the first of keys equal ignoring case wins, and a string with an empty key is skipped |
+| `parse-ebus-txt` | TXT strings | `txtvers`, `ebus_version`, `roles`, `device_ids`, `auth_methods`, `missing`, `is_broker_host` | `parse_ebus_txt` |
+| `check-txt` | `{"service_type", "txt": [[key, value]]}` | `{"valid": false}` or `{"valid": true, "long_keys", "large"}` | `check_txt`; `long_keys` are `TxtReport::long_strings` keys, `large` is `TxtReport::is_large` |
+| `service-txt` | `record`: `identity`, `http` or `broker`, with the identity's fields and the service's | Ordered TXT pairs, or `{"error": true}` | `Identity::check`, `ebus_txt`, `device_info_txt`; `HttpService::txt`; `BrokerService::txt` |
+| `broker-endpoint` | An instance | The endpoint's fields, `url` and candidate `addrs` | `BrokerEndpoint::from_instance` |
+| `broker-url` | `{"url"}` | `broker_type`, `host`, `port`, `url`, or `{"error": true}` | `BrokerEndpoint::from_url`, `url` |
+| `rank-brokers` | `{"instances", "accept"}` (`null`: all four types) | `{"ranked": [endpoint]}` | `rank_brokers` with `BROKER_TYPES` narrowed to `accept` as the order |
+| `match-configured` | `{"url", "instances"}` | `{"match": endpoint or null}` | `match_configured` over the instances ranked with every type |
+| `select-broker` | `{"mode", "url", "instances", "accept", "allow_unmatched"}` | `{"chosen": endpoint or null}` | `select_broker` over `rank_brokers` as in `rank-brokers` |
+| `broker-mode` | `{"text"}` | `{"mode"}` or `{"error": true}` | `BrokerMode::parse`. rust-sdk cases: an empty or blank value is an error |
+| `retry-schedule` | `{"attempts"}` | `{"delays_s"}`: python's wait before each browse attempt | the instants `BrokerSearch::poll_requery` asks for a requery, with no broker seen |
+| `addresses` | `{"address"}`, or `{"addresses"}` | `{"scope", "preference"}`, or `{"candidates"}` | `AddrScope::of`, `preference`; `candidate_addresses` |
+| `instance-name` | `{"device_ids", "instance_name", "server"}` | `{"names"}`: the base name, then `-2` through `-99` | `Advertisement::instance_names` |

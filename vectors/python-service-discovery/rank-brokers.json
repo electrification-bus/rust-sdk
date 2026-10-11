@@ -1,0 +1,663 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/rank-brokers",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "rank-brokers-transports-all",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://a.local:8883",
+            "instance": "a"
+          },
+          {
+            "url": "wss://e.local:9002",
+            "instance": "e"
+          },
+          {
+            "url": "ws://d.local:9001",
+            "instance": "d"
+          },
+          {
+            "url": "mqtt://b.local:1883",
+            "instance": "b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-transports-tcp",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp",
+          "_mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://a.local:8883",
+            "instance": "a"
+          },
+          {
+            "url": "mqtt://b.local:1883",
+            "instance": "b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-transports-tls",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "b",
+            "server": "b.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "a",
+            "server": "A.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "a",
+            "server": "a.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "c",
+            "server": "c.local.",
+            "port": 8883,
+            "txt": [
+              [
+                "broker",
+                "c.example.com"
+              ],
+              [
+                "device_id",
+                "x"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-ws._tcp",
+            "instance_name": "d",
+            "server": "d.local.",
+            "port": 9001,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt-wss._tcp",
+            "instance_name": "e",
+            "server": "e.local.",
+            "port": 9002,
+            "txt": [],
+            "addresses": [
+              "192.168.1.9"
+            ]
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://a.local:8883",
+            "instance": "a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-host-port-all",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "z",
+            "server": "z.local.",
+            "port": 1884,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "y",
+            "server": "Y.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "x",
+            "server": "x.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtt://a.local:1883",
+            "instance": "x"
+          },
+          {
+            "url": "mqtt://Y.local:1883",
+            "instance": "y"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-host-port-tcp",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "z",
+            "server": "z.local.",
+            "port": 1884,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "y",
+            "server": "Y.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "x",
+            "server": "x.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp",
+          "_mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtt://a.local:1883",
+            "instance": "x"
+          },
+          {
+            "url": "mqtt://Y.local:1883",
+            "instance": "y"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-host-port-tls",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "z",
+            "server": "z.local.",
+            "port": 1884,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "y",
+            "server": "Y.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": []
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "x",
+            "server": "x.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "a.local"
+              ]
+            ],
+            "addresses": []
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": []
+      }
+    },
+    {
+      "id": "rank-brokers-addresses-all",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": null
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://s.local:8883",
+            "instance": "s"
+          },
+          {
+            "url": "mqtt://p.local:1883",
+            "instance": "p"
+          },
+          {
+            "url": "mqtt://q.example.com:1883",
+            "instance": "q"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-addresses-tcp",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp",
+          "_mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://s.local:8883",
+            "instance": "s"
+          },
+          {
+            "url": "mqtt://p.local:1883",
+            "instance": "p"
+          },
+          {
+            "url": "mqtt://q.example.com:1883",
+            "instance": "q"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-addresses-tls",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "p",
+            "server": "p.local.",
+            "port": 1883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.8",
+              "fd00::8"
+            ]
+          },
+          {
+            "service_type": "_secure-mqtt._tcp",
+            "instance_name": "s",
+            "server": "s.local.",
+            "port": 8883,
+            "txt": [],
+            "addresses": [
+              "192.168.1.7"
+            ]
+          },
+          {
+            "service_type": "_mqtt._tcp",
+            "instance_name": "q",
+            "server": "q.local.",
+            "port": 1883,
+            "txt": [
+              [
+                "broker",
+                "q.example.com"
+              ]
+            ],
+            "addresses": [
+              "10.0.0.3"
+            ]
+          }
+        ],
+        "accept": [
+          "_secure-mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": [
+          {
+            "url": "mqtts://s.local:8883",
+            "instance": "s"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rank-brokers-empty-all",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [],
+        "accept": null
+      },
+      "expect": {
+        "ranked": []
+      }
+    },
+    {
+      "id": "rank-brokers-empty-tcp",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [],
+        "accept": [
+          "_secure-mqtt._tcp",
+          "_mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": []
+      }
+    },
+    {
+      "id": "rank-brokers-empty-tls",
+      "source": "python-service-discovery:ebus.py rank_brokers",
+      "input": {
+        "instances": [],
+        "accept": [
+          "_secure-mqtt._tcp"
+        ]
+      },
+      "expect": {
+        "ranked": []
+      }
+    }
+  ]
+}

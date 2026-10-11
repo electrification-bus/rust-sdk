@@ -5,7 +5,10 @@
 //! rumqttc client, [`device`] a device tree, and [`pair`] both on one
 //! connection. The host spawns the task's `run`; the SDK spawns nothing. The
 //! broker coordinates, client id, credentials and TLS come from the caller's
-//! [`MqttOptions`].
+//! [`MqttOptions`]. A host that found its broker over mDNS gives the task a
+//! [`Reresolve`] hook ([`ControllerTask::reresolve`]), which finds the same
+//! broker again when connecting fails, at startup or after a lost link, so a
+//! broker whose address changed is reached at its new one.
 //!
 //! ```no_run
 //! use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event};
@@ -56,6 +59,7 @@ use std::time::Duration;
 pub use ebus_homie_tokio;
 pub use rumqttc;
 
+pub use conn::Reresolve;
 pub use device::{DeviceTask, PairTask, RunningDevice, RunningPair, device, pair};
 
 use ebus_homie_tokio::ebus_homie::controller::{Config, ConfigError};
@@ -114,6 +118,7 @@ pub struct ControllerTask {
     commands: Commands,
     client: AsyncClient,
     eventloop: EventLoop,
+    reresolve: Option<Reresolve>,
 }
 
 impl fmt::Debug for ControllerTask {
@@ -145,6 +150,7 @@ pub fn controller(
             commands: a.commands,
             client,
             eventloop,
+            reresolve: None,
         },
     })
 }
@@ -163,6 +169,22 @@ pub fn client_id() -> String {
 }
 
 impl ControllerTask {
+    /// Looks the broker up again while its address may have changed: after
+    /// the first failed connect since the task started or since the last
+    /// successful connect, and after every third failed connect after that,
+    /// the connection calls `f`, and options it returns replace the event
+    /// loop's before the next attempt. They keep the inflight cap and
+    /// manual-ack setting of the options the task was built with. `f`
+    /// returning `None` keeps the current options. Calls start with the
+    /// first connect, so a broker that got a new address while the host was
+    /// off is found at it. A host that found its broker over mDNS returns
+    /// the same broker at its new address; one connected by a host name, or
+    /// to a configured broker, needs no hook.
+    pub fn reresolve(mut self, f: Reresolve) -> Self {
+        self.reresolve = Some(f);
+        self
+    }
+
     /// Runs until [`ControllerHandle::shutdown`]: the driver; an
     /// `EventLoop::poll` loop that feeds the inbox and reconnects with a
     /// 1-30 s backoff; and a command executor, separate so a full request
@@ -180,6 +202,7 @@ impl ControllerTask {
             commands,
             client,
             eventloop,
+            reresolve,
         } = self;
         let conn = conn::Conn {
             inbox,
@@ -188,6 +211,7 @@ impl ControllerTask {
             eventloop,
             receipts: false,
             flush_timeout: Duration::ZERO,
+            redirect: reresolve.map(|f| conn::Redirect::new(f, None)),
         };
         conn::run(driver.run(), conn).await.map_err(Error::Driver)
     }
@@ -213,7 +237,11 @@ mod tests {
         let mqtt = MqttOptions::new(client_id(), "localhost", 1883);
         let run =
             controller(mqtt, Config::wildcard(), AttachOptions::default()).expect("valid config");
-        send_check(&run.task.run());
+        send_check(
+            &run.task
+                .reresolve(Box::new(|| Box::pin(async { None })))
+                .run(),
+        );
     }
 
     #[test]

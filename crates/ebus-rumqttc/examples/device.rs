@@ -8,8 +8,10 @@
 //! cargo run -p ebus-rumqttc --example device --features rustls -- [root-id]   # TLS
 //! ```
 //!
-//! The connection uses the same `EBUS_MQTT_*` variables as the `watch`
-//! example; the root id (default `rust-example`) is also the client id.
+//! The broker settings are the `watch` example's, listed in
+//! `examples/common/mod.rs`: with neither `EBUS_MQTT_HOST` nor
+//! `EBUS_MQTT_PORT` set, the device looks for a broker over mDNS. The root
+//! id (default `rust-example`) is also the client id.
 //! Ctrl-C publishes `disconnected` and disconnects.
 
 mod common;
@@ -21,7 +23,7 @@ use ebus_rumqttc::ebus_homie_tokio::device::{
     DeviceOptions, DeviceSpec, NodeSpec, PropSpec, Shutdown, TreeBuilder, TreeConfig,
 };
 
-use common::{Stderr, options};
+use common::{Stderr, connect};
 
 /// Seconds between pulse events.
 const PULSE_SECS: u64 = 10;
@@ -44,8 +46,8 @@ async fn main() -> ExitCode {
 }
 
 async fn run(root: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let mqtt = options(root.to_owned())?;
-    let broker = mqtt.broker_address();
+    let conn = connect(root.to_owned()).await?;
+    let broker = conn.mqtt.broker_address();
 
     let mut b = TreeBuilder::new(
         TreeConfig::default(),
@@ -64,9 +66,12 @@ async fn run(root: &str) -> Result<(), Box<dyn std::error::Error>> {
     status.set("starting".to_owned())?;
     led.set(false)?;
 
-    let run = ebus_rumqttc::device(mqtt, b, DeviceOptions::default())?;
+    let run = ebus_rumqttc::device(conn.mqtt, b, DeviceOptions::default())?;
     let handle = run.handle;
-    let mut task = tokio::spawn(run.task.run());
+    let mut task = match conn.reresolve {
+        Some(f) => tokio::spawn(run.task.reresolve(f).run()),
+        None => tokio::spawn(run.task.run()),
+    };
     println!("connecting {}:{} as {root}", broker.0, broker.1);
     status.set("running".to_owned())?;
 

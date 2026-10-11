@@ -1,0 +1,281 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/broker-url",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "broker-url-00",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://broker.local"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "broker.local",
+        "port": 1883,
+        "url": "mqtt://broker.local:1883"
+      }
+    },
+    {
+      "id": "broker-url-01",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtts://broker.local"
+      },
+      "expect": {
+        "broker_type": "_secure-mqtt._tcp",
+        "host": "broker.local",
+        "port": 8883,
+        "url": "mqtts://broker.local:8883"
+      }
+    },
+    {
+      "id": "broker-url-02",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "MQTTS://Broker.Local:8884/path?q#f"
+      },
+      "expect": {
+        "broker_type": "_secure-mqtt._tcp",
+        "host": "broker.local",
+        "port": 8884,
+        "url": "mqtts://broker.local:8884"
+      }
+    },
+    {
+      "id": "broker-url-03",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://user:pw@b.example.com:1884"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "b.example.com",
+        "port": 1884,
+        "url": "mqtt://b.example.com:1884"
+      }
+    },
+    {
+      "id": "broker-url-04",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": " mqtt://b.local "
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "b.local",
+        "port": 1883,
+        "url": "mqtt://b.local:1883"
+      }
+    },
+    {
+      "id": "broker-url-05",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://192.168.1.5:1883"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "192.168.1.5",
+        "port": 1883,
+        "url": "mqtt://192.168.1.5:1883"
+      }
+    },
+    {
+      "id": "broker-url-06",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://[fd00::1]:1884"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "fd00::1",
+        "port": 1884,
+        "url": "mqtt://[fd00::1]:1884"
+      }
+    },
+    {
+      "id": "broker-url-07",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://[FE80::1%25En0]"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "fe80::1%25En0",
+        "port": 1883,
+        "url": "mqtt://[fe80::1%25En0]:1883"
+      }
+    },
+    {
+      "id": "broker-url-08",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:0"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "b.local",
+        "port": 1883,
+        "url": "mqtt://b.local:1883"
+      }
+    },
+    {
+      "id": "broker-url-09",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "b.local",
+        "port": 1883,
+        "url": "mqtt://b.local:1883"
+      }
+    },
+    {
+      "id": "broker-url-10",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:65535"
+      },
+      "expect": {
+        "broker_type": "_mqtt._tcp",
+        "host": "b.local",
+        "port": 65535,
+        "url": "mqtt://b.local:65535"
+      }
+    },
+    {
+      "id": "broker-url-11",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:65536"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-12",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:x"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-13",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://b.local:1:2"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-14",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "ws://b.local"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-15",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "wss://b.local"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-16",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "http://b.local"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-17",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "b.local:1883"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-18",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "b.local"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-19",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-20",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://:1883"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-21",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt:b.local"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-22",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt://user@"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-url-23",
+      "source": "python-service-discovery:ebus.py BrokerEndpoint.from_url, url",
+      "input": {
+        "url": "mqtt:///path"
+      },
+      "expect": {
+        "error": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/retry-schedule",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "retry-schedule-default",
+      "source": "python-service-discovery:ebus.py RetrySchedule.delays",
+      "input": {
+        "attempts": 8
+      },
+      "expect": {
+        "delays_s": [
+          0.0,
+          3.0,
+          3.0,
+          30.0,
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ]
+      }
+    }
+  ]
+}

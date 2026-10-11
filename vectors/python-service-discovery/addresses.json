@@ -1,0 +1,575 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/addresses",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "addresses-scope-8.8.8.8",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "8.8.8.8"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-1.1.1.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "1.1.1.1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-192.168.1.2",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "192.168.1.2"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-10.1.2.3",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "10.1.2.3"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-172.16.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "172.16.0.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-172.32.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "172.32.0.1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-100.64.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "100.64.0.1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-100.127.255.255",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "100.127.255.255"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-169.254.1.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "169.254.1.1"
+      },
+      "expect": {
+        "scope": "link-local",
+        "preference": 3
+      }
+    },
+    {
+      "id": "addresses-scope-127.0.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "127.0.0.1"
+      },
+      "expect": {
+        "scope": "loopback",
+        "preference": 4
+      }
+    },
+    {
+      "id": "addresses-scope-0.0.0.0",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "0.0.0.0"
+      },
+      "expect": {
+        "scope": "unspecified",
+        "preference": 5
+      }
+    },
+    {
+      "id": "addresses-scope-0.1.2.3",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "0.1.2.3"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-192.0.0.9",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "192.0.0.9"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-192.0.0.8",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "192.0.0.8"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-192.0.0.170",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "192.0.0.170"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-192.0.2.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "192.0.2.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-198.18.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "198.18.0.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-198.51.100.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "198.51.100.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-203.0.113.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "203.0.113.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-224.0.0.251",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "224.0.0.251"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-240.0.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "240.0.0.1"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-255.255.255.255",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "255.255.255.255"
+      },
+      "expect": {
+        "scope": "private",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-2606:4700::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2606:4700::1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-fd00::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "fd00::1"
+      },
+      "expect": {
+        "scope": "unique-local",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-fc00::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "fc00::1"
+      },
+      "expect": {
+        "scope": "unique-local",
+        "preference": 1
+      }
+    },
+    {
+      "id": "addresses-scope-fe80::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "fe80::1"
+      },
+      "expect": {
+        "scope": "link-local",
+        "preference": 3
+      }
+    },
+    {
+      "id": "addresses-scope-febf::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "febf::1"
+      },
+      "expect": {
+        "scope": "link-local",
+        "preference": 3
+      }
+    },
+    {
+      "id": "addresses-scope-fec0::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "fec0::1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::1"
+      },
+      "expect": {
+        "scope": "loopback",
+        "preference": 4
+      }
+    },
+    {
+      "id": "addresses-scope-::",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::"
+      },
+      "expect": {
+        "scope": "unspecified",
+        "preference": 5
+      }
+    },
+    {
+      "id": "addresses-scope-2001:db8::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2001:db8::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-2001::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2001::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-2001:20::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2001:20::1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-2001:1::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2001:1::1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-2001:4:112::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2001:4:112::1"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-2002::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "2002::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-3fff::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "3fff::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-64:ff9b:1::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "64:ff9b:1::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-64:ff9b::808:808",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "64:ff9b::808:808"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-100::1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "100::1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-ff02::fb",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "ff02::fb"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-::ffff:10.0.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::ffff:10.0.0.1"
+      },
+      "expect": {
+        "scope": "other",
+        "preference": 2
+      }
+    },
+    {
+      "id": "addresses-scope-::ffff:8.8.8.8",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::ffff:8.8.8.8"
+      },
+      "expect": {
+        "scope": "global",
+        "preference": 0
+      }
+    },
+    {
+      "id": "addresses-scope-::ffff:127.0.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::ffff:127.0.0.1"
+      },
+      "expect": {
+        "scope": "loopback",
+        "preference": 4
+      }
+    },
+    {
+      "id": "addresses-scope-::ffff:169.254.0.1",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::ffff:169.254.0.1"
+      },
+      "expect": {
+        "scope": "link-local",
+        "preference": 3
+      }
+    },
+    {
+      "id": "addresses-scope-::ffff:0.0.0.0",
+      "source": "python-service-discovery:record.py Address.scope, preference",
+      "input": {
+        "address": "::ffff:0.0.0.0"
+      },
+      "expect": {
+        "scope": "unspecified",
+        "preference": 5
+      }
+    },
+    {
+      "id": "addresses-candidates-mixed",
+      "source": "python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "addresses": [
+          "0.0.0.0",
+          "8.8.8.8",
+          "100.64.0.1",
+          "127.0.0.1",
+          "169.254.0.5",
+          "192.168.1.2",
+          "192.168.1.9",
+          "::1",
+          "fd00::1",
+          "fe80::1",
+          "fe80::2%2"
+        ]
+      },
+      "expect": {
+        "candidates": [
+          "8.8.8.8",
+          "192.168.1.2",
+          "192.168.1.9",
+          "fd00::1",
+          "100.64.0.1",
+          "169.254.0.5",
+          "fe80::2%2"
+        ]
+      }
+    },
+    {
+      "id": "addresses-candidates-mapped-link-local",
+      "source": "python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "addresses": [
+          "10.0.0.1",
+          "::ffff:169.254.0.1",
+          "::ffff:169.254.0.2%3"
+        ]
+      },
+      "expect": {
+        "candidates": [
+          "10.0.0.1",
+          "::ffff:169.254.0.2%3"
+        ]
+      }
+    },
+    {
+      "id": "addresses-candidates-only-unusable",
+      "source": "python-service-discovery:instance.py candidate_addresses",
+      "input": {
+        "addresses": [
+          "127.0.0.1",
+          "::",
+          "fe80::9"
+        ]
+      },
+      "expect": {
+        "candidates": []
+      }
+    }
+  ]
+}

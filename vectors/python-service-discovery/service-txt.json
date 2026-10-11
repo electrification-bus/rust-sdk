@@ -1,0 +1,1300 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/service-txt",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "service-txt-identity-minimal",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "device"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-full",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device",
+            "broker-host",
+            "controller"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "ebus_version": "0.9",
+          "device_type": "load-center",
+          "name": "Main Panel",
+          "fw_version": "1.2",
+          "register": "/api/v1/auth/register",
+          "broker_ca": "/api/v1/certificate/broker-ca",
+          "auth_methods": [
+            "passphrase",
+            " mtls "
+          ],
+          "hw_version": "2",
+          "os_version": "linux",
+          "mac": "a0b1c2",
+          "extra_ebus_txt": [
+            [
+              "roles",
+              "ignored"
+            ],
+            [
+              "Custom",
+              "1"
+            ]
+          ],
+          "extra_device_info_txt": [
+            [
+              "x",
+              "y"
+            ]
+          ]
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "device,broker-host,controller"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ],
+          [
+            "device_type",
+            "load-center"
+          ],
+          [
+            "name",
+            "Main Panel"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "fw_version",
+            "1.2"
+          ],
+          [
+            "register",
+            "/api/v1/auth/register"
+          ],
+          [
+            "broker_ca",
+            "/api/v1/certificate/broker-ca"
+          ],
+          [
+            "auth_methods",
+            "passphrase,mtls"
+          ],
+          [
+            "Custom",
+            "1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ],
+          [
+            "fw_version",
+            "1.2"
+          ],
+          [
+            "hw_version",
+            "2"
+          ],
+          [
+            "os_version",
+            "linux"
+          ],
+          [
+            "mac",
+            "a0b1c2"
+          ],
+          [
+            "x",
+            "y"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-homie",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "broker-host",
+            "controller",
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "homie_domain": "ebus"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "broker-host,controller,device"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "homie_domain",
+            "ebus"
+          ],
+          [
+            "homie_version",
+            "5"
+          ],
+          [
+            "homie_roles",
+            "controller,device"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-homie-version",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "broker-host"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "homie_domain": "homie",
+          "homie_version": "5.0"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "broker-host"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "homie_domain",
+            "homie"
+          ],
+          [
+            "homie_version",
+            "5.0"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-homie-version-without-domain",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "homie_version": "5.0"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "device"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-empty-recommended",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "name": "",
+          "auth_methods": []
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "device"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-trimmed-ids",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            " a ",
+            "b"
+          ],
+          "roles": [
+            " device "
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "device"
+          ],
+          [
+            "device_id",
+            "a,b"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-no-device-id",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-comma-device-id",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "a,b"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-blank-device-id",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            " "
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-no-role",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-comma-role",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device,controller"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-unknown-role",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "gateway"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "ebus": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "ebus_version",
+            "0.9"
+          ],
+          [
+            "roles",
+            "gateway"
+          ],
+          [
+            "device_id",
+            "panel-1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ]
+        ],
+        "device_info": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "manufacturer",
+            "Acme"
+          ],
+          [
+            "model",
+            "P1"
+          ],
+          [
+            "serial_number",
+            "SN1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-identity-no-model",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "",
+          "serial_number": "SN1"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-no-ebus-version",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "ebus_version": ""
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-bad-homie-domain",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "homie_domain": "a/b"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-identity-long-name",
+      "source": "python-service-discovery:ebus.py Identity.ebus_txt, device_info_txt",
+      "input": {
+        "record": "identity",
+        "identity": {
+          "device_ids": [
+            "panel-1"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "name": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+        }
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "service-txt-http-https",
+      "source": "python-service-discovery:ebus.py HttpService.txt",
+      "input": {
+        "record": "http",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "http": {
+          "port": 443,
+          "path": "/api/v1",
+          "tls": true,
+          "openapi": "/api/v1/docs"
+        }
+      },
+      "expect": {
+        "service_type": "_https._tcp",
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "path",
+            "/api/v1"
+          ],
+          [
+            "version",
+            "1.0"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ],
+          [
+            "device_type",
+            "load-center"
+          ],
+          [
+            "openapi",
+            "/api/v1/docs"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-http-http",
+      "source": "python-service-discovery:ebus.py HttpService.txt",
+      "input": {
+        "record": "http",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "http": {
+          "port": 80,
+          "path": "/api",
+          "version": "2.0",
+          "extra_txt": [
+            [
+              "path",
+              "x"
+            ],
+            [
+              "zz",
+              "1"
+            ]
+          ]
+        }
+      },
+      "expect": {
+        "service_type": "_http._tcp",
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "path",
+            "/api"
+          ],
+          [
+            "version",
+            "2.0"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ],
+          [
+            "device_type",
+            "load-center"
+          ],
+          [
+            "zz",
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-secure-default",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_secure-mqtt._tcp",
+          "port": 8883
+        },
+        "server": "host.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ],
+          [
+            "broker",
+            "host.local"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-secure-broker-name",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_secure-mqtt._tcp",
+          "broker": "cert.example.com.",
+          "port": 8883
+        },
+        "server": "host.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ],
+          [
+            "broker",
+            "cert.example.com"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-secure-v311",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_secure-mqtt._tcp",
+          "protocol": "mqtt-v3.1.1",
+          "port": 8884
+        },
+        "server": "h.local"
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v3.1.1"
+          ],
+          [
+            "broker",
+            "h.local"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-secure-unknown-protocol",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_secure-mqtt._tcp",
+          "protocol": "mqtt-v4",
+          "port": 8883
+        },
+        "server": "h.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v4"
+          ],
+          [
+            "broker",
+            "h.local"
+          ],
+          [
+            "device_id",
+            "panel-1,meter-2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-wss",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_mqtt-wss._tcp",
+          "path": "/ws",
+          "subprotocol": "mqttv3.1",
+          "port": 9002
+        },
+        "server": "h.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ],
+          [
+            "path",
+            "/ws"
+          ],
+          [
+            "subprotocol",
+            "mqttv3.1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-ws",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_mqtt-ws._tcp",
+          "port": 9001
+        },
+        "server": "h.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ],
+          [
+            "path",
+            "/mqtt"
+          ],
+          [
+            "subprotocol",
+            "mqtt"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-plain",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_mqtt._tcp",
+          "extra_txt": [
+            [
+              "protocol",
+              "x"
+            ],
+            [
+              "note",
+              "y"
+            ]
+          ],
+          "port": 1883
+        },
+        "server": "h.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ],
+          [
+            "note",
+            "y"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "service-txt-broker-plain-broker-ignored",
+      "source": "python-service-discovery:ebus.py BrokerService.txt",
+      "input": {
+        "record": "broker",
+        "identity": {
+          "device_ids": [
+            "panel-1",
+            "meter-2"
+          ],
+          "roles": [
+            "device"
+          ],
+          "manufacturer": "Acme",
+          "model": "P1",
+          "serial_number": "SN1",
+          "device_type": "load-center"
+        },
+        "broker": {
+          "service_type": "_mqtt._tcp",
+          "broker": "b.local",
+          "port": 1883
+        },
+        "server": "h.local."
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "protocol",
+            "mqtt-v5"
+          ]
+        ]
+      }
+    }
+  ]
+}

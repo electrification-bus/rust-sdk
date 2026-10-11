@@ -1,0 +1,304 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/check-txt",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "check-txt-ok",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "path",
+            "/api"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-space-in-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "a key",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-empty-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-equals-in-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "a=b",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-non-ascii-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "café",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-control-in-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k\t",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-tilde-key",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "~",
+            "v"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-string-200",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-string-201",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [
+          "k"
+        ],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-string-255",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [
+          "k"
+        ],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-string-256",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-multibyte-256",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k",
+            "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": false
+      }
+    },
+    {
+      "id": "check-txt-total-1300",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k0",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k1",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k2",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k3",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k4",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k5",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k6",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": false
+      }
+    },
+    {
+      "id": "check-txt-total-1301",
+      "source": "python-service-discovery:ebus.py check_txt",
+      "input": {
+        "service_type": "_ebus._tcp",
+        "txt": [
+          [
+            "k0",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k1",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k2",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k3",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k4",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k5",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ],
+          [
+            "k6",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          ]
+        ]
+      },
+      "expect": {
+        "valid": true,
+        "long_keys": [],
+        "large": true
+      }
+    }
+  ]
+}

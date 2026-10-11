@@ -6,7 +6,7 @@
 
 Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS broker discovery. It targets Linux single-board computers first and microcontrollers later.
 
-**Status:** pre-alpha. The controller and device roles are implemented; mDNS broker discovery is planned. Nothing is published to crates.io yet.
+**Status:** pre-alpha. The controller and device roles are implemented, and mDNS broker discovery and host advertisement run on the Avahi and mdns-sd backends. Nothing is published to crates.io yet.
 
 ## What it does
 
@@ -36,15 +36,17 @@ A device publishes a tree of Homie devices (a root and its children) and takes c
 
 A device and a controller can share one connection (`ebus_rumqttc::pair`).
 
-### Broker discovery (planned)
+### Broker discovery
 
 A site has one MQTT broker, and every eBus host at the site connects to it. A host finds it in one of three ways:
 
 - discovers the brokers advertised over mDNS (DNS-SD) and picks one;
 - connects to a configured broker;
-- uses mDNS to find a particular broker, by its host, instance name or device id.
+- uses mDNS to find a particular broker, by its host, its instance name, or a device id any of its broker advertisements carries.
 
-The host also advertises its own eBus services over mDNS. Two backends are planned: Avahi on Linux, and the pure-Rust mdns-sd for hosts without Avahi and for macOS.
+The client sets which broker transports it accepts and its preference among them, by default the specification's order with `_secure-mqtt._tcp` first.
+
+The host also advertises its own eBus services over mDNS. `ebus-discovery-tokio` finds the broker and advertises the host through avahi-daemon over D-Bus on Linux (its `avahi` feature), or on the pure-Rust mdns-sd backend (its `mdns-sd` feature) for Linux without Avahi and for macOS.
 
 ## Quick start
 
@@ -78,15 +80,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-The `watch` example prints every controller event:
+Find the broker over mDNS instead, and find it again if its host gets a new address (`ebus-discovery-tokio` with its `mdns-sd` or `avahi` feature):
+
+```rust
+use std::time::Duration;
+
+use ebus_discovery_tokio::ebus_discovery::BrokerConfig;
+use ebus_discovery_tokio::{Mdns, find_broker, reresolve};
+use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::Config;
+use rumqttc::MqttOptions;
+
+let mdns = Mdns::system().await?;
+let cfg = BrokerConfig::default(); // discovery-only: the first broker advertised
+let broker = find_broker(&mdns, cfg.clone()).await?;
+
+let id = ebus_rumqttc::client_id();
+let options = |id: &str, host: &str, port: u16| {
+    let mut mqtt = MqttOptions::new(id, host, port);
+    mqtt.set_max_packet_size(4 << 20, 4 << 20);
+    mqtt
+};
+let mqtt = options(&id, &broker.connect_host(), broker.port);
+let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())?;
+let task = run.task.reresolve(Box::new(move || {
+    let (mdns, cfg, broker, id) = (mdns.clone(), cfg.clone(), broker.clone(), id.clone());
+    Box::pin(async move {
+        let found = reresolve(&mdns, &broker, &cfg, Duration::from_secs(3)).await.ok()??;
+        Some(options(&id, &found.connect_host(), found.port))
+    })
+}));
+tokio::spawn(task.run());
+```
+
+The `watch` example prints every controller event. With neither `EBUS_MQTT_HOST` nor `EBUS_MQTT_PORT` set it finds the broker over mDNS; with either, it connects to that broker:
 
 ```sh
 cargo run -p ebus-rumqttc --example watch -- wildcard
-cargo run -p ebus-rumqttc --example watch -- tree <root>
+EBUS_MQTT_HOST=localhost cargo run -p ebus-rumqttc --example watch -- tree <root>
 EBUS_MQTT_HOST=broker.local EBUS_MQTT_CA=ca.pem cargo run -p ebus-rumqttc --example watch --features rustls -- wildcard
 ```
 
-Its source lists every setting: [crates/ebus-rumqttc/examples/watch.rs](crates/ebus-rumqttc/examples/watch.rs).
+Its source lists every setting, including `EBUS_BROKER_MODE` and `EBUS_MDNS_BACKEND`: [crates/ebus-rumqttc/examples/watch.rs](crates/ebus-rumqttc/examples/watch.rs).
 
 Publish a device:
 
@@ -117,7 +152,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-The `device` example adds a duration, an event and a clean shutdown on Ctrl-C:
+The `device` example adds a duration, an event and a clean shutdown on Ctrl-C, and takes the `watch` example's broker settings:
 
 ```sh
 cargo run -p ebus-rumqttc --example device -- my-device
@@ -133,17 +168,18 @@ A device can share the connection the same way (`ebus_homie_tokio::device::attac
 
 | Crate | Role | `no_std` |
 |---|---|---|
-| `ebus-rumqttc` | The controller, the device, or both, with their own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature | no |
+| `ebus-rumqttc` | The controller, the device, or both, with their own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature; a `reresolve` hook finds a discovered broker again after its address changes | no |
 | `ebus-homie-tokio` | Runs the controller and the device on tokio over a host-owned MQTT connection, with typed property handles | no |
+| `ebus-discovery-tokio` | Finds the site's broker over mDNS, finds it again after an address change, and advertises the host's services, on tokio; Avahi backend under the `avahi` feature (Linux), mdns-sd backend under the `mdns-sd` feature | no |
 | `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller and device state machines. Performs no I/O | yes, with optional `alloc` |
 | `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership, and pairing two roles on one connection | yes, with optional `alloc` |
-| `ebus-discovery` | eBus DNS-SD contract (placeholder) | yes, with optional `alloc` |
+| `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, the advertisement model, and broker ranking and selection. Performs no I/O | yes, with optional `alloc` |
 
 The core crates take `std` (the default), `alloc`, or neither as cargo features, and are driven by the caller: they receive messages and the current time and return the MQTT commands to send. The design, including subscription pacing, reconnect handling and the Homie state rules, is in [doc/design.md](doc/design.md).
 
 ## Spec compliance
 
-The [Homie 5 convention](https://homieiot.github.io/) and the [eBus specification](https://github.com/electrification-bus/specification) decide wire behavior. Where the spec leaves a choice open, rust-sdk follows [python-sdk](https://github.com/electrification-bus/python-sdk); where python-sdk deviates from the spec, rust-sdk follows the spec ([python-sdk#110](https://github.com/electrification-bus/python-sdk/issues/110)). Shared test vectors generated from python-sdk are in [vectors/](vectors/).
+The [Homie 5 convention](https://homieiot.github.io/) and the [eBus specification](https://github.com/electrification-bus/specification) decide wire behavior. Where the spec leaves a choice open, rust-sdk follows [python-sdk](https://github.com/electrification-bus/python-sdk); where python-sdk deviates from the spec, rust-sdk follows the spec ([python-sdk#110](https://github.com/electrification-bus/python-sdk/issues/110)). Shared test vectors generated from python-sdk and python-service-discovery are in [vectors/](vectors/).
 
 ## Rust version
 

@@ -1,0 +1,34 @@
+[package]
+name = "ebus-discovery-tokio"
+description = "mDNS backends, broker search and host advertisement for eBus on tokio."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+# The Avahi backend over D-Bus; compiles only on Linux.
+avahi = ["dep:zbus"]
+# The mdns-sd backend: its own responder thread and sockets.
+mdns-sd = ["dep:mdns-sd", "dep:gethostname"]
+
+[dependencies]
+ebus-discovery = { workspace = true, features = ["std", "log"] }
+log = { version = "0.4", default-features = false }
+tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt"] }
+mdns-sd = { version = "0.21.4", default-features = false, features = ["async"], optional = true }
+gethostname = { version = "1", optional = true }
+
+# zbus 5.14 onward declares rust-version 1.87.
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = { version = "5.13", default-features = false, features = ["tokio"], optional = true }
+
+[dev-dependencies]
+serde_json = "1.0.100"
+tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt", "rt-multi-thread", "test-util", "process"] }
+
+[lints]
+workspace = true

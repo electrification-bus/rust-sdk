@@ -13,7 +13,7 @@ use ebus_homie_tokio::{ControllerHandle, EventReceiver};
 use rumqttc::{AsyncClient, MqttOptions};
 
 use crate::Error;
-use crate::conn::{self, Conn, REQUEST_CAPACITY};
+use crate::conn::{self, Conn, DeviceConf, REQUEST_CAPACITY, Redirect, Reresolve};
 
 /// mosquitto's default receive quota: it discards QoS 2 messages past 20
 /// in flight from an MQTT 3.1.1 client (client.py:549-552).
@@ -49,6 +49,8 @@ pub struct RunningPair {
 pub struct DeviceTask {
     driver: DeviceDriver,
     conn: Conn,
+    /// What [`device`] set on the options, for a [`Reresolve`] hook.
+    device: DeviceConf,
 }
 
 impl fmt::Debug for DeviceTask {
@@ -65,6 +67,8 @@ impl fmt::Debug for DeviceTask {
 pub struct PairTask {
     driver: PairDriver,
     conn: Conn,
+    /// What [`pair`] set on the options, for a [`Reresolve`] hook.
+    device: DeviceConf,
 }
 
 impl fmt::Debug for PairTask {
@@ -77,6 +81,15 @@ impl fmt::Debug for PairTask {
 }
 
 impl DeviceTask {
+    /// Looks the broker up again while its address may have changed, as
+    /// [`ControllerTask::reresolve`](crate::ControllerTask::reresolve) does.
+    /// Options `f` returns get the will, clean session, inflight cap and
+    /// outgoing packet limit [`device`] sets.
+    pub fn reresolve(mut self, f: Reresolve) -> Self {
+        self.conn.redirect = Some(Redirect::new(f, Some(self.device.clone())));
+        self
+    }
+
     /// Runs until the device stops; see [`DeviceDriver::run`]. After
     /// `Shutdown::Announce` or `Shutdown::Remove`, the connection waits until
     /// every publish handed to rumqttc was written and acknowledged, at most
@@ -92,6 +105,13 @@ impl DeviceTask {
 }
 
 impl PairTask {
+    /// Looks the broker up again while its address may have changed, as
+    /// [`DeviceTask::reresolve`] does.
+    pub fn reresolve(mut self, f: Reresolve) -> Self {
+        self.conn.redirect = Some(Redirect::new(f, Some(self.device.clone())));
+        self
+    }
+
     /// Runs until the device stops, as [`DeviceTask::run`] does. The future
     /// is `Send`.
     pub async fn run(self) -> Result<(), Error> {
@@ -152,6 +172,11 @@ pub fn device(
                 eventloop,
                 receipts: true,
                 flush_timeout: Duration::from_millis(opts.flush_timeout_ms),
+                redirect: None,
+            },
+            device: DeviceConf {
+                will: a.last_will,
+                max_description: max,
             },
         },
     })
@@ -184,6 +209,11 @@ pub fn pair(
                 eventloop,
                 receipts: true,
                 flush_timeout: Duration::from_millis(opts.flush_timeout_ms),
+                redirect: None,
+            },
+            device: DeviceConf {
+                will: a.last_will,
+                max_description: max,
             },
         },
     })
@@ -224,13 +254,76 @@ mod tests {
         assert_eq!(mqtt.inflight(), 5, "a lower cap is kept");
     }
 
+    /// True when a PUBLISH with a `payload`-byte body reaches a broker over
+    /// options set up as a device's with a `max_description` of `payload`,
+    /// or left as built when `device` is false.
+    async fn publish_reaches_broker(device: bool, payload: usize) -> bool {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let port = listener.local_addr().expect("address").port();
+        let broker = tokio::spawn(async move {
+            let (mut s, _) = listener.accept().await.expect("accept");
+            let mut buf = vec![0u8; 4096];
+            let _ = s.read(&mut buf).await;
+            s.write_all(&[0x20, 2, 0, 0]).await.expect("CONNACK");
+            let mut total = 0;
+            while total < payload {
+                match s.read(&mut buf).await {
+                    Ok(0) | Err(_) => return false,
+                    Ok(n) => total += n,
+                }
+            }
+            true
+        });
+        let mut mqtt = MqttOptions::new("r", "127.0.0.1", port);
+        if device {
+            let will = LastWill {
+                topic: "ebus/5/r/$state".into(),
+                payload: b"lost".to_vec(),
+                qos: ebus_homie_tokio::ebus_mqtt::QoS::AtLeastOnce,
+                retain: true,
+            };
+            configure(&mut mqtt, &will, payload);
+        }
+        let (client, mut eventloop) = AsyncClient::new(mqtt, 4);
+        client
+            .publish("t", rumqttc::QoS::AtMostOnce, false, vec![b'x'; payload])
+            .await
+            .expect("queued");
+        let poller = tokio::spawn(async move { while eventloop.poll().await.is_ok() {} });
+        let reached = tokio::time::timeout(Duration::from_secs(5), broker)
+            .await
+            .is_ok_and(|r| r.expect("broker task"));
+        poller.abort();
+        reached
+    }
+
+    #[tokio::test]
+    async fn device_connections_send_a_description_of_the_configured_size() {
+        // Over rumqttc's default 10 KiB outgoing limit.
+        assert!(!publish_reaches_broker(false, 12_000).await);
+        assert!(publish_reaches_broker(true, 12_000).await);
+    }
+
     #[test]
     fn tasks_are_send() {
         let mqtt = MqttOptions::new("r", "localhost", 1883);
         let run = device(mqtt.clone(), tree(), DeviceOptions::default()).expect("device");
         send_check(&run.task.run());
+        let run = device(mqtt.clone(), tree(), DeviceOptions::default()).expect("device");
+        send_check(
+            &run.task
+                .reresolve(Box::new(|| Box::pin(async { None })))
+                .run(),
+        );
         let run = pair(mqtt, tree(), Config::wildcard(), DeviceOptions::default()).expect("pair");
-        send_check(&run.task.run());
+        send_check(
+            &run.task
+                .reresolve(Box::new(|| Box::pin(async { None })))
+                .run(),
+        );
     }
 
     #[tokio::test]

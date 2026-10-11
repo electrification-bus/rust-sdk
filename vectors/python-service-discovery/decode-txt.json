@@ -1,0 +1,275 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/decode-txt",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "decode-txt-simple",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "txtvers=1",
+          "roles=device,controller"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "txtvers",
+            "1"
+          ],
+          [
+            "roles",
+            "device,controller"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-flag-key",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "flag",
+          "k=v"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "flag",
+            ""
+          ],
+          [
+            "k",
+            "v"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-empty-value",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "k="
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-value-with-equals",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "k=a=b=c"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "a=b=c"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-upper-key",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "Roles=device",
+          "DEVICE_ID=x"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "roles",
+            "device"
+          ],
+          [
+            "device_id",
+            "x"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-exact-duplicate-first-wins",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "k=1",
+          "k=2"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-invalid-utf8-value",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings_hex": [
+          "6b3dfffe6f6b"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "��ok"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-invalid-utf8-key",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings_hex": [
+          "6bff3d31"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k�",
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-truncated-utf8",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings_hex": [
+          "6b3de282"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "�"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-utf8-value",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          "name=Küche"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "name",
+            "Küche"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-spaces",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": [
+          " k = v "
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            " k ",
+            " v "
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-empty",
+      "source": "python-service-discovery:ebus.py decode_txt over python-zeroconf's TXT parse",
+      "input": {
+        "strings": []
+      },
+      "expect": {
+        "txt": []
+      }
+    },
+    {
+      "id": "decode-txt-case-variant-first-wins",
+      "source": "rust-sdk doc/design.md#txt-records: the first of keys equal ignoring case wins (RFC 6763 section 6.4); python keeps the last (ebus.py:144-152)",
+      "input": {
+        "strings": [
+          "Key=1",
+          "KEY=2"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "key",
+            "1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-empty-key-skipped",
+      "source": "rust-sdk doc/design.md#txt-records: a string with an empty key is skipped; python keeps it as key ''",
+      "input": {
+        "strings": [
+          "=x",
+          "k=v"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "v"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "decode-txt-zero-length-string-skipped",
+      "source": "rust-sdk doc/design.md#txt-records: a zero-length string has an empty key and is skipped",
+      "input": {
+        "strings": [
+          "",
+          "k=v"
+        ]
+      },
+      "expect": {
+        "txt": [
+          [
+            "k",
+            "v"
+          ]
+        ]
+      }
+    }
+  ]
+}

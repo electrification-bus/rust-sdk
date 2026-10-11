@@ -1,0 +1,118 @@
+{
+  "$schema": "https://ebus.energy/schemas/conformance-vectors.json",
+  "suite": "python-service-discovery/broker-mode",
+  "version": "0.1",
+  "generator": "rust-sdk tools/gen_vectors.py from python-service-discovery 0.5.1",
+  "cases": [
+    {
+      "id": "broker-mode-00",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "configured-only"
+      },
+      "expect": {
+        "mode": "configured-only"
+      }
+    },
+    {
+      "id": "broker-mode-01",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "discovery-with-fallback"
+      },
+      "expect": {
+        "mode": "discovery-with-fallback"
+      }
+    },
+    {
+      "id": "broker-mode-02",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "discovery-only"
+      },
+      "expect": {
+        "mode": "discovery-only"
+      }
+    },
+    {
+      "id": "broker-mode-03",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "Discovery_Only"
+      },
+      "expect": {
+        "mode": "discovery-only"
+      }
+    },
+    {
+      "id": "broker-mode-04",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": " CONFIGURED_ONLY "
+      },
+      "expect": {
+        "mode": "configured-only"
+      }
+    },
+    {
+      "id": "broker-mode-05",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "discovery_with-fallback"
+      },
+      "expect": {
+        "mode": "discovery-with-fallback"
+      }
+    },
+    {
+      "id": "broker-mode-06",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "discovery"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-mode-07",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "auto"
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-mode-08",
+      "source": "rust-sdk doc/design.md#configuration-and-precedence: an empty mode is an error, so the host treats it as unset; python parses it as discovery-only (ebus.py:120-121)",
+      "input": {
+        "text": ""
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-mode-09",
+      "source": "rust-sdk doc/design.md#configuration-and-precedence: an empty mode is an error, so the host treats it as unset; python parses it as discovery-only (ebus.py:120-121)",
+      "input": {
+        "text": "   "
+      },
+      "expect": {
+        "error": true
+      }
+    },
+    {
+      "id": "broker-mode-10",
+      "source": "python-service-discovery:ebus.py BrokerMode.parse",
+      "input": {
+        "text": "configured only"
+      },
+      "expect": {
+        "error": true
+      }
+    }
+  ]
+}

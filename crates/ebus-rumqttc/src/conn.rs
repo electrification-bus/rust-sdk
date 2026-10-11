@@ -3,14 +3,15 @@
 
 use std::collections::{BTreeMap, VecDeque};
 use std::future::Future;
+use std::pin::Pin;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
 use ebus_homie_tokio::device::Shutdown;
-use ebus_homie_tokio::ebus_mqtt::{self, Command, Receipt};
+use ebus_homie_tokio::ebus_mqtt::{self, Command, LastWill, Receipt};
 use ebus_homie_tokio::{Commands, DriverError, Inbox};
 use rumqttc::{
-    AsyncClient, ClientError, EventLoop, Outgoing, Packet, Request, SubscribeFilter,
+    AsyncClient, ClientError, EventLoop, MqttOptions, Outgoing, Packet, Request, SubscribeFilter,
     SubscribeReasonCode,
 };
 use tokio::sync::{Notify, watch};
@@ -50,6 +51,72 @@ enum Mark {
     Description(String),
     /// A zero-length retained publish: reported once acknowledged.
     Clear(String),
+}
+
+/// Looks the broker up again when connects to it fail: returns its options
+/// at the current address, or `None` to keep the old ones. See
+/// [`ControllerTask::reresolve`](crate::ControllerTask::reresolve).
+pub type Reresolve =
+    Box<dyn FnMut() -> Pin<Box<dyn Future<Output = Option<MqttOptions>> + Send>> + Send>;
+
+/// Failed connects between [`Reresolve`] calls.
+const RERESOLVE_EVERY: u32 = 3;
+
+/// When to call [`Reresolve`]: after the first failed connect since the task
+/// started or since the last link-up, then after every third.
+#[derive(Debug, Default)]
+pub(crate) struct ReresolveSchedule {
+    /// Failed connects since the task started or the last link-up.
+    failed: u32,
+}
+
+impl ReresolveSchedule {
+    /// A CONNACK arrived.
+    pub(crate) fn link_up(&mut self) {
+        self.failed = 0;
+    }
+
+    /// A connect failed; true when [`Reresolve`] is due.
+    pub(crate) fn connect_failed(&mut self) -> bool {
+        self.failed = self.failed.saturating_add(1);
+        self.failed % RERESOLVE_EVERY == 1
+    }
+}
+
+/// The settings `device()` and `pair()` put on the caller's options, applied
+/// again to options from [`Reresolve`].
+#[derive(Clone, Debug)]
+pub(crate) struct DeviceConf {
+    pub(crate) will: LastWill,
+    pub(crate) max_description: usize,
+}
+
+/// A [`Reresolve`] hook and what its options need before use.
+pub(crate) struct Redirect {
+    pub(crate) f: Reresolve,
+    pub(crate) device: Option<DeviceConf>,
+    pub(crate) schedule: ReresolveSchedule,
+}
+
+impl Redirect {
+    pub(crate) fn new(f: Reresolve, device: Option<DeviceConf>) -> Self {
+        Self {
+            f,
+            device,
+            schedule: ReresolveSchedule::default(),
+        }
+    }
+
+    /// `new` as the event loop can use it: the device's settings as at
+    /// startup, and the inflight cap and manual acks the event loop's state
+    /// was built for, since rumqttc sizes its packet-id range once.
+    pub(crate) fn prepare(&self, new: &mut MqttOptions, current: &MqttOptions) {
+        if let Some(d) = &self.device {
+            crate::device::configure(new, &d.will, d.max_description);
+        }
+        new.set_inflight(current.inflight());
+        new.set_manual_acks(current.manual_acks());
+    }
 }
 
 /// Delivery tracking for one connection, matching rumqttc's packet ids in
@@ -164,6 +231,8 @@ pub(crate) struct Conn {
     pub(crate) receipts: bool,
     /// How long `Announce` and `Remove` wait for their publishes.
     pub(crate) flush_timeout: Duration,
+    /// Called as [`ReresolveSchedule`] says while the link is down.
+    pub(crate) redirect: Option<Redirect>,
 }
 
 /// Runs `driver`, the poller and the executor in one task until all three
@@ -179,6 +248,7 @@ pub(crate) async fn run(
         eventloop,
         receipts,
         flush_timeout,
+        redirect,
     } = conn;
     let (end_tx, end_rx) = watch::channel(End::Running);
     let (done_tx, done_rx) = watch::channel(false);
@@ -200,6 +270,7 @@ pub(crate) async fn run(
             &wire_tx,
             &progress,
             track.as_ref(),
+            redirect,
         )
         .await;
         wire_tx.send_replace(Wire::Ended);
@@ -407,7 +478,9 @@ pub(crate) fn next_backoff(current: Duration) -> Duration {
 /// is written, the executor ended while the link was down, the executor
 /// asks for a drop, or the driver stopped while the link is down. Returning
 /// drops the event loop, so the executor's pending requests fail at once
-/// instead of waiting for a reconnect.
+/// instead of waiting for a reconnect. While the link is down, `redirect`
+/// may replace the event loop's options before the next attempt.
+#[allow(clippy::too_many_arguments)]
 async fn poll(
     mut eventloop: EventLoop,
     inbox: Inbox,
@@ -416,6 +489,7 @@ async fn poll(
     wire: &watch::Sender<Wire>,
     progress: &Notify,
     track: Option<&Mutex<Track>>,
+    mut redirect: Option<Redirect>,
 ) {
     let mut backoff = BACKOFF_MIN;
     let mut up = false;
@@ -451,6 +525,9 @@ async fn poll(
                 );
                 up = true;
                 backoff = BACKOFF_MIN;
+                if let Some(r) = redirect.as_mut() {
+                    r.schedule.link_up();
+                }
                 inbox.connected(ack.session_present);
                 wire.send_replace(Wire::Up);
             }
@@ -503,12 +580,34 @@ async fn poll(
                     lock(t).reset();
                 }
                 discard_stale(&mut eventloop);
+                let retry_at = tokio::time::Instant::now() + backoff;
                 if up {
                     up = false;
                     inbox.disconnected();
+                } else if let Some(r) = redirect.as_mut() {
+                    if r.schedule.connect_failed() {
+                        tokio::select! {
+                            new = (r.f)() => {
+                                if let Some(mut new) = new {
+                                    r.prepare(&mut new, &eventloop.mqtt_options);
+                                    let addr = new.broker_address();
+                                    if addr != eventloop.mqtt_options.broker_address() {
+                                        log::info!(
+                                            "reason=mqttReresolved,host={},port={}",
+                                            addr.0,
+                                            addr.1
+                                        );
+                                    }
+                                    eventloop.mqtt_options = new;
+                                }
+                            }
+                            _ = end.wait_for(|e| *e != End::Running) => return,
+                            _ = done.wait_for(|d| *d) => return,
+                        }
+                    }
                 }
                 tokio::select! {
-                    () = tokio::time::sleep(backoff) => {}
+                    () = tokio::time::sleep_until(retry_at) => {}
                     _ = end.wait_for(|e| *e != End::Running) => return,
                     _ = done.wait_for(|d| *d) => return,
                 }
@@ -691,7 +790,7 @@ mod tests {
         let progress: &'static Notify = Box::leak(Box::new(Notify::new()));
         let mut up = wire.subscribe();
         let poller = tokio::spawn(poll(
-            eventloop, dev.inbox, end_rx, done_rx, wire, progress, None,
+            eventloop, dev.inbox, end_rx, done_rx, wire, progress, None, None,
         ));
         up.wait_for(|w| *w == Wire::Up)
             .await
@@ -761,6 +860,7 @@ mod tests {
             wire,
             progress,
             Some(track),
+            None,
         ));
         let publish = |topic: &str, payload: Vec<u8>| Command::Publish {
             topic: topic.into(),
@@ -809,5 +909,203 @@ mod tests {
             "{:?}",
             lock(track)
         );
+    }
+
+    #[test]
+    fn reresolve_runs_after_the_first_failed_connect_then_every_third() {
+        let mut s = ReresolveSchedule::default();
+        let startup: Vec<u32> = (1..=7).filter(|_| s.connect_failed()).collect();
+        assert_eq!(startup, [1, 4, 7], "before any link-up");
+        s.link_up();
+        let due: Vec<u32> = (1..=10).filter(|_| s.connect_failed()).collect();
+        assert_eq!(due, [1, 4, 7, 10]);
+        s.link_up();
+        assert!(s.connect_failed(), "a new lost link starts the count again");
+        assert!(!s.connect_failed());
+    }
+
+    #[test]
+    fn reresolved_options_get_the_device_settings_and_the_event_loop_limits() {
+        let will = LastWill {
+            topic: "ebus/5/r/$state".into(),
+            payload: b"lost".to_vec(),
+            qos: ebus_mqtt::QoS::ExactlyOnce,
+            retain: true,
+        };
+        let hook: Reresolve = Box::new(|| Box::pin(async { None }));
+        let r = Redirect::new(
+            hook,
+            Some(DeviceConf {
+                will,
+                max_description: 10_000,
+            }),
+        );
+        let mut current = MqttOptions::new("r", "127.0.0.1", 1883);
+        current.set_inflight(7);
+        current.set_manual_acks(true);
+        let mut new = MqttOptions::new("r", "192.0.2.7", 1883);
+        new.set_clean_session(false);
+        new.set_inflight(100);
+        r.prepare(&mut new, &current);
+        let w = new.last_will().expect("will");
+        assert_eq!(w.topic, "ebus/5/r/$state");
+        assert_eq!(&w.message[..], b"lost");
+        assert!(w.retain);
+        assert!(new.clean_session());
+        assert_eq!(new.inflight(), 7, "the event loop's state is sized for 7");
+        assert!(new.manual_acks(), "the event loop's manual-ack setting");
+        assert_eq!(new.broker_address(), ("192.0.2.7".to_owned(), 1883));
+
+        let hook: Reresolve = Box::new(|| Box::pin(async { None }));
+        let r = Redirect::new(hook, None);
+        let mut new = MqttOptions::new("c", "192.0.2.7", 1883);
+        new.set_clean_session(false);
+        r.prepare(&mut new, &current);
+        assert!(new.last_will().is_none(), "a controller has no will");
+        assert!(
+            !new.clean_session(),
+            "a controller's options are the host's"
+        );
+        assert_eq!(new.inflight(), current.inflight());
+        assert!(new.manual_acks());
+    }
+
+    /// A poll loop for a device whose options name `port`, with `hook`;
+    /// returns its link state.
+    fn spawn_poll(port: u16, hook: Reresolve) -> watch::Receiver<Wire> {
+        let (_client, eventloop) = AsyncClient::new(MqttOptions::new("r", "127.0.0.1", port), 8);
+        let tree = ebus_homie_tokio::device::TreeBuilder::new(
+            ebus_homie_tokio::device::TreeConfig::default(),
+            "r",
+            ebus_homie_tokio::device::DeviceSpec::default(),
+        )
+        .expect("tree");
+        let dev = ebus_homie_tokio::device::attach_device(
+            tree,
+            ebus_homie_tokio::device::DeviceOptions::default(),
+        )
+        .expect("device");
+        let (end_tx, end_rx) = watch::channel(End::Running);
+        let (done_tx, done_rx) = watch::channel(false);
+        // Kept for the test's lifetime, so the poll loop keeps running.
+        Box::leak(Box::new((end_tx, done_tx)));
+        let wire: &'static watch::Sender<Wire> = Box::leak(Box::new(watch::channel(Wire::Down).0));
+        let progress: &'static Notify = Box::leak(Box::new(Notify::new()));
+        let link = wire.subscribe();
+        tokio::spawn(poll(
+            eventloop,
+            dev.inbox,
+            end_rx,
+            done_rx,
+            wire,
+            progress,
+            None,
+            Some(Redirect::new(hook, None)),
+        ));
+        link
+    }
+
+    #[tokio::test]
+    async fn a_broker_down_at_startup_is_replaced_by_the_reresolved_one() {
+        use std::sync::Arc;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        // Nothing listens on A's port; broker B answers.
+        let a_port = {
+            let a = std::net::TcpListener::bind("127.0.0.1:0").expect("bind");
+            a.local_addr().expect("address").port()
+        };
+        let b = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let b_port = b.local_addr().expect("address").port();
+        tokio::spawn(async move {
+            let mut buf = [0u8; 256];
+            let (mut s, _) = b.accept().await.expect("accept");
+            let _ = s.read(&mut buf).await;
+            s.write_all(&[0x20, 2, 0, 0]).await.expect("CONNACK");
+            while s.read(&mut buf).await.unwrap_or(0) > 0 {}
+        });
+        let calls = Arc::new(AtomicUsize::new(0));
+        let c = Arc::clone(&calls);
+        let hook: Reresolve = Box::new(move || {
+            c.fetch_add(1, Ordering::AcqRel);
+            Box::pin(async move { Some(MqttOptions::new("r", "127.0.0.1", b_port)) })
+        });
+        let mut link = spawn_poll(a_port, hook);
+        tokio::time::timeout(Duration::from_secs(15), link.wait_for(|w| *w == Wire::Up))
+            .await
+            .expect("up on B")
+            .expect("poller running");
+        assert_eq!(
+            calls.load(Ordering::Acquire),
+            1,
+            "called after the first failed connect"
+        );
+    }
+
+    #[tokio::test]
+    async fn the_reresolved_broker_is_used_for_the_next_attempt() {
+        use std::sync::Arc;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        // Broker A answers one CONNECT, then closes the connection and stops
+        // listening; broker B answers the next.
+        let a = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let a_port = a.local_addr().expect("address").port();
+        let b = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let b_port = b.local_addr().expect("address").port();
+        tokio::spawn(async move {
+            let mut buf = [0u8; 256];
+            let (mut s, _) = a.accept().await.expect("accept");
+            let _ = s.read(&mut buf).await;
+            s.write_all(&[0x20, 2, 0, 0]).await.expect("CONNACK");
+            drop(a);
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        });
+        let (b_tx, b_rx) = tokio::sync::oneshot::channel();
+        tokio::spawn(async move {
+            let mut buf = [0u8; 256];
+            let (mut s, _) = b.accept().await.expect("accept");
+            let _ = s.read(&mut buf).await;
+            s.write_all(&[0x20, 2, 0, 0]).await.expect("CONNACK");
+            let _ = b_tx.send(());
+            while s.read(&mut buf).await.unwrap_or(0) > 0 {}
+        });
+        let calls = Arc::new(AtomicUsize::new(0));
+        let c = Arc::clone(&calls);
+        let hook: Reresolve = Box::new(move || {
+            c.fetch_add(1, Ordering::AcqRel);
+            Box::pin(async move { Some(MqttOptions::new("r", "127.0.0.1", b_port)) })
+        });
+        let mut link = spawn_poll(a_port, hook);
+        let within = Duration::from_secs(15);
+        tokio::time::timeout(within, link.wait_for(|w| *w == Wire::Up))
+            .await
+            .expect("connected to A")
+            .expect("poller running");
+        assert_eq!(calls.load(Ordering::Acquire), 0, "not called while up");
+        tokio::time::timeout(within, link.wait_for(|w| *w == Wire::Down))
+            .await
+            .expect("A closed the link")
+            .expect("poller running");
+        assert_eq!(
+            calls.load(Ordering::Acquire),
+            0,
+            "a lost link is not a failed connect"
+        );
+        tokio::time::timeout(within, b_rx)
+            .await
+            .expect("connected to B")
+            .expect("B answered");
+        tokio::time::timeout(within, link.wait_for(|w| *w == Wire::Up))
+            .await
+            .expect("up on B")
+            .expect("poller running");
+        assert_eq!(calls.load(Ordering::Acquire), 1);
     }
 }
