@@ -49,7 +49,7 @@ The six crates share the workspace version and are published together, in depend
 2. Move the `[Unreleased]` entries in `CHANGELOG.md` under the new version and its date.
 3. Merge, then tag the merge commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`.
 
-The tag starts `.github/workflows/release.yml`, which runs the CI suite, checks that the tag matches the workspace version, and publishes the six crates with a short-lived token from trusted publishing. It skips any crate whose version is already on crates.io, so if it fails partway, re-run it.
+The tag starts `.github/workflows/release.yml`, which runs the CI suite, checks that the tag matches the workspace version, publishes the six crates with a short-lived token from trusted publishing, and creates the GitHub release with that version's CHANGELOG section as its notes. It skips any crate whose version is already on crates.io and a release that already exists, so if it fails partway, re-run it.
 
 ## Code of conduct
 

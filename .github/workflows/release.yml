@@ -1,7 +1,8 @@
 name: Release
 
 # Publishes every crate in the workspace to crates.io when a version tag is
-# pushed, after the CI suite passes on that commit.
+# pushed, after the CI suite passes on that commit, then creates the GitHub
+# release from the version's CHANGELOG section.
 on:
   push:
     tags: ["v*"]
@@ -21,7 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
+      # gh release create.
+      contents: write
       # crates.io trusted publishing exchanges the job's OIDC token for a
       # short-lived publish token.
       id-token: write
@@ -33,19 +35,38 @@ jobs:
           version=$(cargo metadata --no-deps --format-version 1 --locked | jq -r '.packages[0].version')
           test "$GITHUB_REF_NAME" = "v$version" || { echo "tag $GITHUB_REF_NAME, workspace version $version"; exit 1; }
           echo "version=$version" >> "$GITHUB_ENV"
-      - uses: rust-lang/crates-io-auth-action@v1
-        id: auth
-      # One crate at a time in dependency order, skipping a version the index
-      # already holds, so re-running a release that failed partway finishes
-      # it. cargo publish waits for each crate to appear in the index before
-      # the next one, which may depend on it, is published.
-      - run: |
+      # Crates in dependency order whose version the index does not hold yet,
+      # so re-running a release that failed partway finishes it, and a release
+      # published by hand only gets its GitHub release.
+      - name: Crates to publish
+        id: pending
+        run: |
+          pending=
           for c in ebus-mqtt ebus-homie ebus-discovery ebus-homie-tokio ebus-discovery-tokio ebus-rumqttc; do
             if curl -sf "https://index.crates.io/eb/us/$c" | jq -e --arg v "$version" 'select(.vers == $v)' > /dev/null; then
               echo "$c $version is already published"
             else
-              cargo publish -p "$c" --locked
+              pending="$pending $c"
             fi
+          done
+          echo "crates=$pending" >> "$GITHUB_OUTPUT"
+      - uses: rust-lang/crates-io-auth-action@v1
+        if: steps.pending.outputs.crates != ''
+        id: auth
+      # cargo publish waits for each crate to appear in the index before the
+      # next one, which may depend on it, is published.
+      - if: steps.pending.outputs.crates != ''
+        run: |
+          for c in ${{ steps.pending.outputs.crates }}; do
+            cargo publish -p "$c" --locked
           done
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+      - name: GitHub release
+        run: |
+          gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1 && { echo "release $GITHUB_REF_NAME exists"; exit 0; }
+          awk -v v="$version" '$0 ~ "^## \\[" v "\\]" {f=1; next} f && /^## \[/ {exit} f && !/^\[[^]]+\]: /' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "CHANGELOG.md has no section for $version"; exit 1; }
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

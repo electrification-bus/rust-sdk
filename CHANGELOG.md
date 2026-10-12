@@ -4,6 +4,8 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-12
+
 ### Added
 
 - `doc/python-sdk.md`, a guide for python-sdk users mapping each python-sdk pattern to rust-sdk, with code compiled as doctests of the unpublished `guide-doctest` workspace member, which also compiles the root README's examples.
@@ -23,4 +25,7 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 - The controller's entry points are named like the device's and the pair's: `attach_controller`, `AttachedController`, `ControllerOptions`, `RunningController` and `controller_client_id`. The core tree builder is `ebus_homie::device::TreeBuilder`, the broker configuration error `BrokerConfigError`, and `DeviceState`'s parse error `ParseStateError`; `ControllerHandle::device` and `devices` return `DeviceView`. `DirtySet` is internal to `ebus-homie-tokio`, and `ebus_homie::pyfmt` is hidden from the documentation.
 - Every `ebus-homie` error type implements `core::error::Error` without `std`. `ebus_discovery_tokio::Error`, `ebus_rumqttc::Error` and `AttachError` print only their own context and return the error they wrap from `source()`.
 - `ebus_homie::serde_json` and `ebus_homie_tokio::bytes` re-export the crates those types come from; `Debug` for `MdnsBrowse`, `MdnsGroup` and `Reconfigure`; docs.rs builds every crate with all features and marks feature-gated items.
-- Each crate has a README, crates.io keywords and categories, and ships its LICENSE; a `v*` tag publishes the six crates to crates.io through `.github/workflows/release.yml`.
+- Each crate has a README, crates.io keywords and categories, and ships its LICENSE; a `v*` tag publishes the six crates to crates.io and creates the GitHub release through `.github/workflows/release.yml`.
+
+[Unreleased]: https://github.com/electrification-bus/rust-sdk/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/electrification-bus/rust-sdk/releases/tag/v0.1.0

@@ -1,6 +1,8 @@
 # rust-sdk
 
 [![CI](https://github.com/electrification-bus/rust-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/electrification-bus/rust-sdk/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/ebus-rumqttc.svg)](https://crates.io/crates/ebus-rumqttc)
+[![docs.rs](https://img.shields.io/docsrs/ebus-rumqttc)](https://docs.rs/ebus-rumqttc)
 [![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)](#rust-version)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -51,6 +53,13 @@ The client sets which broker transports it accepts and its preference among them
 The host also advertises its own eBus services over mDNS. `ebus-discovery-tokio` finds the broker and advertises the host through avahi-daemon over D-Bus on Linux (its `avahi` feature), or on the pure-Rust mdns-sd backend (its `mdns-sd` feature) for Linux without Avahi and for macOS.
 
 ## Quick start
+
+The crates are on [crates.io](https://crates.io/search?q=ebus). Most programs need only `ebus-rumqttc`, which re-exports the others it uses:
+
+```sh
+cargo add ebus-rumqttc
+cargo add tokio --features macros,rt-multi-thread
+```
 
 Watch every device on a broker:
 
@@ -180,16 +189,18 @@ A device can share the connection the same way (`ebus_homie_tokio::device::attac
 
 ## Crates
 
-| Crate | Role | `no_std` |
-|---|---|---|
-| `ebus-rumqttc` | The controller, the device, or both, with their own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature; a `reresolve` hook finds a discovered broker again after its address changes | no |
-| `ebus-homie-tokio` | Runs the controller and the device on tokio over a host-owned MQTT connection, with typed property handles | no |
-| `ebus-discovery-tokio` | Finds the site's broker over mDNS, finds it again after an address change, and advertises the host's services, on tokio; Avahi backend under the `avahi` feature (Linux), mdns-sd backend under the `mdns-sd` feature | no |
-| `ebus-homie` | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller and device state machines. Performs no I/O | yes, with optional `alloc` |
-| `ebus-mqtt` | MQTT vocabulary: messages and commands, topic filters and their ownership, and pairing two roles on one connection | yes, with optional `alloc` |
-| `ebus-discovery` | eBus DNS-SD contract: service types, TXT records, the advertisement model, and broker ranking and selection. Performs no I/O | yes, with optional `alloc` |
+| Crate | Role | `no_std` | Version |
+|---|---|---|---|
+| [`ebus-rumqttc`](https://docs.rs/ebus-rumqttc) | The controller, the device, or both, with their own rumqttc 0.25 connection: TCP, or TLS with the `rustls` or `native-tls` feature; a `reresolve` hook finds a discovered broker again after its address changes | no | [![crates.io](https://img.shields.io/crates/v/ebus-rumqttc.svg)](https://crates.io/crates/ebus-rumqttc) |
+| [`ebus-homie-tokio`](https://docs.rs/ebus-homie-tokio) | Runs the controller and the device on tokio over a host-owned MQTT connection, with typed property handles | no | [![crates.io](https://img.shields.io/crates/v/ebus-homie-tokio.svg)](https://crates.io/crates/ebus-homie-tokio) |
+| [`ebus-discovery-tokio`](https://docs.rs/ebus-discovery-tokio) | Finds the site's broker over mDNS, finds it again after an address change, and advertises the host's services, on tokio; Avahi backend under the `avahi` feature (Linux), mdns-sd backend under the `mdns-sd` feature | no | [![crates.io](https://img.shields.io/crates/v/ebus-discovery-tokio.svg)](https://crates.io/crates/ebus-discovery-tokio) |
+| [`ebus-homie`](https://docs.rs/ebus-homie) | Homie 5 protocol core: identifiers, topics, datatypes, `$description`, and the controller and device state machines. Performs no I/O | yes, with optional `alloc` | [![crates.io](https://img.shields.io/crates/v/ebus-homie.svg)](https://crates.io/crates/ebus-homie) |
+| [`ebus-mqtt`](https://docs.rs/ebus-mqtt) | MQTT vocabulary: messages and commands, topic filters and their ownership, and pairing two roles on one connection | yes, with optional `alloc` | [![crates.io](https://img.shields.io/crates/v/ebus-mqtt.svg)](https://crates.io/crates/ebus-mqtt) |
+| [`ebus-discovery`](https://docs.rs/ebus-discovery) | eBus DNS-SD contract: service types, TXT records, the advertisement model, and broker ranking and selection. Performs no I/O | yes, with optional `alloc` | [![crates.io](https://img.shields.io/crates/v/ebus-discovery.svg)](https://crates.io/crates/ebus-discovery) |
 
 The core crates take `std` (the default), `alloc`, or neither as cargo features, and are driven by the caller: they receive messages and the current time and return the MQTT commands to send. The design, including subscription pacing, reconnect handling and the Homie state rules, is in [doc/design.md](doc/design.md).
+
+Each `v*` tag on this repository publishes all six crates to crates.io at that version and creates the matching [GitHub release](https://github.com/electrification-bus/rust-sdk/releases), whose notes are that version's [CHANGELOG](CHANGELOG.md) section; [CONTRIBUTING.md](CONTRIBUTING.md#releasing) has the steps.
 
 ## Spec compliance
 
