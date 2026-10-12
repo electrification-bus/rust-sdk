@@ -12,7 +12,6 @@ mod support;
 #[path = "../examples/common/span.rs"]
 mod span;
 
-use std::net::Ipv4Addr;
 use std::path::Path;
 use std::time::Duration;
 
@@ -361,14 +360,16 @@ async fn tls_verifies_the_panel_name_at_an_address() {
         return;
     }
     let file = |f: &str| dir.join(f).display().to_string();
-    let Some((_broker, port)) = Broker::start_with(test, Ipv4Addr::LOCALHOST.into(), 0, |port| {
-        format!(
-            "listener {port} 127.0.0.1\ncafile {}\ncertfile {}\nkeyfile {}\n",
-            file("panel-ca.pem"),
-            file("server.pem"),
-            file("server.key")
-        )
-    }) else {
+    let Some((_broker, port)) =
+        Broker::start_with(test, std::net::Ipv4Addr::LOCALHOST.into(), 0, |port| {
+            format!(
+                "listener {port} 127.0.0.1\ncafile {}\ncertfile {}\nkeyfile {}\n",
+                file("panel-ca.pem"),
+                file("server.pem"),
+                file("server.key")
+            )
+        })
+    else {
         let _ = std::fs::remove_dir_all(&dir);
         return;
     };
