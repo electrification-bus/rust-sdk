@@ -7,7 +7,8 @@ on:
   push:
     tags: ["v*"]
   # Run by hand to check the crates.io trusted publishing setup: it requests
-  # a token and publishes nothing.
+  # a token, which crates.io issues only when an entry matches this
+  # repository, workflow and environment, and publishes nothing.
   workflow_dispatch:
 
 permissions:
@@ -86,12 +87,3 @@ jobs:
       id-token: write
     steps:
       - uses: rust-lang/crates-io-auth-action@v1
-        id: auth
-      # The token covers every crate whose entry matches; list each crate's
-      # entries with it, read only.
-      - run: |
-          for c in ebus-mqtt ebus-homie ebus-discovery ebus-homie-tokio ebus-discovery-tokio ebus-rumqttc; do
-            echo "$c: $(curl -s -A "rust-sdk release check" -H "Authorization: $TOKEN" "https://crates.io/api/v1/trusted_publishing/github_configs?crate=$c")"
-          done
-        env:
-          TOKEN: ${{ steps.auth.outputs.token }}
