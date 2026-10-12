@@ -8,6 +8,7 @@ use tokio::sync::mpsc::{self, error::TryRecvError, error::TrySendError};
 
 /// One delivery from an [`EventReceiver`].
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Delivered {
     /// An event, in the order the controller emitted it.
     Event(Event),

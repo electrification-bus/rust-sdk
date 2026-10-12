@@ -37,7 +37,7 @@ Where the spec leaves a choice open, rust-sdk follows python-sdk: JSON key order
 | [`topic`](../crates/ebus-homie/src/topic.rs) | Borrowing `parse` into `Topic`/`TopicKind` (`$state`, `$description`, `$log/{level}`, `$alert/{id}`, value, `/set`, `$target`, `$broadcast`); topic builders |
 | [`state`](../crates/ebus-homie/src/state.rs) | `DeviceState` with exact-match `parse`; `effective_state` (state.rs:100-105): only a root in `lost` overrides its tree (convention.md:262-267) |
 | [`payload`](../crates/ebus-homie/src/payload.rs) | `classify`: zero-length is `Deleted`, `0x00` is `""`, otherwise UTF-8; `encode_str` |
-| [`pyfmt`](../crates/ebus-homie/src/pyfmt.rs) (alloc) | Python-identical float formatting for `f64` (`format_float`); `format_float32` for `f32`, with the shortest digits that read back as the same `f32` in that layout; `json.dumps` output and `json.loads` input |
+| [`pyfmt`](../crates/ebus-homie/src/pyfmt.rs) (alloc, `#[doc(hidden)]`: public only for the vector tests) | Python-identical float formatting for `f64` (`format_float`); `format_float32` for `f32`, with the shortest digits that read back as the same `f32` in that layout; `json.dumps` output and `json.loads` input |
 | [`datatype`](../crates/ebus-homie/src/datatype.rs) | The nine datatypes, payload grammar checks (no alloc), `Problem` codes; with alloc, `parse_set_payload` (datatype.rs:1099) with exact decimal step rounding, and the encoders |
 | [`description`](../crates/ebus-homie/src/description.rs) (alloc) | `DeviceDescription` model; `parse_with_ignored` prunes illegal nodes and properties and rejects illegal device-level fields (convention.md:663-669); `to_json` in python's `json.dumps` key order and formatting, byte-identical when keys nested inside an extra are sorted (description.rs:349-353); `content_hash` (description.rs:432) and `compute_version` |
 
@@ -51,8 +51,8 @@ The controller is a sans-IO state machine in `ebus-homie::controller` (alloc), i
 |---|---|
 | `ebus-mqtt` | `QoS`, `Instant`, `Message<'a>`, `Command`, `Link`, `LastWill`; `filter::{is_valid_filter, is_valid_topic, matches, overlap}` (`overlap` ported from ebus-mqtt-client `_filters_overlap`, client.py:65-85); `FilterLedger` |
 | `ebus-homie` | `controller` module; `datatype::check_value`; optional `log` feature |
-| `ebus-homie-tokio` | `attach()`, `Inbox`, `ControllerDriver`, `ControllerHandle`, `EventReceiver`, `DeviceSnapshot`. tokio features `sync`, `time`, `macros`; also `bytes` 1, `log` 0.4 and `rpds` |
-| `ebus-rumqttc` | `controller()`: driver plus rumqttc 0.25 `EventLoop` poller plus command executor; `client_id()`. rumqttc with `default-features = false`; pass-through features `rustls` and `native-tls` |
+| `ebus-homie-tokio` | `attach_controller()`, `Inbox`, `ControllerDriver`, `ControllerHandle`, `EventReceiver`. tokio features `sync`, `time`, `macros`; also `bytes` 1, `log` 0.4 and `rpds` |
+| `ebus-rumqttc` | `controller()`: driver plus rumqttc 0.25 `EventLoop` poller plus command executor; `controller_client_id()`. rumqttc with `default-features = false`; pass-through features `rustls` and `native-tls` |
 
 `ebus-rumqttc` is a separate published crate, not a feature of `ebus-homie-tokio`: under Cargo feature unification, a feature enabled by one member of a host workspace would compile rumqttc 0.25 into every service sharing `ebus-homie-tokio`, including hosts that bring their own client. A rumqttc bump is then a semver change in one crate.
 
@@ -63,20 +63,25 @@ The controller is a sans-IO state machine in `ebus-homie::controller` (alloc), i
 pub enum QoS { AtMostOnce = 0, AtLeastOnce = 1, ExactlyOnce = 2 } // from_u8
 /// Milliseconds on the caller's monotonic clock.
 pub struct Instant(pub u64); // saturating_since, add_ms (saturating)
+// The structs and struct variants below are #[non_exhaustive], so MQTT 5
+// properties can be added as fields: match with `..`, build with the constructors.
+#[non_exhaustive]
 pub struct Message<'a> {
     pub topic: &'a str,
     pub payload: &'a [u8],
     /// MQTT retain bit; None when the client does not surface it.
     pub retain: Option<bool>,
-}
-pub enum Link { Up { session_present: bool }, Down }
-#[non_exhaustive] // room for v5 properties
+} // const fn new(topic, payload, retain)
+#[non_exhaustive]
+pub enum Link { #[non_exhaustive] Up { session_present: bool }, Down } // const fn up(session_present)
+#[non_exhaustive]
 pub enum Command {
-    Subscribe { filters: Vec<(String, QoS)> }, // one SUBSCRIBE packet
-    Unsubscribe { filters: Vec<String> },
-    Publish { topic: String, payload: Vec<u8>, qos: QoS, retain: bool },
-}
-pub struct LastWill { pub topic: String, pub payload: Vec<u8>, pub qos: QoS, pub retain: bool }
+    #[non_exhaustive] Subscribe { filters: Vec<(String, QoS)> }, // one SUBSCRIBE packet
+    #[non_exhaustive] Unsubscribe { filters: Vec<String> },
+    #[non_exhaustive] Publish { topic: String, payload: Vec<u8>, qos: QoS, retain: bool },
+} // subscribe(filters), unsubscribe(filters), publish(topic, payload, qos, retain)
+#[non_exhaustive]
+pub struct LastWill { pub topic: String, pub payload: Vec<u8>, pub qos: QoS, pub retain: bool } // new(..)
 pub mod filter {
     pub fn is_valid_filter(f: &str) -> bool;
     pub fn is_valid_topic(t: &str) -> bool;
@@ -130,7 +135,7 @@ pub enum Origin { Retained, Live, Unknown } // from Message::retain
 pub struct Value { pub raw: Arc<str> /* 0x00 decoded */, pub check: Result<(), Problem> }
 pub enum Missing { State, Description, Properties }
 
-#[non_exhaustive]
+#[non_exhaustive] // and each struct variant: patterns end with `..`
 pub enum Event {
     Link(Link), // after the resubscribe commands are queued
     DeviceDiscovered { device: Id, state: DeviceState },
@@ -150,7 +155,8 @@ pub enum Event {
     TreeComplete { root: Id },    // edge-triggered, re-arming
 }
 
-pub struct SetOptions { pub allow_not_ready: bool, pub unchecked: bool }
+#[non_exhaustive]
+pub struct SetOptions { pub allow_not_ready: bool, pub unchecked: bool } // Default; const setters allow_not_ready(bool), unchecked(bool)
 #[non_exhaustive]
 pub enum SetError { NotConnected, UnknownDevice, UnknownProperty, NotSettable, DeviceNotReady(DeviceState), Invalid(Problem), InvalidTopic }
 
@@ -163,6 +169,7 @@ impl DeviceView {
     pub fn alerts(&self) -> impl Iterator<Item = (&Id, &str)> + '_;
     pub fn shares_values(&self, other: &DeviceView) -> bool; // same property and alert maps: a clone not changed since
 }
+#[non_exhaustive]
 pub struct PropertyView { pub value: Option<Value>, pub last_valid: Option<Arc<str>>, pub target: Option<Value> }
 pub enum Handled { Consumed, Ignored }
 
@@ -203,8 +210,9 @@ impl Inbox {
     pub fn command_failed(&self, cmd: Command);
 }
 #[non_exhaustive]
-pub struct AttachOptions { pub inbox_bytes: usize /* 4 MiB */, pub event_capacity: usize /* 1024 */ }
-pub struct Attached {
+pub struct ControllerOptions { pub inbox_bytes: usize /* 4 MiB */, pub event_capacity: usize /* 1024 */ }
+#[non_exhaustive]
+pub struct AttachedController {
     pub handle: ControllerHandle,
     pub inbox: Inbox,
     pub commands: Commands,
@@ -217,19 +225,19 @@ impl Commands {
     pub fn try_recv(&mut self) -> Option<Command>;
     pub fn last_is_stale(&self, last: &Command) -> bool; // for a command held across an await
 }
-pub fn attach(config: Config, opts: AttachOptions) -> Result<Attached, ConfigError>;
+pub fn attach_controller(config: Config, opts: ControllerOptions) -> Result<AttachedController, ConfigError>;
 impl ControllerDriver { pub async fn run(self) -> Result<(), DriverError>; } // Send; the host spawns it
 #[non_exhaustive]
 pub enum DriverError { CommandsClosed }
+#[non_exhaustive]
 pub enum Delivered { Event(Event), Overflow { dropped: u64 } } // Overflow => re-read snapshots
 impl EventReceiver { pub async fn recv(&mut self) -> Option<Delivered>; pub fn try_recv(&mut self) -> Option<Delivered>; }
 
-pub type DeviceSnapshot = DeviceView;
 #[derive(Clone)] // Send + Sync
 pub struct ControllerHandle;
 impl ControllerHandle {
-    pub fn device(&self, id: &str) -> Option<Arc<DeviceSnapshot>>; // sync snapshot reads
-    pub fn devices(&self) -> Vec<Arc<DeviceSnapshot>>;
+    pub fn device(&self, id: &str) -> Option<Arc<DeviceView>>; // sync snapshot reads
+    pub fn devices(&self) -> Vec<Arc<DeviceView>>;
     pub fn effective_state(&self, id: &str) -> Option<DeviceState>;
     pub fn is_tree_complete(&self, root: &str) -> bool;
     pub fn is_connected(&self) -> bool;
@@ -243,15 +251,16 @@ impl ControllerHandle {
 }
 
 // ===== ebus-rumqttc =====
-pub struct Running { pub handle: ControllerHandle, pub events: EventReceiver, pub task: ControllerTask }
+#[non_exhaustive]
+pub struct RunningController { pub handle: ControllerHandle, pub events: EventReceiver, pub task: ControllerTask }
 impl ControllerTask { pub async fn run(self) -> Result<(), Error>; } // Send
 #[non_exhaustive]
 pub enum Error { Driver(DriverError) }
-pub fn controller(mqtt: rumqttc::MqttOptions, config: Config, opts: AttachOptions) -> Result<Running, ConfigError>;
-pub fn client_id() -> String;
+pub fn controller(mqtt: rumqttc::MqttOptions, config: Config, opts: ControllerOptions) -> Result<RunningController, ConfigError>;
+pub fn controller_client_id() -> String;
 ```
 
-Snapshots are copy-on-write: the driver republishes `Arc<Snapshot>` through a `watch` channel once per inbox drain in which something changed, with new `Arc<DeviceSnapshot>`s only for devices that changed. Unless a link change, a timer or a shutdown touched every device, it compares only the devices the drain touched. Tree completeness, which walks every tree, is recomputed only after such a change, a `$state` or `$description` message, or a device-level event, never for value traffic alone. A device's properties and alerts are persistent maps (`rpds`, `Arc`-backed), and the controller writes one only when its content changes, so a device is unchanged when its scalar fields are equal, it holds the same description `Arc`, and it still shares both maps with its snapshot (`DeviceView::shares_values`); the comparison takes constant time. A changed device's new snapshot shares every property and alert entry that did not change, including the slots a description change leaves unchanged, and the snapshot's device map, also persistent, copies only the path to each changed id. The driver yields to the runtime after each batch of 256 inputs while a backlog remains.
+Snapshots are copy-on-write: the driver republishes `Arc<Snapshot>` through a `watch` channel once per inbox drain in which something changed, with new `Arc<DeviceView>`s only for devices that changed. Unless a link change, a timer or a shutdown touched every device, it compares only the devices the drain touched. Tree completeness, which walks every tree, is recomputed only after such a change, a `$state` or `$description` message, or a device-level event, never for value traffic alone. A device's properties and alerts are persistent maps (`rpds`, `Arc`-backed), and the controller writes one only when its content changes, so a device is unchanged when its scalar fields are equal, it holds the same description `Arc`, and it still shares both maps with its snapshot (`DeviceView::shares_values`); the comparison takes constant time. A changed device's new snapshot shares every property and alert entry that did not change, including the slots a description change leaves unchanged, and the snapshot's device map, also persistent, copies only the path to each changed id. The driver yields to the runtime after each batch of 256 inputs while a backlog remains.
 
 ### Device discovery
 
@@ -357,7 +366,7 @@ A host service keeps its own MQTT client, options, TLS, last will and reconnect 
 ```rust
 let mut cfg = Config::tree(&root_id)?;
 cfg.host_filters = vec!["ebus/5/+/$description".into()];
-let ebus = ebus_homie_tokio::attach(cfg, AttachOptions::default())?;
+let ebus = ebus_homie_tokio::attach_controller(cfg, ControllerOptions::default())?;
 tokio::spawn(ebus.driver.run());
 
 // Existing std::thread reader over connection.iter(): add the eBus arms.
@@ -384,10 +393,10 @@ tokio::spawn(async move {
         let res = {
             let mut c = mqtt.lock().unwrap();
             match &cmd {
-                Command::Subscribe { filters } => c.client.try_subscribe_many(
+                Command::Subscribe { filters, .. } => c.client.try_subscribe_many(
                     filters.iter().map(|(f, q)| SubscribeFilter::new(f.clone(), qos(*q)))),
-                Command::Unsubscribe { filters } => filters.iter().try_for_each(|f| c.client.try_unsubscribe(f.clone())),
-                Command::Publish { topic, payload, qos: q, retain } => c.client.try_publish(topic.clone(), qos(*q), *retain, payload.clone()),
+                Command::Unsubscribe { filters, .. } => filters.iter().try_for_each(|f| c.client.try_unsubscribe(f.clone())),
+                Command::Publish { topic, payload, qos: q, retain, .. } => c.client.try_publish(topic.clone(), qos(*q), *retain, payload.clone()),
                 _ => Ok(()),
             }
         };
@@ -416,15 +425,15 @@ The inbox is capped in bytes and the event channel in deliveries; the command an
 ## Bundled path: tokio and rumqttc 0.25
 
 ```rust
-let mut mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::client_id(), "localhost", 1883);
+let mut mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::controller_client_id(), "localhost", 1883);
 mqtt.set_clean_session(true);
-let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())?;
+let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())?;
 tokio::spawn(run.task.run());
 
 let mut events = run.events;
 while let Some(d) = events.recv().await {
     match d {
-        Delivered::Event(Event::DeviceSynced { device, missing: 0 }) => { /* values present */ }
+        Delivered::Event(Event::DeviceSynced { device, missing: 0, .. }) => { /* values present */ }
         Delivered::Overflow { .. } => { let all = run.handle.devices(); /* resync */ }
         _ => {}
     }
@@ -433,7 +442,7 @@ while let Some(d) = events.recv().await {
 
 The transport is MQTT over TCP, or TLS through rumqttc's rustls support (MQTTS); WebSocket transports stay off. A service on the broker's own host can use a local plaintext listener, as above.
 
-`ControllerTask::run` joins three futures: the driver; an `EventLoop::poll` loop feeding the `Inbox`, with 1-30 s backoff (client.py:155); and a command executor, separate so a full request channel cannot deadlock against `poll`. The executor hands `AsyncClient` nothing while the link is down, since rumqttc would queue it for the next connection, and uses the `try_*` calls, so a request handed over before a disconnect is either written or in the queue a clean-session CONNACK empties; a request that does not fit waits for the event loop to send something, and a filter or topic rumqttc refuses is reported through `command_failed`. After any wait the executor checks `Commands::last_is_stale` again, so no SUBSCRIBE queued before a clean link-up is sent after it, and `controller()` sets `link_up_discards_queued`. A `/set` already handed to the executor when the link drops is sent after the next link-up. After the shutdown's UNSUBSCRIBE the executor sends a DISCONNECT, and the task ends once it is written, or at once when the link is down, discarding the commands not yet written. `controller()` connects with the client id in the caller's `MqttOptions`; `ebus_rumqttc::client_id()` returns `ebus-controller-` plus 16 random hex digits, after python's `homie-controller-{uuid}` (homie.py:3870).
+`ControllerTask::run` joins three futures: the driver; an `EventLoop::poll` loop feeding the `Inbox`, with 1-30 s backoff (client.py:155); and a command executor, separate so a full request channel cannot deadlock against `poll`. The executor hands `AsyncClient` nothing while the link is down, since rumqttc would queue it for the next connection, and uses the `try_*` calls, so a request handed over before a disconnect is either written or in the queue a clean-session CONNACK empties; a request that does not fit waits for the event loop to send something, and a filter or topic rumqttc refuses is reported through `command_failed`. After any wait the executor checks `Commands::last_is_stale` again, so no SUBSCRIBE queued before a clean link-up is sent after it, and `controller()` sets `link_up_discards_queued`. A `/set` already handed to the executor when the link drops is sent after the next link-up. After the shutdown's UNSUBSCRIBE the executor sends a DISCONNECT, and the task ends once it is written, or at once when the link is down, discarding the commands not yet written. `controller()` connects with the client id in the caller's `MqttOptions`; `ebus_rumqttc::controller_client_id()` returns `ebus-controller-` plus 16 random hex digits, after python's `homie-controller-{uuid}` (homie.py:3870).
 
 `device()` and `pair()` run the same three futures around a `DeviceDriver` or `PairDriver`, with the connection settings and shutdown flush given under [Device role](#device-role).
 
@@ -446,8 +455,8 @@ The device role is a sans-IO state machine, `ebus_homie::device::Tree` (alloc), 
 | Crate | Additions |
 |---|---|
 | `ebus-mqtt` | `Role` trait and `Pair<A, B>` (two roles on one link); `Receipt`; `Handled` moves here, re-exported from `ebus_homie::controller` |
-| `ebus-homie` | `device` module (alloc): `Tree`, `Builder` (builds a tree with one description check per device, at `finish`), `ValueCheck` (a slot's checks, copied for another thread), `Reconfigure`, specs, `ValueRef`, `HomieValue`, `HomieEnum`, `DirtySet`, `DeviceEvent`, `AlertError`; `impl Role for Controller`; `Id` and `PropertyAddr` move to the crate root, re-exported from `controller`; `pyfmt::write_float`/`write_float32` and `datatype::write_*` encode into a caller buffer, with `format_float` (pyfmt.rs:160), `format_float32` and the existing encoders as wrappers; `datatype::parse_set_payload_with(text, datatype, format, &NumericFormat, current)`, which takes the numeric format pre-parsed (the format text still serves `enum` and `color`), with `parse_set_payload` (datatype.rs:1099) as a wrapper |
-| `ebus-homie-tokio` | `Inbox::receipt`; `Commands::ending`; `device` module: `TreeBuilder`, `ReconfigureHandles`, `Property<T>`, `Settable<T>`, `SetRequest<T>`, `Event<T>`, `DeviceHandle`, `DeviceOptions`, `attach_device`, `attach_pair`, `AttachError`, and re-exports of the core types they take; an internal `Driver<R>` with `DeviceDriver` and `PairDriver` as newtypes over it. `ControllerDriver` keeps its own loop and shares the controller's snapshot and event code with `PairDriver`; `ControllerDriver::run` is unchanged |
+| `ebus-homie` | `device` module (alloc): `Tree`, `TreeBuilder` (builds a tree with one description check per device, at `finish`), `ValueCheck` (a slot's checks, copied for another thread), `Reconfigure`, specs, `ValueRef`, `HomieValue`, `HomieEnum`, `DeviceEvent`, `AlertError`; `impl Role for Controller`; `Id` and `PropertyAddr` move to the crate root, re-exported from `controller`; `pyfmt::write_float`/`write_float32` and `datatype::write_*` encode into a caller buffer, with `format_float` (pyfmt.rs:160), `format_float32` and the existing encoders as wrappers; `datatype::parse_set_payload_with(text, datatype, format, &NumericFormat, current)`, which takes the numeric format pre-parsed (the format text still serves `enum` and `color`), with `parse_set_payload` (datatype.rs:1099) as a wrapper |
+| `ebus-homie-tokio` | `Inbox::receipt`; `Commands::ending`; the private `DirtySet`; `device` module: `TreeBuilder`, `ReconfigureHandles`, `Property<T>`, `Settable<T>`, `SetRequest<T>`, `Event<T>`, `DeviceHandle`, `DeviceOptions`, `attach_device`, `attach_pair`, `AttachError`, and re-exports of the core types they take; an internal `Driver<R>` with `DeviceDriver` and `PairDriver` as newtypes over it. `ControllerDriver` keeps its own loop and shares the controller's snapshot and event code with `PairDriver`; `ControllerDriver::run` is unchanged |
 | `ebus-rumqttc` | `device()`, `pair()`, `RunningDevice`, `RunningPair`, `DeviceTask`, `PairTask` |
 
 ### Public API
@@ -497,13 +506,14 @@ pub struct TreeConfig {
 pub struct DevIdx(u16);
 pub struct NodeIdx(u32);
 pub struct SlotId { index: u32, gen: u32 } // a removed slot's id returns Gone
+// The three specs are #[non_exhaustive]: build them with typed(), Default or new() and the setters.
 pub struct DeviceSpec { pub name: Option<String>, pub r#type: Option<String>,
     pub extensions: Vec<String>, pub extras: Vec<(String, serde_json::Value)> }
 pub struct NodeSpec { pub name: Option<String>, pub r#type: Option<String> }
 pub struct PropSpec { pub name: Option<String>, pub format: Option<String>, pub unit: Option<String>,
     pub settable: bool, pub retained: bool /* true */, pub target: bool /* $target on every update, convention.md:333 */ }
-impl DeviceSpec { pub fn typed(r#type: &str) -> Self; }
-impl NodeSpec { pub fn typed(r#type: &str) -> Self; }
+impl DeviceSpec { pub fn typed(r#type: &str) -> Self; } // plus by-value setters: name, extension (one id), extra (one field)
+impl NodeSpec { pub fn typed(r#type: &str) -> Self; } // plus a by-value name setter
 impl PropSpec { pub fn new() -> Self; } // plus by-value setters: name, format, unit, retained, target
 #[non_exhaustive]
 pub enum BuildError { InvalidId, DuplicateId, NodeIdHasDot, FormatRequired, InvalidFormat(Problem),
@@ -536,7 +546,7 @@ pub enum ValueError { NotFinite, OutOfRange, NotInFormat, WrongDatatype, IsEvent
     NotForRoot /* set_presence(root, Disconnected | Lost) */ }
 #[non_exhaustive]
 pub enum AlertError { InvalidId /* convention.md:519 */, EmptyMessage, Gone }
-#[non_exhaustive]
+#[non_exhaustive] // and each struct variant
 pub enum DeviceEvent {
     Set { slot: SlotId, value: SetValue, raw: Box<[u8]> }, // validated and step-rounded; raw as received
     Broadcast { subtopic: String, payload: Box<[u8]> },
@@ -573,8 +583,8 @@ impl Tree {
 }
 impl Role for Tree {}
 /// Each change checked alone; descriptions built and checked once per device at finish. Tree::new is new + finish.
-pub struct Builder;
-impl Builder {
+pub struct TreeBuilder;
+impl TreeBuilder {
     pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError>;
     pub fn edit(&mut self) -> Reconfigure<'_>; // no rollback; a refused change changes nothing
     pub fn set_receipts(&mut self, on: bool);
@@ -588,18 +598,14 @@ impl ValueCheck {
     pub fn datatype(&self) -> Datatype; // also is_retained, is_target, is_settable, format
 }
 
-/// Lock-free dirty marks, set from any thread, drained by the owner.
-pub struct DirtySet; // Box<[AtomicU32]>
-impl DirtySet {
-    pub fn new(slots: usize) -> Self;
-    pub fn mark(&self, i: u32) -> bool;              // true when the bit was clear: wake the owner
-    pub fn drain(&self, f: impl FnMut(u32) -> bool); // rotating start; false stops, unvisited bits stay set
-}
+// ebus-homie-tokio keeps a private `DirtySet`: lock-free dirty marks, one bit per slot index, set from
+// any thread (`mark` reports a clear-to-set transition, which wakes the driver) and drained by the driver
+// from a rotating start.
 
 // ===== ebus-homie-tokio::device =====
 impl Inbox { pub fn receipt(&self, r: Receipt); } // never dropped
 impl Commands { pub fn ending(&self) -> Option<Shutdown>; } // after recv() returns None: the mode, Silent after abort()
-pub struct TreeBuilder; // over a core Builder; descriptions are checked by attach_*
+pub struct TreeBuilder; // over the core TreeBuilder; descriptions are checked by attach_*
 impl TreeBuilder {
     pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError>;
     pub fn root(&self) -> DevIdx;
@@ -676,8 +682,10 @@ impl<'b> ReconfigureHandles<'_, 'b> {
 }
 #[non_exhaustive]
 pub enum AttachError { Build(BuildError), Config(ConfigError) }
+#[non_exhaustive]
 pub struct AttachedDevice { pub handle: DeviceHandle, pub last_will: LastWill, pub inbox: Inbox,
     pub commands: Commands, pub driver: DeviceDriver }
+#[non_exhaustive]
 pub struct AttachedPair { pub device: DeviceHandle, pub controller: ControllerHandle, pub events: EventReceiver,
     pub last_will: LastWill, pub inbox: Inbox, pub commands: Commands, pub driver: PairDriver }
 pub fn attach_device(tree: TreeBuilder, opts: DeviceOptions) -> Result<AttachedDevice, BuildError>;
@@ -687,7 +695,9 @@ impl DeviceDriver { pub async fn run(self) -> Result<(), DriverError>; } // Send
 // ===== ebus-rumqttc =====
 pub fn device(mqtt: rumqttc::MqttOptions, tree: TreeBuilder, opts: DeviceOptions) -> Result<RunningDevice, BuildError>;
 pub fn pair(mqtt: rumqttc::MqttOptions, tree: TreeBuilder, config: Config, opts: DeviceOptions) -> Result<RunningPair, AttachError>;
+#[non_exhaustive]
 pub struct RunningDevice { pub handle: DeviceHandle, pub task: DeviceTask }
+#[non_exhaustive]
 pub struct RunningPair { pub device: DeviceHandle, pub controller: ControllerHandle, pub events: EventReceiver, pub task: PairTask }
 impl DeviceTask { pub async fn run(self) -> Result<(), Error>; } // Send; also PairTask
 ```
@@ -845,7 +855,7 @@ Inside `ebus-homie-tokio`, each command carries an origin tag. Under `link_up_di
 
 ### ESP32
 
-`Tree`, `HomieValue`, `DirtySet`, `Role` and `Pair` are no_std + alloc. `ebus-homie-espidf` builds its handles on `DirtySet` and `std::sync` value cells and drives a `Tree` or a `Pair` from the loop described under ESP32. With `retain: None`, a retained `/set` cannot be told apart and is executed.
+`Tree`, `HomieValue`, `Role` and `Pair` are no_std + alloc. `ebus-homie-espidf` builds its handles on dirty marks of its own, like ebus-homie-tokio's private `DirtySet`, and `std::sync` value cells and drives a `Tree` or a `Pair` from the loop described under ESP32. With `retain: None`, a retained `/set` cannot be told apart and is executed.
 
 ### Testing
 
@@ -899,6 +909,7 @@ The backends live in a runtime crate because core crates perform no I/O and depe
 
 ```rust
 // ===== ebus-discovery (no alloc) =====
+#[non_exhaustive]
 pub enum BrokerType { SecureMqtt, MqttWss, MqttWs, Mqtt } // the spec's preference order (framework.md:330-335), the default
 impl BrokerType {
     pub fn as_str(self) -> &'static str;          // "_secure-mqtt._tcp", ...
@@ -906,7 +917,8 @@ impl BrokerType {
     pub fn default_port(self) -> u16;             // 8883, 9002, 9001, 1883 (ebus.py:57-62)
     pub fn uses_tls(self) -> bool;                // SecureMqtt, MqttWss (ebus.py:64-69)
 }
-pub const TCP_BROKER_TYPES: [BrokerType; 2];      // SecureMqtt, Mqtt (ebus.py:54)
+pub const BROKER_TYPES: &[BrokerType];            // every type, in preference order
+pub const TCP_BROKER_TYPES: &[BrokerType];        // SecureMqtt, Mqtt (ebus.py:54)
 pub enum BrokerMode { ConfiguredOnly, DiscoveryWithFallback, DiscoveryOnly }
 impl BrokerMode { pub fn parse(text: &str) -> Result<Self, ParseModeError>; } // ebus.py:110-127; "" is an error
 pub enum AddrScope { Global, Private, UniqueLocal, Other, LinkLocal, Loopback, Unspecified } // of(ip), preference(); record.py:51-61, 93-108
@@ -946,6 +958,7 @@ impl InstanceTable {
 }
 
 #[derive(Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct BrokerEndpoint {
     pub broker_type: BrokerType,
     pub host: String,               // TXT `broker`, else the SRV target (ebus.py:599-614)
@@ -958,6 +971,7 @@ pub struct BrokerEndpoint {
 impl BrokerEndpoint {
     pub fn from_instance(i: &Instance) -> Option<Self>; // ebus.py:599-614; None for a non-broker type
     pub fn from_url(url: &str) -> Result<Self, UrlError>; // ebus.py:617-633
+    pub fn configured(broker_type: BrokerType, host: &str, port: u16) -> Self;
     pub fn url(&self) -> String;
     pub fn connect_host(&self) -> Cow<'_, str>;
 }
@@ -978,12 +992,12 @@ pub struct BrokerConfig {
     pub settle_ms: u64,                   // 3_000
     pub fallback_after_ms: u64,           // 15_000
 }
-impl BrokerConfig { pub fn effective_mode(&self) -> BrokerMode; pub fn accepted(&self) -> Vec<BrokerType>; pub fn check(&self) -> Result<(), ConfigError>; pub fn rank(&self, endpoints: impl IntoIterator<Item = BrokerEndpoint>) -> Vec<BrokerEndpoint>; }
+impl BrokerConfig { pub fn effective_mode(&self) -> BrokerMode; pub fn accepted(&self) -> Vec<BrokerType>; pub fn check(&self) -> Result<(), BrokerConfigError>; pub fn rank(&self, endpoints: impl IntoIterator<Item = BrokerEndpoint>) -> Vec<BrokerEndpoint>; }
 #[non_exhaustive]
-pub enum ConfigError { NoUrl /* configured-only */, WantedWithUrl }
+pub enum BrokerConfigError { NoUrl /* configured-only */, WantedWithUrl }
 pub struct BrokerSearch { /* sans-IO, one search */ }
 impl BrokerSearch {
-    pub fn new(now: Instant, cfg: BrokerConfig) -> Result<Self, ConfigError>;
+    pub fn new(now: Instant, cfg: BrokerConfig) -> Result<Self, BrokerConfigError>;
     pub fn browses(&self) -> bool;                     // false in configured-only
     pub fn handle(&mut self, now: Instant, s: Sighting);
     pub fn handle_timeout(&mut self, now: Instant);
@@ -1054,7 +1068,7 @@ cfg.mode = mode.as_deref().map(BrokerMode::parse).transpose()?;
 cfg.url = url.as_deref().map(BrokerEndpoint::from_url).transpose()?;
 let broker = find_broker(&mdns, cfg.clone()).await?;
 let options = options_for(&broker, &creds); // client id, credentials, TLS
-let run = ebus_rumqttc::controller(options, Config::wildcard(), AttachOptions::default())?;
+let run = ebus_rumqttc::controller(options, Config::wildcard(), ControllerOptions::default())?;
 let task = run.task.reresolve(Box::new(move || {
     let (m, c, b, creds) = (mdns.clone(), cfg.clone(), broker.clone(), creds.clone());
     Box::pin(async move {
@@ -1124,13 +1138,13 @@ With `log`, the search logs python's reason strings: `brokerDiscovered`, `broker
 
 | `mode` | URL | Effective mode |
 |---|---|---|
-| set | any | `mode`; `configured-only` without a URL is a `ConfigError` |
+| set | any | `mode`; `configured-only` without a URL is a `BrokerConfigError` |
 | unset | set | `configured-only` |
 | unset | unset | `discovery-only` (framework.md:102, 622) |
 
 The order of `accept` is the client's preference among broker types, most preferred first: a client may look for `_secure-mqtt._tcp` first and then `_mqtt._tcp`, or the reverse. Ranking, the transport a broker with several keeps, and the settle window all follow it. A type listed twice keeps its first position. With `accept` unset the order is the specification's (framework.md:330-335), narrowed as in [Broker selection](#broker-selection).
 
-With `mode` unset, a configured URL is used as configured (`configured-only`). `wanted` applies in `discovery-only` and in `discovery-with-fallback` without a URL; with a URL, `new` returns a `ConfigError`. framework.md:622 defines the default only for the case without a URL; python uses `discovery-only` whenever the mode is unset (ebus.py:130), which would ignore a configured URL. `BrokerMode::parse` accepts the spec's spellings case-insensitively and with `_` for `-`, and rejects other values (ebus.py:110-127), the empty string included, which python parses as `discovery-only` (ebus.py:120-121); a host maps an empty setting to an unset `mode`, so the URL precedence above applies. The host builds `BrokerConfig` from its baked-in defaults overridden by its REST "MQTT broker configuration" (framework.md:93, 607).
+With `mode` unset, a configured URL is used as configured (`configured-only`). `wanted` applies in `discovery-only` and in `discovery-with-fallback` without a URL; with a URL, `new` returns a `BrokerConfigError`. framework.md:622 defines the default only for the case without a URL; python uses `discovery-only` whenever the mode is unset (ebus.py:130), which would ignore a configured URL. `BrokerMode::parse` accepts the spec's spellings case-insensitively and with `_` for `-`, and rejects other values (ebus.py:110-127), the empty string included, which python parses as `discovery-only` (ebus.py:120-121); a host maps an empty setting to an unset `mode`, so the URL precedence above applies. The host builds `BrokerConfig` from its baked-in defaults overridden by its REST "MQTT broker configuration" (framework.md:93, 607).
 
 ### Addresses and host names
 

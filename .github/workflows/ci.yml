@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  # release.yml runs this suite before it publishes.
+  workflow_call:
 
 permissions:
   contents: read
@@ -21,6 +23,8 @@ jobs:
         with:
           components: rustfmt
       - run: cargo fmt --all --check
+      # Each crate ships a copy of the workspace LICENSE.
+      - run: for c in crates/*/; do cmp LICENSE "${c}LICENSE"; done
 
   clippy:
     name: clippy

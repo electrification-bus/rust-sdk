@@ -33,6 +33,18 @@ pub const MAX_PACKET: usize = 4 << 20;
 /// How long a lookup of the same broker browses for it.
 const RERESOLVE_WINDOW: Duration = Duration::from_secs(3);
 
+/// `e` and each error in its `source` chain, joined with `: `.
+pub fn report(e: &dyn std::error::Error) -> String {
+    let mut out = e.to_string();
+    let mut next = e.source();
+    while let Some(s) = next {
+        out.push_str(": ");
+        out.push_str(&s.to_string());
+        next = s.source();
+    }
+    out
+}
+
 /// Prints warnings and errors to stderr.
 pub struct Stderr;
 
@@ -145,7 +157,7 @@ pub async fn connect(client_id: String) -> Result<Connect, String> {
     );
     let broker = find_broker(&mdns, cfg.clone())
         .await
-        .map_err(|e| format!("broker discovery: {e}"))?;
+        .map_err(|e| format!("broker discovery: {}", report(&e)))?;
     match &broker.instance {
         Some(name) => eprintln!("found broker {name:?} at {}", broker.url()),
         None => eprintln!("no broker found; using {}", broker.url()),

@@ -31,7 +31,7 @@ use std::time::Instant;
 
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event, Origin, Value};
 use ebus_rumqttc::ebus_homie_tokio::ebus_mqtt::Link;
-use ebus_rumqttc::ebus_homie_tokio::{AttachOptions, ControllerHandle, Delivered};
+use ebus_rumqttc::ebus_homie_tokio::{ControllerHandle, ControllerOptions, Delivered};
 
 use common::{Stderr, connect};
 
@@ -58,21 +58,28 @@ fn value(v: &Value) -> String {
 
 fn line(e: &Event) -> String {
     match e {
-        Event::Link(Link::Up { session_present }) => {
+        Event::Link(Link::Up {
+            session_present, ..
+        }) => {
             format!("link up session_present={session_present}")
         }
         Event::Link(Link::Down) => "link down".to_owned(),
-        Event::DeviceDiscovered { device, state } => format!("discovered {device} state={state}"),
+        Event::DeviceDiscovered { device, state, .. } => {
+            format!("discovered {device} state={state}")
+        }
         Event::StateChanged {
             device,
             old,
             new,
             effective,
+            ..
         } => {
             let old = old.map_or_else(|| "-".to_owned(), |s| s.to_string());
             format!("state {device} {old} -> {new} effective={effective}")
         }
-        Event::EffectiveStateChanged { device, old, new } => {
+        Event::EffectiveStateChanged {
+            device, old, new, ..
+        } => {
             format!("effective {device} {old} -> {new}")
         }
         Event::DescriptionChanged {
@@ -80,6 +87,7 @@ fn line(e: &Event) -> String {
             description,
             ignored,
             while_ready,
+            ..
         } => format!(
             "description {device} version={} nodes={} children={} ignored={} while_ready={while_ready}",
             description.version,
@@ -87,13 +95,14 @@ fn line(e: &Event) -> String {
             description.children.len(),
             ignored.len()
         ),
-        Event::DescriptionRejected { device, error } => {
+        Event::DescriptionRejected { device, error, .. } => {
             format!("description-rejected {device} {error}")
         }
         Event::PropertyChanged {
             addr,
             value: v,
             origin,
+            ..
         } => {
             let origin = match origin {
                 Origin::Retained => "retained",
@@ -112,6 +121,7 @@ fn line(e: &Event) -> String {
             addr,
             value: v,
             origin,
+            ..
         } => {
             let origin = match origin {
                 Origin::Retained => " (retained replay)",
@@ -125,10 +135,10 @@ fn line(e: &Event) -> String {
                 value(v)
             )
         }
-        Event::PropertyCleared { addr } => {
+        Event::PropertyCleared { addr, .. } => {
             format!("cleared {}/{}/{}", addr.device, addr.node, addr.property)
         }
-        Event::TargetChanged { addr, target } => format!(
+        Event::TargetChanged { addr, target, .. } => format!(
             "target {}/{}/{} = {}",
             addr.device,
             addr.node,
@@ -139,17 +149,21 @@ fn line(e: &Event) -> String {
             device,
             alert,
             message,
+            ..
         } => format!("alert {device}/{alert} = {message:?}"),
-        Event::DeviceSynced { device, missing } => format!("synced {device} missing={missing}"),
+        Event::DeviceSynced {
+            device, missing, ..
+        } => format!("synced {device} missing={missing}"),
         Event::DeviceStuck {
             device,
             missing,
             attempt,
             gave_up,
+            ..
         } => format!("stuck {device} missing={missing:?} attempt={attempt} gave_up={gave_up}"),
-        Event::DeviceAbsent { device } => format!("absent {device}"),
-        Event::DeviceRemoved { device } => format!("removed {device}"),
-        Event::TreeComplete { root } => format!("tree-complete {root}"),
+        Event::DeviceAbsent { device, .. } => format!("absent {device}"),
+        Event::DeviceRemoved { device, .. } => format!("removed {device}"),
+        Event::TreeComplete { root, .. } => format!("tree-complete {root}"),
         other => format!("{other:?}"),
     }
 }
@@ -184,7 +198,7 @@ async fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let conn = match connect(ebus_rumqttc::client_id()).await {
+    let conn = match connect(ebus_rumqttc::controller_client_id()).await {
         Ok(c) => c,
         Err(e) => {
             eprintln!("{e}");
@@ -192,7 +206,7 @@ async fn main() -> ExitCode {
         }
     };
     let broker = conn.mqtt.broker_address();
-    let run = match ebus_rumqttc::controller(conn.mqtt, config, AttachOptions::default()) {
+    let run = match ebus_rumqttc::controller(conn.mqtt, config, ControllerOptions::default()) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("{e}");
@@ -221,6 +235,7 @@ async fn main() -> ExitCode {
                     println!("overflow dropped={dropped}");
                     println!("{}", summary(&handle, started));
                 }
+                Some(_) => {}
                 None => break,
             },
             _ = tokio::signal::ctrl_c() => {
@@ -232,7 +247,7 @@ async fn main() -> ExitCode {
     match (&mut task).await {
         Ok(Ok(())) => ExitCode::SUCCESS,
         Ok(Err(e)) => {
-            eprintln!("{e}");
+            eprintln!("{}", common::report(&e));
             ExitCode::FAILURE
         }
         Err(e) => {

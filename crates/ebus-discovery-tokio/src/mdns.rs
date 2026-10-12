@@ -76,7 +76,8 @@ impl Default for MdnsSdOptions {
 impl Mdns {
     /// The system's backend: Avahi when built with `avahi`, on Linux, with
     /// `org.freedesktop.Avahi` reachable; else mdns-sd when built with
-    /// `mdns-sd`; else [`Error::NoBackend`].
+    /// `mdns-sd`; else [`Error::NoBackend`], which is all a build with neither
+    /// feature returns.
     pub async fn system() -> Result<Mdns, Error> {
         #[cfg(all(feature = "avahi", target_os = "linux"))]
         match Self::avahi().await {
@@ -137,6 +138,21 @@ enum BrowseInner {
     None(Infallible),
 }
 
+impl core::fmt::Debug for MdnsBrowse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let name = match &self.inner {
+            #[cfg(all(feature = "avahi", target_os = "linux"))]
+            BrowseInner::Avahi(_) => "avahi",
+            #[cfg(feature = "mdns-sd")]
+            BrowseInner::MdnsSd(_) => "mdns-sd",
+            BrowseInner::None(n) => match *n {},
+        };
+        f.debug_struct("MdnsBrowse")
+            .field("backend", &name)
+            .finish_non_exhaustive()
+    }
+}
+
 /// A published group of an [`Mdns`] backend.
 pub struct MdnsGroup {
     inner: GroupInner,
@@ -149,6 +165,21 @@ enum GroupInner {
     MdnsSd(crate::mdns_sd::MdnsSdGroup),
     #[allow(dead_code)]
     None(Infallible),
+}
+
+impl core::fmt::Debug for MdnsGroup {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let name = match &self.inner {
+            #[cfg(all(feature = "avahi", target_os = "linux"))]
+            GroupInner::Avahi(_) => "avahi",
+            #[cfg(feature = "mdns-sd")]
+            GroupInner::MdnsSd(_) => "mdns-sd",
+            GroupInner::None(n) => match *n {},
+        };
+        f.debug_struct("MdnsGroup")
+            .field("backend", &name)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Backend for Mdns {

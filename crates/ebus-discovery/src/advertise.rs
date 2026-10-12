@@ -340,6 +340,7 @@ impl BrokerService {
 
 /// One service an advertisement registers.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct ServiceRecord {
     /// The service type, without a domain.
     pub service_type: &'static str,

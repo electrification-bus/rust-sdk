@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use ebus_rumqttc::Reresolve;
-use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ControllerOptions;
 use ebus_rumqttc::ebus_homie_tokio::device::{
     DeviceOptions, DeviceSpec, NodeSpec, PropSpec, TreeBuilder, TreeConfig,
 };
@@ -72,13 +72,13 @@ async fn device_and_controller_follow_the_reresolved_broker() {
     );
 
     let ctl_calls = Arc::new(AtomicUsize::new(0));
-    let id = ebus_rumqttc::client_id();
+    let id = ebus_rumqttc::controller_client_id();
     let mut mqtt = MqttOptions::new(id.clone(), "127.0.0.1", a.port);
     mqtt.set_max_packet_size(1 << 20, 1 << 20);
     let run = ebus_rumqttc::controller(
         mqtt,
         Config::tree(ROOT).expect("valid root"),
-        AttachOptions::default(),
+        ControllerOptions::default(),
     )
     .expect("controller");
     let ctl_task = tokio::spawn(run.task.reresolve(hook(id, b.port, &ctl_calls)).run());
@@ -146,11 +146,11 @@ async fn device_and_controller_reresolve_a_broker_down_at_startup() {
     );
 
     let ctl_calls = Arc::new(AtomicUsize::new(0));
-    let id = ebus_rumqttc::client_id();
+    let id = ebus_rumqttc::controller_client_id();
     let run = ebus_rumqttc::controller(
         MqttOptions::new(id.clone(), "127.0.0.1", down),
         Config::tree(ROOT).expect("valid root"),
-        AttachOptions::default(),
+        ControllerOptions::default(),
     )
     .expect("controller");
     let ctl_task = tokio::spawn(run.task.reresolve(hook(id, b.port, &ctl_calls)).run());

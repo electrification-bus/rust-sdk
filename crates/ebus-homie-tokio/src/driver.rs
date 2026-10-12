@@ -154,13 +154,13 @@ impl Touched {
             | Event::Alert { device, .. }
             | Event::DeviceSynced { device, .. }
             | Event::DeviceStuck { device, .. }
-            | Event::DeviceAbsent { device }
-            | Event::DeviceRemoved { device } => self.id(device.as_str()),
+            | Event::DeviceAbsent { device, .. }
+            | Event::DeviceRemoved { device, .. } => self.id(device.as_str()),
             Event::PropertyChanged { addr, .. }
             | Event::PropertyEvent { addr, .. }
-            | Event::PropertyCleared { addr }
+            | Event::PropertyCleared { addr, .. }
             | Event::TargetChanged { addr, .. } => self.id(addr.device.as_str()),
-            Event::TreeComplete { root } => self.id(root.as_str()),
+            Event::TreeComplete { root, .. } => self.id(root.as_str()),
             _ => self.all = true,
         }
     }
@@ -259,22 +259,12 @@ impl ControllerDriver {
             } => {
                 self.shared.release(size);
                 self.side.before_message(&mut self.core, &self.shared);
-                self.core.handle_message(
-                    now,
-                    Message {
-                        topic: &topic,
-                        payload: &payload,
-                        retain,
-                    },
-                );
+                self.core
+                    .handle_message(now, Message::new(&topic, &payload, retain));
                 self.side.touch_topic(&topic);
             }
             Inbound::Link(link) => {
-                if link
-                    == (Link::Up {
-                        session_present: false,
-                    })
-                {
+                if link == Link::up(false) {
                     // What the core queued before the link-up falls below
                     // the boundary.
                     send_all(&mut self.core, &mut self.out);

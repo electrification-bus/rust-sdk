@@ -95,12 +95,12 @@ impl BrokerConfig {
     }
 
     /// The configuration errors [`BrokerSearch::new`] rejects.
-    pub fn check(&self) -> Result<(), ConfigError> {
+    pub fn check(&self) -> Result<(), BrokerConfigError> {
         if self.wanted.is_some() && self.url.is_some() {
-            return Err(ConfigError::WantedWithUrl);
+            return Err(BrokerConfigError::WantedWithUrl);
         }
         if self.effective_mode() == BrokerMode::ConfiguredOnly && self.url.is_none() {
-            return Err(ConfigError::NoUrl);
+            return Err(BrokerConfigError::NoUrl);
         }
         Ok(())
     }
@@ -126,14 +126,14 @@ impl BrokerConfig {
 /// A broker configuration a search cannot run with.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
-pub enum ConfigError {
+pub enum BrokerConfigError {
     /// `ConfiguredOnly` without a URL.
     NoUrl,
     /// `wanted` together with a URL.
     WantedWithUrl,
 }
 
-impl fmt::Display for ConfigError {
+impl fmt::Display for BrokerConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
             Self::NoUrl => "configured-only needs a broker URL",
@@ -142,7 +142,7 @@ impl fmt::Display for ConfigError {
     }
 }
 
-impl core::error::Error for ConfigError {}
+impl core::error::Error for BrokerConfigError {}
 
 /// One broker search, with no I/O: the backend's sightings and the time go
 /// in; requeries and, once, the result come out.
@@ -175,7 +175,7 @@ pub struct BrokerSearch {
 impl BrokerSearch {
     /// A search starting at `now`. In `ConfiguredOnly` the result is the
     /// configured broker at once.
-    pub fn new(now: Instant, cfg: BrokerConfig) -> Result<Self, ConfigError> {
+    pub fn new(now: Instant, cfg: BrokerConfig) -> Result<Self, BrokerConfigError> {
         cfg.check()?;
         let mode = cfg.effective_mode();
         let result = match mode {
@@ -211,7 +211,7 @@ impl BrokerSearch {
     }
 
     /// The service types to browse: every broker type.
-    pub fn browse_types(&self) -> [BrokerType; 4] {
+    pub fn browse_types(&self) -> &'static [BrokerType] {
         BROKER_TYPES
     }
 
@@ -450,7 +450,7 @@ mod tests {
         cfg.mode = Some(BrokerMode::ConfiguredOnly);
         assert_eq!(
             BrokerSearch::new(Instant(0), cfg).err(),
-            Some(ConfigError::NoUrl)
+            Some(BrokerConfigError::NoUrl)
         );
         for mode in [
             None,
@@ -463,7 +463,7 @@ mod tests {
             cfg.wanted = Some(Wanted::Instance("b".into()));
             assert_eq!(
                 BrokerSearch::new(Instant(0), cfg).err(),
-                Some(ConfigError::WantedWithUrl)
+                Some(BrokerConfigError::WantedWithUrl)
             );
         }
     }

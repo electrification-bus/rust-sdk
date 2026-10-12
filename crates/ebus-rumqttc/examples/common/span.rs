@@ -19,6 +19,7 @@ use ebus_rumqttc::Reresolve;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::PropertyAddr;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::Event;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::description::DeviceDescription;
+use ebus_rumqttc::ebus_homie_tokio::ebus_homie::state::DeviceState;
 use ebus_rumqttc::ebus_homie_tokio::{ControllerHandle, Delivered, EventReceiver};
 use rumqttc::MqttOptions;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -765,21 +766,15 @@ impl Monitor {
     /// The lines `e` gives; `value` reads the controller's snapshot.
     pub fn event(&mut self, e: &Event, value: &Values<'_>) -> Vec<Line> {
         match e {
-            // A discovery (`old: None`) is not a change, as in python-sdk.
             Event::StateChanged {
-                device,
-                old: Some(old),
-                new,
-                ..
-            } if self.watched(device).is_some() => {
-                vec![Line::Info(format!("{device}: {old} -> {new}"))]
-            }
+                device, old, new, ..
+            } => self.state_changed(device, *old, *new),
             Event::DescriptionChanged {
                 device,
                 description,
                 ..
             } => self.described(device, description, value),
-            Event::PropertyChanged { addr, .. } | Event::PropertyCleared { addr } => {
+            Event::PropertyChanged { addr, .. } | Event::PropertyCleared { addr, .. } => {
                 self.sync(addr, value).into_iter().collect()
             }
             _ => Vec::new(),
@@ -813,6 +808,17 @@ impl Monitor {
             }
         }
         out
+    }
+
+    /// The line for a `$state` change of a watched device.
+    fn state_changed(&self, device: &str, old: Option<DeviceState>, new: DeviceState) -> Vec<Line> {
+        match old {
+            // A discovery (`old: None`) is not a change, as in python-sdk.
+            Some(old) if self.watched(device).is_some() => {
+                vec![Line::Info(format!("{device}: {old} -> {new}"))]
+            }
+            _ => Vec::new(),
+        }
     }
 
     fn described(&mut self, device: &str, d: &DeviceDescription, value: &Values<'_>) -> Vec<Line> {
@@ -914,6 +920,7 @@ pub async fn monitor(
                         .filter_map(|d| Some((d.id.as_str(), d.description.as_deref()?)));
                     m.resync(described, &value).into_iter().for_each(&mut *out);
                 }
+                Some(_) => {}
                 None => return,
             },
             _ = waiting.tick() => {
@@ -940,9 +947,7 @@ mod tests {
     };
     use ebus_discovery_tokio::{Error as MdnsError, Group, GroupReport, HostName};
     use ebus_rumqttc::ebus_homie_tokio::ebus_homie::Id;
-    use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Origin, Value};
     use ebus_rumqttc::ebus_homie_tokio::ebus_homie::description::parse;
-    use ebus_rumqttc::ebus_homie_tokio::ebus_homie::state::DeviceState;
 
     use super::*;
 
@@ -1266,16 +1271,16 @@ mod tests {
     }
 
     fn instance(service_type: &str, server: &str, txt: &[&str]) -> Instance {
-        Instance {
-            key: InstanceKey {
+        Instance::new(
+            InstanceKey {
                 service_type: service_type.into(),
                 name: "x".into(),
             },
-            server: server.into(),
-            port: 8883,
-            txt: TxtRecord::from_strings(txt),
-            addrs: vec![ScopedAddr::new("192.0.2.1".parse().unwrap())],
-        }
+            server.into(),
+            8883,
+            TxtRecord::from_strings(txt),
+            vec![ScopedAddr::new("192.0.2.1".parse().unwrap())],
+        )
     }
 
     #[test]
@@ -1520,24 +1525,33 @@ mod tests {
         )
     }
 
-    fn described(device: &str, d: Arc<DeviceDescription>) -> Event {
-        Event::DescriptionChanged {
-            device: Id::new(device).unwrap(),
-            description: d,
-            ignored: Vec::new(),
-            while_ready: false,
+    /// The parts of an [`Event`] the monitor reads. Only the controller
+    /// builds an `Event`, so the tests call the handlers `Monitor::event`
+    /// dispatches to; the end-to-end test covers the dispatch.
+    enum Ev {
+        State(Id, Option<DeviceState>, DeviceState),
+        Described(Id, Arc<DeviceDescription>),
+        /// A value event; the monitor reads the value from the snapshot.
+        Property(PropertyAddr),
+    }
+
+    impl Monitor {
+        fn ev(&mut self, e: &Ev, value: &Values<'_>) -> Vec<Line> {
+            match e {
+                Ev::State(device, old, new) => self.state_changed(device, *old, *new),
+                Ev::Described(device, d) => self.described(device, d, value),
+                Ev::Property(addr) => self.sync(addr, value).into_iter().collect(),
+            }
         }
     }
 
-    fn property(device: &str, node: &str, prop: &str, raw: &str) -> Event {
-        Event::PropertyChanged {
-            addr: PropertyAddr::new(device, node, prop).unwrap(),
-            value: Value {
-                raw: raw.into(),
-                check: Ok(()),
-            },
-            origin: Origin::Live,
-        }
+    fn described(device: &str, d: Arc<DeviceDescription>) -> Ev {
+        Ev::Described(Id::new(device).unwrap(), d)
+    }
+
+    /// The event for a value set to `_raw`.
+    fn property(device: &str, node: &str, prop: &str, _raw: &str) -> Ev {
+        Ev::Property(PropertyAddr::new(device, node, prop).unwrap())
     }
 
     fn info(s: &str) -> Line {
@@ -1570,10 +1584,8 @@ mod tests {
         }
     }
 
-    fn cleared(device: &str, node: &str, prop: &str) -> Event {
-        Event::PropertyCleared {
-            addr: PropertyAddr::new(device, node, prop).unwrap(),
-        }
+    fn cleared(device: &str, node: &str, prop: &str) -> Ev {
+        Ev::Property(PropertyAddr::new(device, node, prop).unwrap())
     }
 
     /// Sets a value in the snapshot, then delivers its event, as the
@@ -1591,7 +1603,7 @@ mod tests {
             Some(v) => property(d, n, p, v),
             None => cleared(d, n, p),
         };
-        m.event(&e, &s.values())
+        m.ev(&e, &s.values())
     }
 
     #[test]
@@ -1605,7 +1617,7 @@ mod tests {
         );
         s.set(ENCLOSURE, "power-flows", "grid", Some("-120.5"));
         assert_eq!(
-            m.event(
+            m.ev(
                 &described(ENCLOSURE, enclosure_description(true)),
                 &s.values()
             ),
@@ -1617,7 +1629,7 @@ mod tests {
         );
         assert_eq!(m.mid(), None);
         assert_eq!(
-            m.event(&described(MID, mid_description()), &s.values()),
+            m.ev(&described(MID, mid_description()), &s.values()),
             [
                 info("MID (islanding source) discovered: nt-0000-xxxxx-mid"),
                 info("nt-0000-xxxxx-mid/grid (2 properties):"),
@@ -1674,7 +1686,7 @@ mod tests {
         // was dequeued; both events are still queued behind it.
         s.set(ENCLOSURE, "power-flows", "grid", Some("2.0"));
         assert_eq!(
-            m.event(
+            m.ev(
                 &described(ENCLOSURE, enclosure_description(true)),
                 &s.values()
             ),
@@ -1685,26 +1697,26 @@ mod tests {
             ]
         );
         let grid = |v| property(ENCLOSURE, "power-flows", "grid", v);
-        assert_eq!(m.event(&grid("1.0"), &s.values()), []);
-        assert_eq!(m.event(&grid("2.0"), &s.values()), []);
+        assert_eq!(m.ev(&grid("1.0"), &s.values()), []);
+        assert_eq!(m.ev(&grid("2.0"), &s.values()), []);
 
         // Behind again: 3.0 and 4.0 queued, the snapshot at 4.0.
         s.set(ENCLOSURE, "power-flows", "grid", Some("4.0"));
         assert_eq!(
-            m.event(&grid("3.0"), &s.values()),
+            m.ev(&grid("3.0"), &s.values()),
             [info("nt-0000-xxxxx/power-flows/grid changed: 2.0 -> 4.0")]
         );
-        assert_eq!(m.event(&grid("4.0"), &s.values()), []);
+        assert_eq!(m.ev(&grid("4.0"), &s.values()), []);
         // A queued value set and then cleared.
         assert_eq!(
-            m.event(
+            m.ev(
                 &property(ENCLOSURE, "power-flows", "pv", "5.0"),
                 &s.values()
             ),
             []
         );
         assert_eq!(
-            m.event(&cleared(ENCLOSURE, "power-flows", "pv"), &s.values()),
+            m.ev(&cleared(ENCLOSURE, "power-flows", "pv"), &s.values()),
             []
         );
     }
@@ -1712,43 +1724,36 @@ mod tests {
     #[test]
     fn monitor_states_and_missing_node() {
         let mut m = Monitor::new(ENCLOSURE);
-        let state =
-            |device: &str, old: Option<DeviceState>, new: DeviceState| Event::StateChanged {
-                device: Id::new(device).unwrap(),
-                old,
-                new,
-                effective: new,
-            };
+        let state = |device: &str, old: Option<DeviceState>, new: DeviceState| {
+            Ev::State(Id::new(device).unwrap(), old, new)
+        };
         // Discovery is not a state change.
+        assert_eq!(m.ev(&state(ENCLOSURE, None, DeviceState::Ready), &none), []);
         assert_eq!(
-            m.event(&state(ENCLOSURE, None, DeviceState::Ready), &none),
-            []
-        );
-        assert_eq!(
-            m.event(
+            m.ev(
                 &state(ENCLOSURE, Some(DeviceState::Init), DeviceState::Ready),
                 &none
             ),
             [info("nt-0000-xxxxx: init -> ready")]
         );
-        assert_eq!(m.event(&state(MID, None, DeviceState::Ready), &none), []);
-        m.event(&described(MID, mid_description()), &none);
+        assert_eq!(m.ev(&state(MID, None, DeviceState::Ready), &none), []);
+        m.ev(&described(MID, mid_description()), &none);
         assert_eq!(
-            m.event(
+            m.ev(
                 &state(MID, Some(DeviceState::Ready), DeviceState::Lost),
                 &none
             ),
             [info("nt-0000-xxxxx-mid: ready -> lost")]
         );
         assert_eq!(
-            m.event(&described(ENCLOSURE, enclosure_description(false)), &none),
+            m.ev(&described(ENCLOSURE, enclosure_description(false)), &none),
             [Line::Warn(
                 "node \"power-flows\" not found on nt-0000-xxxxx".to_owned()
             )]
         );
         // A second MID is not taken.
         let other = "nt-0000-xxxxx-mid2";
-        assert_eq!(m.event(&described(other, mid_description()), &none), []);
+        assert_eq!(m.ev(&described(other, mid_description()), &none), []);
         assert_eq!(m.mid(), Some(MID));
     }
 
@@ -1782,14 +1787,14 @@ mod tests {
         );
         // Events queued behind the overflow are older than the snapshot.
         assert_eq!(
-            m.event(
+            m.ev(
                 &property(ENCLOSURE, "power-flows", "grid", "4.5"),
                 &s.values()
             ),
             []
         );
         assert_eq!(
-            m.event(&cleared(ENCLOSURE, "power-flows", "pv"), &s.values()),
+            m.ev(&cleared(ENCLOSURE, "power-flows", "pv"), &s.values()),
             []
         );
         // pv published again with its old value is a first value.

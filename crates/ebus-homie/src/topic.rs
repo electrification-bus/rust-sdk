@@ -120,8 +120,7 @@ impl fmt::Display for TopicError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for TopicError {}
+impl core::error::Error for TopicError {}
 
 const BROADCAST: &str = "$broadcast";
 

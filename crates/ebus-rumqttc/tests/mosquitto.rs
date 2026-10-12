@@ -97,7 +97,7 @@ async fn python_device_tree_is_discovered_and_synced() {
     tree.eventually(5, "tree complete", |h| h.is_tree_complete("py-root"))
         .await;
     assert!(
-        tree.saw(|e| matches!(e, Event::TreeComplete { root } if root.as_str() == "py-root")),
+        tree.saw(|e| matches!(e, Event::TreeComplete { root, .. } if root.as_str() == "py-root")),
         "no TreeComplete"
     );
     tree.shutdown().await;
@@ -177,7 +177,7 @@ async fn broker_restart_without_persistence_marks_absent_then_heals() {
     ctl.until(
         5,
         "DeviceAbsent static-1",
-        |e| matches!(e, Event::DeviceAbsent { device } if device.as_str() == "static-1"),
+        |e| matches!(e, Event::DeviceAbsent { device, .. } if device.as_str() == "static-1"),
     )
     .await;
     let d = ctl
@@ -230,7 +230,7 @@ async fn removal_and_return(test: &str, config: Config) {
     ctl.until(
         5,
         "DeviceRemoved rm-1",
-        |e| matches!(e, Event::DeviceRemoved { device } if device.as_str() == "rm-1"),
+        |e| matches!(e, Event::DeviceRemoved { device, .. } if device.as_str() == "rm-1"),
     )
     .await;
     assert!(ctl.handle.device("rm-1").is_none());
@@ -264,7 +264,7 @@ async fn removal_and_return(test: &str, config: Config) {
     assert!(
         !ctl.seen[mark..ctl.seen.len() - 1].iter().any(|e| matches!(
             e,
-            Event::PropertyCleared { addr } if addr.device.as_str() == "rm-1"
+            Event::PropertyCleared { addr, .. } if addr.device.as_str() == "rm-1"
         )),
         "a removed device's value was cleared: {:?}",
         &ctl.seen[mark..]
@@ -389,7 +389,7 @@ async fn a_resync_lost_with_its_connection_does_not_stall_the_next() {
     ctl.until(
         10,
         "p001 cleared",
-        |e| matches!(e, Event::PropertyCleared { addr } if addr.property.as_str() == "p001"),
+        |e| matches!(e, Event::PropertyCleared { addr, .. } if addr.property.as_str() == "p001"),
     )
     .await;
     assert_eq!(ctl.value("d1", "n", "p000").as_deref(), Some("10"));

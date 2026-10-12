@@ -68,6 +68,7 @@
 //! [`DeviceOptions::max_outstanding`] are sent and not yet received from
 //! [`Commands`]; past it, values stay dirty and coalesce.
 
+mod dirty;
 mod driver;
 mod handles;
 #[cfg(test)]
@@ -88,7 +89,7 @@ pub use handles::{
 };
 
 use ebus_homie::controller::{Config, ConfigError, Controller};
-use ebus_homie::device::{Builder, Tree};
+use ebus_homie::device::{Tree, TreeBuilder as CoreBuilder};
 use ebus_mqtt::{LastWill, Pair};
 use tokio::sync::{mpsc, watch};
 
@@ -154,13 +155,20 @@ pub enum AttachError {
 impl fmt::Display for AttachError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AttachError::Build(e) => write!(f, "build: {e}"),
-            AttachError::Config(e) => write!(f, "config: {e}"),
+            AttachError::Build(_) => f.write_str("device tree refused"),
+            AttachError::Config(_) => f.write_str("controller configuration refused"),
         }
     }
 }
 
-impl std::error::Error for AttachError {}
+impl std::error::Error for AttachError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            AttachError::Build(e) => Some(e),
+            AttachError::Config(e) => Some(e),
+        }
+    }
+}
 
 impl From<BuildError> for AttachError {
     fn from(e: BuildError) -> Self {
@@ -179,7 +187,7 @@ impl From<ConfigError> for AttachError {
 /// once per device by [`attach_device`] or [`attach_pair`]. Handles work at
 /// once: a value set before the driver runs goes out in the first refresh.
 pub struct TreeBuilder {
-    core: Builder,
+    core: CoreBuilder,
     reg: Registry,
     dev: Arc<DevShared>,
     requests: mpsc::UnboundedReceiver<handles::DevRequest>,
@@ -197,7 +205,7 @@ impl fmt::Debug for TreeBuilder {
 impl TreeBuilder {
     /// A tree with the root device `root_id` and no nodes.
     pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError> {
-        let core = Builder::new(cfg, root_id, root)?;
+        let core = CoreBuilder::new(cfg, root_id, root)?;
         let (req_tx, requests) = mpsc::unbounded_channel();
         let (emit_tx, emits) = mpsc::unbounded_channel();
         let dev = Arc::new(DevShared::new(req_tx, emit_tx));
@@ -314,6 +322,7 @@ struct Parts {
 
 /// The pieces of an attached device tree; see the [module documentation](self).
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct AttachedDevice {
     /// Presence, alerts, reconfiguration and shutdown.
     pub handle: DeviceHandle,
@@ -329,6 +338,7 @@ pub struct AttachedDevice {
 
 /// The pieces of a device tree and a controller on one connection.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct AttachedPair {
     /// The device's handle.
     pub device: DeviceHandle,

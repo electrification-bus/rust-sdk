@@ -58,7 +58,10 @@ pub enum Sighting {
 }
 
 /// A service instance as the table holds it.
+///
+/// Built with [`Instance::new`] outside this crate.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Instance {
     /// The instance.
     pub key: InstanceKey,
@@ -71,6 +74,25 @@ pub struct Instance {
     /// The union of every slot's addresses, without duplicates, in the order
     /// the slots and addresses were first reported.
     pub addrs: Vec<ScopedAddr>,
+}
+
+impl Instance {
+    /// An instance with the given SRV target, port, TXT record and addresses.
+    pub fn new(
+        key: InstanceKey,
+        server: String,
+        port: u16,
+        txt: TxtRecord,
+        addrs: Vec<ScopedAddr>,
+    ) -> Self {
+        Self {
+            key,
+            server,
+            port,
+            txt,
+            addrs,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

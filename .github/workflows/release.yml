@@ -1,0 +1,51 @@
+name: Release
+
+# Publishes every crate in the workspace to crates.io when a version tag is
+# pushed, after the CI suite passes on that commit.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      # crates.io trusted publishing exchanges the job's OIDC token for a
+      # short-lived publish token.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Tag matches the workspace version
+        run: |
+          version=$(cargo metadata --no-deps --format-version 1 --locked | jq -r '.packages[0].version')
+          test "$GITHUB_REF_NAME" = "v$version" || { echo "tag $GITHUB_REF_NAME, workspace version $version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_ENV"
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      # One crate at a time in dependency order, skipping a version the index
+      # already holds, so re-running a release that failed partway finishes
+      # it. cargo publish waits for each crate to appear in the index before
+      # the next one, which may depend on it, is published.
+      - run: |
+          for c in ebus-mqtt ebus-homie ebus-discovery ebus-homie-tokio ebus-discovery-tokio ebus-rumqttc; do
+            if curl -sf "https://index.crates.io/eb/us/$c" | jq -e --arg v "$version" 'select(.vers == $v)' > /dev/null; then
+              echo "$c $version is already published"
+            else
+              cargo publish -p "$c" --locked
+            fi
+          done
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}

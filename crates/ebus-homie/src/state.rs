@@ -61,34 +61,33 @@ impl fmt::Display for DeviceState {
 /// Error returned by [`DeviceState::from_str`] for an unknown state string.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum StateError {
+pub enum ParseStateError {
     /// Not one of the five lowercase state values.
     UnknownState,
 }
 
-impl StateError {
+impl ParseStateError {
     /// camelCase error code.
     pub const fn as_str(self) -> &'static str {
         match self {
-            StateError::UnknownState => "unknownState",
+            ParseStateError::UnknownState => "unknownState",
         }
     }
 }
 
-impl fmt::Display for StateError {
+impl fmt::Display for ParseStateError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for StateError {}
+impl core::error::Error for ParseStateError {}
 
 impl FromStr for DeviceState {
-    type Err = StateError;
+    type Err = ParseStateError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        DeviceState::parse(s).ok_or(StateError::UnknownState)
+        DeviceState::parse(s).ok_or(ParseStateError::UnknownState)
     }
 }
 
@@ -120,7 +119,7 @@ mod tests {
     fn parse_is_exact() {
         for s in ["", "Ready", "READY", " ready", "ready\0", "unknown"] {
             assert_eq!(DeviceState::parse(s), None, "{s:?}");
-            assert_eq!(s.parse::<DeviceState>(), Err(StateError::UnknownState));
+            assert_eq!(s.parse::<DeviceState>(), Err(ParseStateError::UnknownState));
         }
     }
 

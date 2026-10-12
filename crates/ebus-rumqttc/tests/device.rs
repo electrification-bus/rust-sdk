@@ -80,10 +80,7 @@ fn tree() -> (TreeBuilder, Handles, DevIdx) {
     let mut b = TreeBuilder::new(
         TreeConfig::default(),
         ROOT,
-        DeviceSpec {
-            name: Some("Rust root".into()),
-            ..DeviceSpec::typed("energy.ebus.device.test")
-        },
+        DeviceSpec::typed("energy.ebus.device.test").name("Rust root"),
     )
     .expect("tree");
     let ctl = b

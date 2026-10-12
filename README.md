@@ -4,9 +4,11 @@
 [![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)](#rust-version)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Rust SDK for the [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS broker discovery. It targets Linux single-board computers first and microcontrollers later.
+Rust SDK for [Electrification Bus](https://github.com/electrification-bus/specification) (eBus): Homie 5 devices and controllers over MQTT, with mDNS broker discovery. It targets Linux single-board computers first and microcontrollers later.
 
-**Status:** pre-alpha. The controller and device roles are implemented, and mDNS broker discovery and host advertisement run on the Avahi and mdns-sd backends. Nothing is published to crates.io yet.
+**Status:** pre-alpha. The controller and device roles are implemented, and mDNS broker discovery and host advertisement run on the Avahi and mdns-sd backends.
+
+Coming from python-sdk? [doc/python-sdk.md](doc/python-sdk.md) maps its patterns to rust-sdk.
 
 ## What it does
 
@@ -52,17 +54,18 @@ The host also advertises its own eBus services over mDNS. `ebus-discovery-tokio`
 
 Watch every device on a broker:
 
-```rust
+```rust,no_run
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event};
-use ebus_rumqttc::ebus_homie_tokio::{AttachOptions, Delivered};
+use ebus_rumqttc::ebus_homie_tokio::{ControllerOptions, Delivered};
+use ebus_rumqttc::rumqttc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::client_id(), "localhost", 1883);
+    let mut mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::controller_client_id(), "localhost", 1883);
     // A `$description` can exceed rumqttc's 10 KiB default packet size.
     mqtt.set_max_packet_size(4 << 20, 4 << 20);
 
-    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())?;
+    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())?;
     tokio::spawn(run.task.run());
 
     let mut events = run.events;
@@ -82,27 +85,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Find the broker over mDNS instead, and find it again if its host gets a new address (`ebus-discovery-tokio` with its `mdns-sd` or `avahi` feature):
 
-```rust
+```rust,ignore
 use std::time::Duration;
 
 use ebus_discovery_tokio::ebus_discovery::BrokerConfig;
 use ebus_discovery_tokio::{Mdns, find_broker, reresolve};
-use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ControllerOptions;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::Config;
-use rumqttc::MqttOptions;
+use ebus_rumqttc::rumqttc::MqttOptions;
 
 let mdns = Mdns::system().await?;
 let cfg = BrokerConfig::default(); // discovery-only: the first broker advertised
 let broker = find_broker(&mdns, cfg.clone()).await?;
 
-let id = ebus_rumqttc::client_id();
+let id = ebus_rumqttc::controller_client_id();
 let options = |id: &str, host: &str, port: u16| {
     let mut mqtt = MqttOptions::new(id, host, port);
     mqtt.set_max_packet_size(4 << 20, 4 << 20);
     mqtt
 };
 let mqtt = options(&id, &broker.connect_host(), broker.port);
-let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())?;
+let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())?;
 let task = run.task.reresolve(Box::new(move || {
     let (mdns, cfg, broker, id) = (mdns.clone(), cfg.clone(), broker.clone(), id.clone());
     Box::pin(async move {
@@ -125,10 +128,11 @@ Its source lists every setting, including `EBUS_BROKER_MODE` and `EBUS_MDNS_BACK
 
 Publish a device:
 
-```rust
+```rust,no_run
 use ebus_rumqttc::ebus_homie_tokio::device::{
     DeviceOptions, DeviceSpec, NodeSpec, PropSpec, TreeBuilder, TreeConfig,
 };
+use ebus_rumqttc::rumqttc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -158,6 +162,8 @@ The `device` example adds a duration, an event and a clean shutdown on Ctrl-C, a
 cargo run -p ebus-rumqttc --example device -- my-device
 ```
 
+### SPAN panel example
+
 The `simple-span-controller` example, a port of python-sdk's [simple-span-controller](https://github.com/electrification-bus/python-sdk/blob/main/examples/simple-span-controller), reports whether a SPAN panel's home is islanded from the grid, watching the MID child's `grid` node and the enclosure's `power-flows` node. It finds the panel's broker over mDNS as the `_secure-mqtt._tcp` advertisement whose SRV target is `span-<serial-number>.local`, else connects to that host name after 5 s:
 
 ```sh
@@ -168,7 +174,7 @@ Without a password argument it reads the panel's `ebus_broker_password` from `SP
 
 ### Inside a service that already has an MQTT connection
 
-A service can share its own MQTT client with the controller instead of opening a second connection: `ebus_homie_tokio::attach` returns an inbox the client's reader feeds and a command stream the client sends. The host keeps its client version, TLS, last will and reconnect loop. The contract is in the [`ebus-homie-tokio` crate docs](crates/ebus-homie-tokio/src/lib.rs).
+A service can share its own MQTT client with the controller instead of opening a second connection: `ebus_homie_tokio::attach_controller` returns an inbox the client's reader feeds and a command stream the client sends. The host keeps its client version, TLS, last will and reconnect loop. The contract is in the [`ebus-homie-tokio` crate docs](crates/ebus-homie-tokio/src/lib.rs).
 
 A device can share the connection the same way (`ebus_homie_tokio::device::attach_device`, or `attach_pair` with a controller), provided the host installs the device's last will on it. The contract is in the [`device` module docs](crates/ebus-homie-tokio/src/device/mod.rs).
 

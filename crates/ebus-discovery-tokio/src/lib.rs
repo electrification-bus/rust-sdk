@@ -13,7 +13,9 @@
 //! The backends implement [`Backend`]: Avahi under the `avahi` feature, a
 //! client of avahi-daemon over D-Bus that compiles only on Linux, and
 //! mdns-sd under the `mdns-sd` feature, with its own responder thread and
-//! sockets. [`Mdns::system`] picks the backend at run time.
+//! sockets. [`Mdns::system`] picks the backend at run time. Built with
+//! neither feature, [`Mdns::system`] returns [`Error::NoBackend`]; a host can
+//! still pass its own [`Backend`] to the search and advertising functions.
 //!
 //! ```no_run
 //! # #[cfg(feature = "mdns-sd")]
@@ -31,6 +33,8 @@
 //! # Ok(())
 //! # }
 //! ```
+
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod advertiser;
 #[cfg(all(feature = "avahi", target_os = "linux"))]
@@ -54,7 +58,7 @@ pub use search::{find_broker, list_brokers, reresolve};
 
 use core::fmt;
 
-use ebus_discovery::{ConfigError, TxtError};
+use ebus_discovery::{BrokerConfigError, TxtError};
 
 /// A discovery or advertising failure.
 #[derive(Debug)]
@@ -69,7 +73,7 @@ pub enum Error {
     /// The call needs a tokio runtime and none is running.
     NoRuntime,
     /// A broker configuration a search cannot run with.
-    Config(ConfigError),
+    Config(BrokerConfigError),
     /// An advertisement that cannot be built.
     Txt(TxtError),
     /// A host name the backend cannot advertise under.
@@ -87,8 +91,8 @@ impl fmt::Display for Error {
             Self::NoSystemBus => f.write_str("no D-Bus system bus"),
             Self::AvahiUnavailable => f.write_str("avahi-daemon is not reachable"),
             Self::NoRuntime => f.write_str("no tokio runtime is running"),
-            Self::Config(e) => write!(f, "broker configuration: {e}"),
-            Self::Txt(e) => write!(f, "advertisement: {e}"),
+            Self::Config(_) => f.write_str("invalid broker configuration"),
+            Self::Txt(_) => f.write_str("invalid advertisement"),
             Self::HostName(e) => write!(f, "host name: {e}"),
             Self::Backend(e) => write!(f, "mDNS backend: {e}"),
             Self::Closed => f.write_str("the mDNS backend has stopped"),
@@ -106,8 +110,8 @@ impl std::error::Error for Error {
     }
 }
 
-impl From<ConfigError> for Error {
-    fn from(e: ConfigError) -> Self {
+impl From<BrokerConfigError> for Error {
+    fn from(e: BrokerConfigError) -> Self {
         Self::Config(e)
     }
 }
@@ -122,3 +126,31 @@ impl From<TxtError> for Error {
 pub(crate) fn lock<T>(m: &std::sync::Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::error::Error as _;
+
+    use super::*;
+
+    #[test]
+    fn wrapped_errors_are_reported_once() {
+        for (e, inner) in [
+            (
+                Error::from(BrokerConfigError::NoUrl),
+                BrokerConfigError::NoUrl.to_string(),
+            ),
+            (
+                Error::from(TxtError::NoDeviceId),
+                TxtError::NoDeviceId.to_string(),
+            ),
+        ] {
+            assert!(!e.to_string().contains(&inner), "{e}");
+            assert_eq!(e.source().map(ToString::to_string), Some(inner));
+        }
+    }
+}
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

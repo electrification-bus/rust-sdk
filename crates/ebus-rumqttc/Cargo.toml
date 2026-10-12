@@ -7,6 +7,12 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/ebus-rumqttc"
+readme = "README.md"
+keywords = ["ebus", "homie", "mqtt", "rumqttc", "tokio"]
+categories = ["asynchronous", "network-programming"]
+include = ["/src", "/README.md", "/LICENSE"]
 
 [features]
 default = []
@@ -34,6 +40,11 @@ ebus-discovery-tokio = { path = "../ebus-discovery-tokio", features = ["mdns-sd"
 [[example]]
 name = "simple-span-controller"
 required-features = ["rustls"]
+
+[package.metadata.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

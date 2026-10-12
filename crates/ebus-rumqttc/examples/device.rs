@@ -39,7 +39,7 @@ async fn main() -> ExitCode {
     match run(&root).await {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            eprintln!("{e}");
+            eprintln!("{}", common::report(&*e));
             ExitCode::FAILURE
         }
     }
@@ -52,10 +52,7 @@ async fn run(root: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut b = TreeBuilder::new(
         TreeConfig::default(),
         root,
-        DeviceSpec {
-            name: Some("Rust example".into()),
-            ..DeviceSpec::default()
-        },
+        DeviceSpec::default().name("Rust example"),
     )?;
     let node = b.node(b.root(), "sensor", NodeSpec::typed("example.sensor"))?;
     let temperature = b.property::<f64>(node, "temperature", PropSpec::new().unit("°C"))?;

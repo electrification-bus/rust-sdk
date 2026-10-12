@@ -15,7 +15,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event};
-use ebus_rumqttc::ebus_homie_tokio::{AttachOptions, ControllerHandle, Delivered, EventReceiver};
+use ebus_rumqttc::ebus_homie_tokio::{
+    ControllerHandle, ControllerOptions, Delivered, EventReceiver,
+};
 use rumqttc::{AsyncClient, MqttOptions, Packet, QoS};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
@@ -777,10 +779,10 @@ pub async fn retained(port: u16, filter: &str) -> BTreeMap<String, Vec<u8>> {
 
 /// A bundled controller on the broker at `port`, spawned.
 pub fn controller(port: u16, config: Config) -> Ctl {
-    let mut mqtt = MqttOptions::new(ebus_rumqttc::client_id(), "127.0.0.1", port);
+    let mut mqtt = MqttOptions::new(ebus_rumqttc::controller_client_id(), "127.0.0.1", port);
     mqtt.set_max_packet_size(1 << 20, 1 << 20);
     let run =
-        ebus_rumqttc::controller(mqtt, config, AttachOptions::default()).expect("valid config");
+        ebus_rumqttc::controller(mqtt, config, ControllerOptions::default()).expect("valid config");
     let task = tokio::spawn(run.task.run());
     Ctl {
         handle: run.handle,
@@ -837,6 +839,7 @@ impl Ctl {
                     }
                 }
                 Delivered::Overflow { dropped } => panic!("event overflow: {dropped}"),
+                other => panic!("unexpected delivery: {other:?}"),
             }
         }
     }
@@ -851,7 +854,10 @@ impl Ctl {
                     matches!(e, Event::DeviceSynced { device, .. } if left.iter().any(|l| l == device.as_str()))
                 })
                 .await;
-            if let Event::DeviceSynced { device, missing } = e {
+            if let Event::DeviceSynced {
+                device, missing, ..
+            } = e
+            {
                 assert_eq!(
                     missing,
                     0,

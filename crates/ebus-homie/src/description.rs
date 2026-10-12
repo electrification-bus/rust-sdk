@@ -33,7 +33,10 @@ pub const CORE_FIELDS: [&str; 9] = [
 ];
 
 /// One property in a node (convention.md: Properties).
+///
+/// Built from [`PropertyDescription::new`] outside this crate.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct PropertyDescription {
     /// Friendly name; `None` omits it (consumers default it to the property id).
     pub name: Option<String>,
@@ -64,7 +67,10 @@ impl PropertyDescription {
 }
 
 /// One node in a device (convention.md: Nodes).
+///
+/// Built from `NodeDescription::default()` outside this crate.
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct NodeDescription {
     /// Friendly name; `None` omits it (consumers default it to the node id).
     pub name: Option<String>,
@@ -76,7 +82,10 @@ pub struct NodeDescription {
 }
 
 /// A device's `$description` (convention.md: Device Attributes).
+///
+/// Built from `DeviceDescription::default()` outside this crate.
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct DeviceDescription {
     /// Document version: any JSON integer (convention.md: Device Attributes,
     /// `version`); see [`DeviceDescription::compute_version`].
@@ -203,8 +212,7 @@ impl fmt::Display for DescriptionError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for DescriptionError {}
+impl core::error::Error for DescriptionError {}
 
 /// Entries of `items` whose key has not appeared earlier, in order.
 fn first_by_key<T>(items: &[(String, T)]) -> impl Iterator<Item = (&str, &T)> {
@@ -454,6 +462,7 @@ impl DeviceDescription {
 /// A node or property [`parse_with_ignored`] left out because one of its known
 /// fields holds an illegal value (convention.md: Forward compatibility).
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Ignored {
     /// The node's id, as received.
     pub node: String,

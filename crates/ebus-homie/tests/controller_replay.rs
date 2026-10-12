@@ -390,12 +390,7 @@ impl World {
         self.broker.subs.clear();
         self.broker.queue.clear();
         self.bursts.clear();
-        self.ctl.handle_link(
-            Instant(self.now),
-            Link::Up {
-                session_present: false,
-            },
-        );
+        self.ctl.handle_link(Instant(self.now), Link::up(false));
         self.pump();
     }
 
@@ -415,7 +410,7 @@ impl World {
                 continue;
             }
             match cmd {
-                Command::Subscribe { filters } => {
+                Command::Subscribe { filters, .. } => {
                     let filters: Vec<String> = filters.into_iter().map(|(f, _)| f).collect();
                     self.track_bursts(&filters);
                     for f in filters {
@@ -436,7 +431,7 @@ impl World {
                         }
                     }
                 }
-                Command::Unsubscribe { filters } => {
+                Command::Unsubscribe { filters, .. } => {
                     for f in filters {
                         self.broker.subs.remove(&f);
                     }
@@ -546,14 +541,8 @@ impl World {
             }
         }
         let retain = if self.retain_none { None } else { Some(retain) };
-        self.ctl.handle_message(
-            Instant(self.now),
-            Message {
-                topic: &t,
-                payload: &payload,
-                retain,
-            },
-        );
+        self.ctl
+            .handle_message(Instant(self.now), Message::new(&t, &payload, retain));
         self.pump();
         true
     }
@@ -601,7 +590,9 @@ impl World {
 
     fn last_synced(&self, since: usize, id: &str) -> Option<u32> {
         self.events[since..].iter().rev().find_map(|e| match e {
-            Event::DeviceSynced { device, missing } if device == id => Some(*missing),
+            Event::DeviceSynced {
+                device, missing, ..
+            } if device == id => Some(*missing),
             _ => None,
         })
     }
@@ -774,7 +765,7 @@ fn replay_retained(label: &str, tree: &Tree, mode: &Mode, cfg: Config, retain_no
     if let Mode::Tree(root) = mode {
         let fired = w.count(
             0,
-            |e| matches!(e, Event::TreeComplete { root: r } if r.as_str() == root.as_str()),
+            |e| matches!(e, Event::TreeComplete { root: r, .. } if r.as_str() == root.as_str()),
         );
         if !w.ctl.is_tree_complete(root) || fired == 0 {
             w.fault(format!("{root}: tree not complete ({fired} events)"));
@@ -800,7 +791,7 @@ fn broker_restart(label: &str, tree: &Tree, mode: &Mode, retain_none: bool) -> V
     for id in &scope {
         let absent = w.count(
             mark,
-            |e| matches!(e, Event::DeviceAbsent { device } if device.as_str() == id.as_str()),
+            |e| matches!(e, Event::DeviceAbsent { device, .. } if device.as_str() == id.as_str()),
         );
         if absent != 1 {
             w.fault(format!("{id}: {absent} DeviceAbsent"));
@@ -988,7 +979,7 @@ fn removal_and_return(label: &str, tree: &Tree, mode: &Mode, retain_none: bool) 
     let removed: Vec<String> = w.events[mark..]
         .iter()
         .filter_map(|e| match e {
-            Event::DeviceRemoved { device } => Some(device.to_string()),
+            Event::DeviceRemoved { device, .. } => Some(device.to_string()),
             _ => None,
         })
         .collect();
@@ -1050,7 +1041,7 @@ fn deleted_while_disconnected(
     let mut cleared: Vec<(String, String, String)> = w.events[mark..]
         .iter()
         .filter_map(|e| match e {
-            Event::PropertyCleared { addr } => Some((
+            Event::PropertyCleared { addr, .. } => Some((
                 addr.device.to_string(),
                 addr.node.to_string(),
                 addr.property.to_string(),

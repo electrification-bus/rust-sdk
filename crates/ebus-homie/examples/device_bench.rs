@@ -15,7 +15,7 @@ use std::hint::black_box;
 use std::time::{Duration, Instant as Clock};
 
 use ebus_homie::device::{
-    Builder, DeviceSpec, NodeSpec, PropSpec, SlotId, Tree, TreeConfig, ValueRef,
+    DeviceSpec, NodeSpec, PropSpec, SlotId, Tree, TreeBuilder, TreeConfig, ValueRef,
 };
 use ebus_mqtt::{Instant, Link};
 
@@ -50,7 +50,7 @@ pub struct Stats {
 
 fn tree() -> (Tree, Vec<SlotId>) {
     let mut b =
-        Builder::new(TreeConfig::default(), "bench-root", DeviceSpec::default()).expect("root");
+        TreeBuilder::new(TreeConfig::default(), "bench-root", DeviceSpec::default()).expect("root");
     let mut devices = vec![b.root()];
     for d in 1..DEVICES {
         let parent = b.root();
@@ -85,12 +85,7 @@ pub fn run(allocs: Option<&dyn Fn() -> u64>) -> Stats {
     for (slot, v) in slots.iter().zip(&values) {
         tree.set_value(*slot, ValueRef::Float(*v)).expect("value");
     }
-    tree.handle_link(
-        Instant(0),
-        Link::Up {
-            session_present: false,
-        },
-    );
+    tree.handle_link(Instant(0), Link::up(false));
     while tree.poll_command().is_some() {}
 
     let count = || allocs.map_or(0, |f| f());

@@ -396,9 +396,9 @@ pub(crate) fn try_send(
     track: Option<&Mutex<Track>>,
 ) -> Result<(), Unsent> {
     match cmd {
-        Command::Subscribe { filters } => {
+        Command::Subscribe { filters, .. } => {
             if filters.is_empty() || !filters.iter().all(|(f, _)| rumqttc::valid_filter(f)) {
-                return Err(Unsent::Invalid(Command::Subscribe { filters }));
+                return Err(Unsent::Invalid(Command::subscribe(filters)));
             }
             let requests = filters
                 .iter()
@@ -410,15 +410,15 @@ pub(crate) fn try_send(
                     }
                     Ok(())
                 }
-                Err(_) => Err(Unsent::Full(Command::Subscribe { filters })),
+                Err(_) => Err(Unsent::Full(Command::subscribe(filters))),
             }
         }
-        Command::Unsubscribe { filters } => {
+        Command::Unsubscribe { filters, .. } => {
             for (i, f) in filters.iter().enumerate() {
                 if client.try_unsubscribe(f.clone()).is_err() {
-                    return Err(Unsent::Full(Command::Unsubscribe {
-                        filters: filters.iter().skip(i).cloned().collect(),
-                    }));
+                    return Err(Unsent::Full(Command::unsubscribe(
+                        filters.iter().skip(i).cloned().collect::<Vec<_>>(),
+                    )));
                 }
             }
             Ok(())
@@ -428,14 +428,10 @@ pub(crate) fn try_send(
             payload,
             qos: q,
             retain,
+            ..
         } => {
             if !rumqttc::valid_topic(&topic) {
-                return Err(Unsent::Invalid(Command::Publish {
-                    topic,
-                    payload,
-                    qos: q,
-                    retain,
-                }));
+                return Err(Unsent::Invalid(Command::publish(topic, payload, q, retain)));
             }
             let mark = track.and_then(|_| Track::mark(&topic, payload.is_empty(), retain));
             match client.try_publish(topic, qos(q), retain, payload) {
@@ -446,12 +442,12 @@ pub(crate) fn try_send(
                     Ok(())
                 }
                 Err(ClientError::TryRequest(r) | ClientError::Request(r)) => match r {
-                    Request::Publish(p) => Err(Unsent::Full(Command::Publish {
-                        topic: p.topic,
-                        payload: p.payload.to_vec(),
-                        qos: q,
+                    Request::Publish(p) => Err(Unsent::Full(Command::publish(
+                        p.topic,
+                        p.payload.to_vec(),
+                        q,
                         retain,
-                    })),
+                    ))),
                     // try_publish returns the request it was given.
                     _ => Ok(()),
                 },
@@ -720,11 +716,13 @@ mod tests {
         let mqtt = MqttOptions::new("t", "localhost", 1883);
         let (client, mut el) = AsyncClient::new(mqtt, 1);
         let track = Mutex::new(Track::default());
-        let p = |payload: &[u8]| Command::Publish {
-            topic: "ebus/5/r/$description".into(),
-            payload: payload.to_vec(),
-            qos: ebus_mqtt::QoS::ExactlyOnce,
-            retain: true,
+        let p = |payload: &[u8]| {
+            Command::publish(
+                "ebus/5/r/$description",
+                payload.to_vec(),
+                ebus_mqtt::QoS::ExactlyOnce,
+                true,
+            )
         };
         try_send(&client, p(b"one"), Some(&track)).expect("fits");
         assert_eq!(
@@ -862,11 +860,8 @@ mod tests {
             Some(track),
             None,
         ));
-        let publish = |topic: &str, payload: Vec<u8>| Command::Publish {
-            topic: topic.into(),
-            payload,
-            qos: ebus_mqtt::QoS::AtLeastOnce,
-            retain: true,
+        let publish = |topic: &str, payload: Vec<u8>| {
+            Command::publish(topic, payload, ebus_mqtt::QoS::AtLeastOnce, true)
         };
         let within = Duration::from_secs(10);
         tokio::time::timeout(within, link.wait_for(|w| *w == Wire::Up))
@@ -926,12 +921,12 @@ mod tests {
 
     #[test]
     fn reresolved_options_get_the_device_settings_and_the_event_loop_limits() {
-        let will = LastWill {
-            topic: "ebus/5/r/$state".into(),
-            payload: b"lost".to_vec(),
-            qos: ebus_mqtt::QoS::ExactlyOnce,
-            retain: true,
-        };
+        let will = LastWill::new(
+            "ebus/5/r/$state",
+            b"lost".to_vec(),
+            ebus_mqtt::QoS::ExactlyOnce,
+            true,
+        );
         let hook: Reresolve = Box::new(|| Box::pin(async { None }));
         let r = Redirect::new(
             hook,

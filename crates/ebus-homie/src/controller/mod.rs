@@ -544,12 +544,8 @@ impl Controller {
             Vec::from(payload.as_bytes())
         };
         crate::log::info!("settingProperty", topic = topic);
-        self.commands.push_back(Command::Publish {
-            topic,
-            payload,
-            qos: QoS::AtMostOnce,
-            retain: false,
-        });
+        self.commands
+            .push_back(Command::publish(topic, payload, QoS::AtMostOnce, false));
         Ok(())
     }
 
@@ -568,12 +564,12 @@ impl Controller {
         }
         let topic = crate::topic::broadcast(domain, subtopic);
         crate::log::info!("broadcasting", topic = topic);
-        self.commands.push_back(Command::Publish {
+        self.commands.push_back(Command::publish(
             topic,
-            payload: Vec::from(payload.as_bytes()),
-            qos: QoS::AtMostOnce,
-            retain: false,
-        });
+            Vec::from(payload.as_bytes()),
+            QoS::AtMostOnce,
+            false,
+        ));
         Ok(())
     }
 
@@ -703,7 +699,7 @@ impl Controller {
         let Some(cmd) = cmd else {
             return;
         };
-        if let Command::Subscribe { filters } = &cmd {
+        if let Command::Subscribe { filters, .. } = &cmd {
             self.number_subscribe(filters);
         }
         self.commands.push_back(cmd);
@@ -740,7 +736,7 @@ impl Controller {
             self.ledger.subscribe(fresh),
             self.ledger.resubscribe(again.iter()),
         ] {
-            if let Some(Command::Subscribe { filters: more }) = cmd {
+            if let Some(Command::Subscribe { filters: more, .. }) = cmd {
                 for (f, q) in more {
                     match filters
                         .iter_mut()
@@ -756,7 +752,7 @@ impl Controller {
             return;
         }
         filters.sort_by_key(|(f, _)| order.iter().position(|o| o == f));
-        self.push(Some(Command::Subscribe { filters }));
+        self.push(Some(Command::subscribe(filters)));
     }
 
     /// Sends the SUBSCRIBE again for filters the device holds, so the broker
@@ -877,10 +873,10 @@ impl ebus_mqtt::Role for Controller {
                 self.wants(topic)
                     && (is_set_level(topic) || topic.split('/').nth(2) == Some("$broadcast"))
             }
-            Command::Subscribe { filters } => filters
+            Command::Subscribe { filters, .. } => filters
                 .iter()
                 .any(|(f, _)| self.wants(f) && !is_set_level(f)),
-            Command::Unsubscribe { filters } => {
+            Command::Unsubscribe { filters, .. } => {
                 filters.iter().any(|f| self.wants(f) && !is_set_level(f))
             }
             _ => false,

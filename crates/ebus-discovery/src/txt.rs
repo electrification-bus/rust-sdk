@@ -217,6 +217,7 @@ impl core::error::Error for TxtError {}
 
 /// What [`check_txt`] found near the limits; nothing here stops a record.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct TxtReport {
     /// Keys whose string is over [`TXT_STRING_WARN`] bytes, with its length.
     pub long_strings: Vec<(String, usize)>,
@@ -275,6 +276,7 @@ pub fn check_txt(service_type: &str, txt: &TxtRecord) -> Result<TxtReport, TxtEr
 
 /// A parsed `_ebus._tcp` TXT record (ebus.py:178-216).
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct EbusTxt {
     /// `txtvers`, or `""`.
     pub txtvers: String,

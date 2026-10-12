@@ -203,8 +203,7 @@ impl fmt::Display for Problem {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Problem {}
+impl core::error::Error for Problem {}
 
 // ── Grammar checks (no allocation) ──────────────────────────────────────────
 

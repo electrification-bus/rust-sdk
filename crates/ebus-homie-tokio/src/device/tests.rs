@@ -24,6 +24,7 @@ fn show(c: &Command) -> String {
             payload,
             qos,
             retain,
+            ..
         } => {
             let text = String::from_utf8_lossy(payload);
             if !retain {
@@ -36,11 +37,11 @@ fn show(c: &Command) -> String {
                 format!("{topic}={text}")
             }
         }
-        Command::Subscribe { filters } => {
+        Command::Subscribe { filters, .. } => {
             let f: Vec<&str> = filters.iter().map(|(f, _)| f.as_str()).collect();
             format!("SUB {}", f.join(","))
         }
-        Command::Unsubscribe { filters } => format!("UNSUB {}", filters.join(",")),
+        Command::Unsubscribe { filters, .. } => format!("UNSUB {}", filters.join(",")),
         _ => String::from("?"),
     }
 }
@@ -787,15 +788,16 @@ async fn pair_failures_go_to_the_role_that_owns_the_command() {
     f.inbox.connected(false);
     settle().await;
     f.cmds();
-    f.inbox.command_failed(Command::Publish {
-        topic: "ebus/5/r/n/p".into(),
-        payload: b"1.5".to_vec(),
-        qos: QoS::ExactlyOnce,
-        retain: true,
-    });
-    f.inbox.command_failed(Command::Subscribe {
-        filters: vec![("ebus/5/+/$state".into(), QoS::ExactlyOnce)],
-    });
+    f.inbox.command_failed(Command::publish(
+        "ebus/5/r/n/p",
+        b"1.5".to_vec(),
+        QoS::ExactlyOnce,
+        true,
+    ));
+    f.inbox.command_failed(Command::subscribe(vec![(
+        "ebus/5/+/$state".into(),
+        QoS::ExactlyOnce,
+    )]));
     settle().await;
     assert_eq!(
         f.cmds(),
@@ -1019,4 +1021,22 @@ async fn an_enum_value_is_published_again_when_its_format_changes() {
         .expect("commit");
     settle().await;
     assert!(f.cmds().iter().all(|c| !c.starts_with("ebus/5/r/n/m=")));
+}
+
+#[test]
+fn attach_error_is_reported_once() {
+    use std::error::Error as _;
+    for (e, inner) in [
+        (
+            AttachError::from(BuildError::InvalidId),
+            BuildError::InvalidId.to_string(),
+        ),
+        (
+            AttachError::from(ConfigError::ZeroBatch),
+            ConfigError::ZeroBatch.to_string(),
+        ),
+    ] {
+        assert!(!e.to_string().contains(&inner), "{e}");
+        assert_eq!(e.source().map(ToString::to_string), Some(inner));
+    }
 }

@@ -32,6 +32,25 @@ Pull requests are welcome.
 
 Keep your personal configuration out of the repo: `CLAUDE.local.md` (which Claude Code loads alongside `CLAUDE.md`), `.claude/`, `.cursor/` and the like are gitignored. To version them anyway, keep them in a separate private "shadow" repository and symlink them into your working tree, for example `ln -s ~/path/to/shadow-repo/rust-sdk/CLAUDE.local.md CLAUDE.local.md`; for a file you don't need to version, `.git/info/exclude` works too.
 
+## Releasing
+
+The six crates share the workspace version and are published together, in dependency order: `ebus-mqtt`, `ebus-homie`, `ebus-discovery`, `ebus-homie-tokio`, `ebus-discovery-tokio`, `ebus-rumqttc`.
+
+### One-time setup
+
+1. Publish each crate once from a laptop, with a personal crates.io API token that has the `publish-new` and `publish-update` scopes (crates.io requires a verified email address). From a clean checkout of the release commit: `cargo publish --workspace --locked` publishes all six in dependency order. If it stops partway, publish the rest with `cargo publish -p <crate> --locked`, in the order above.
+2. Add the GitHub team as an owner of each crate: `cargo owner --add github:electrification-bus:core-contributors <crate>`. Your GitHub account must belong to the team, and the crates.io application must have access to the `electrification-bus` organization. A team owner can publish and yank versions but cannot add or remove owners; that stays with the user owners.
+3. On crates.io, for each crate, open Settings, then Trusted Publishing, and add a GitHub publisher: owner `electrification-bus`, repository `rust-sdk`, workflow `release.yml`, environment `release`.
+4. In the GitHub repository settings, the `release` environment can restrict which tags may deploy and require a reviewer before publishing.
+
+### Later releases
+
+1. Bump `version` in `[workspace.package]` and in each version requirement between the crates (`[workspace.dependencies]`, `ebus-rumqttc`'s dependency on `ebus-homie-tokio`, and `tools/guide-doctest`'s on `ebus-discovery-tokio` and `ebus-rumqttc`). Then run `cargo update --workspace` and commit the updated `Cargo.lock` with the bump.
+2. Move the `[Unreleased]` entries in `CHANGELOG.md` under the new version and its date.
+3. Merge, then tag the merge commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`.
+
+The tag starts `.github/workflows/release.yml`, which runs the CI suite, checks that the tag matches the workspace version, and publishes the six crates with a short-lived token from trusted publishing. It skips any crate whose version is already on crates.io, so if it fails partway, re-run it.
+
 ## Code of conduct
 
 Be respectful and constructive.

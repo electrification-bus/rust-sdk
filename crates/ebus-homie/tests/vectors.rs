@@ -461,21 +461,12 @@ fn python_sdk_set_payload_through_tree() {
         if set.is_err() {
             return Ok(());
         }
-        tree.handle_link(
-            Instant(0),
-            Link::Up {
-                session_present: false,
-            },
-        );
+        tree.handle_link(Instant(0), Link::up(false));
         while tree.poll_command().is_some() {}
         while tree.poll_event().is_some() {}
         tree.handle_message(
             Instant(0),
-            Message {
-                topic: "ebus/5/d/n/p/set",
-                payload: &payload,
-                retain: Some(false),
-            },
+            Message::new("ebus/5/d/n/p/set", &payload, Some(false)),
         );
         ran.set(ran.get() + 1);
         let event = tree.poll_event();
@@ -562,11 +553,10 @@ fn build_description(input: &Value) -> Result<DeviceDescription, String> {
             p.unit = opt_str(prop, "unit")?;
             properties.push((str_field(prop, "id")?.to_string(), p));
         }
-        let n = NodeDescription {
-            name: opt_str(node, "name")?,
-            r#type: opt_str(node, "type")?,
-            properties,
-        };
+        let mut n = NodeDescription::default();
+        n.name = opt_str(node, "name")?;
+        n.r#type = opt_str(node, "type")?;
+        n.properties = properties;
         nodes.push((str_field(node, "id")?.to_string(), n));
     }
     let mut extras = Vec::new();
@@ -576,17 +566,16 @@ fn build_description(input: &Value) -> Result<DeviceDescription, String> {
             _ => return Err(format!("bad extras entry {pair}")),
         }
     }
-    Ok(DeviceDescription {
-        version: 0,
-        r#type: opt_str(input, "type")?,
-        name: opt_str(input, "name")?,
-        nodes,
-        children: strings(input, "children")?,
-        root: opt_str(input, "root")?,
-        parent: opt_str(input, "parent")?,
-        extensions: strings(input, "extensions")?,
-        extras,
-    })
+    let mut d = DeviceDescription::default();
+    d.r#type = opt_str(input, "type")?;
+    d.name = opt_str(input, "name")?;
+    d.nodes = nodes;
+    d.children = strings(input, "children")?;
+    d.root = opt_str(input, "root")?;
+    d.parent = opt_str(input, "parent")?;
+    d.extensions = strings(input, "extensions")?;
+    d.extras = extras;
+    Ok(d)
 }
 
 #[test]

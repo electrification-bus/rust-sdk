@@ -9,8 +9,23 @@
 //! The crate performs no I/O and reads no clock: time arrives as an [`Instant`]
 //! the caller supplies, received messages arrive as [`Message`]s, and work for
 //! the MQTT client leaves as [`Command`]s.
+//!
+//! ```
+//! use ebus_mqtt::filter;
+//!
+//! assert!(filter::matches("ebus/5/+/$state", "ebus/5/meter-1/$state"));
+//! assert!(filter::matches("ebus/5/meter-1/#", "ebus/5/meter-1/power/watts"));
+//! // A leading wildcard does not match a topic that starts with `$`.
+//! assert!(!filter::matches("+/5/meter-1/$state", "$SYS/5/meter-1/$state"));
+//! ```
+//!
+//! # Features
+//!
+//! - `std` (default): links `std`; implies `alloc`.
+//! - `alloc`: [`Command`], [`LastWill`], [`FilterLedger`], [`Role`] and [`Pair`].
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -86,7 +101,10 @@ impl Instant {
 }
 
 /// A message received from the broker, borrowed from the client's buffer.
+///
+/// Built with [`Message::new`] outside this crate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct Message<'a> {
     /// Topic name the message was published to.
     pub topic: &'a str,
@@ -96,10 +114,27 @@ pub struct Message<'a> {
     pub retain: Option<bool>,
 }
 
+impl<'a> Message<'a> {
+    /// A received message.
+    pub const fn new(topic: &'a str, payload: &'a [u8], retain: Option<bool>) -> Self {
+        Self {
+            topic,
+            payload,
+            retain,
+        }
+    }
+}
+
 /// A change in the state of the connection to the broker.
+///
+/// `#[non_exhaustive]`: a `match` on it outside this crate needs a `_` arm.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Link {
     /// The broker accepted a connection (CONNACK with return code 0).
+    ///
+    /// Built with [`Link::up`] outside this crate.
+    #[non_exhaustive]
     Up {
         /// The CONNACK session present flag: the broker resumed a stored
         /// session, including its subscriptions.
@@ -109,22 +144,36 @@ pub enum Link {
     Down,
 }
 
+impl Link {
+    /// [`Link::Up`] with the CONNACK session present flag.
+    pub const fn up(session_present: bool) -> Self {
+        Self::Up { session_present }
+    }
+}
+
 /// Work for the MQTT client.
+///
+/// Each variant is `#[non_exhaustive]`: match it with `..`, and build it with
+/// [`Command::subscribe`], [`Command::unsubscribe`] or [`Command::publish`]
+/// outside this crate.
 #[cfg(feature = "alloc")]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Command {
     /// Subscribe to every filter in one SUBSCRIBE packet.
+    #[non_exhaustive]
     Subscribe {
         /// Topic filters with their requested maximum QoS.
         filters: Vec<(String, QoS)>,
     },
     /// Unsubscribe from every filter in one UNSUBSCRIBE packet.
+    #[non_exhaustive]
     Unsubscribe {
         /// Topic filters to remove.
         filters: Vec<String>,
     },
     /// Publish one message.
+    #[non_exhaustive]
     Publish {
         /// Topic name.
         topic: String,
@@ -137,9 +186,44 @@ pub enum Command {
     },
 }
 
+#[cfg(feature = "alloc")]
+impl Command {
+    /// Subscribe to every filter in one SUBSCRIBE packet.
+    pub fn subscribe(filters: impl Into<Vec<(String, QoS)>>) -> Self {
+        Self::Subscribe {
+            filters: filters.into(),
+        }
+    }
+
+    /// Unsubscribe from every filter in one UNSUBSCRIBE packet.
+    pub fn unsubscribe(filters: impl Into<Vec<String>>) -> Self {
+        Self::Unsubscribe {
+            filters: filters.into(),
+        }
+    }
+
+    /// Publish one message.
+    pub fn publish(
+        topic: impl Into<String>,
+        payload: impl Into<Vec<u8>>,
+        qos: QoS,
+        retain: bool,
+    ) -> Self {
+        Self::Publish {
+            topic: topic.into(),
+            payload: payload.into(),
+            qos,
+            retain,
+        }
+    }
+}
+
 /// The Last Will and Testament a client registers when it connects.
+///
+/// Built with [`LastWill::new`] outside this crate.
 #[cfg(feature = "alloc")]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct LastWill {
     /// Topic the broker publishes the will to.
     pub topic: String,
@@ -149,6 +233,24 @@ pub struct LastWill {
     pub qos: QoS,
     /// Will retain flag.
     pub retain: bool,
+}
+
+#[cfg(feature = "alloc")]
+impl LastWill {
+    /// A will the broker publishes to `topic` when the client drops.
+    pub fn new(
+        topic: impl Into<String>,
+        payload: impl Into<Vec<u8>>,
+        qos: QoS,
+        retain: bool,
+    ) -> Self {
+        Self {
+            topic: topic.into(),
+            payload: payload.into(),
+            qos,
+            retain,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -178,6 +280,56 @@ mod tests {
         assert_eq!(Instant::default(), Instant(0));
     }
 
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn constructors_fill_every_field() {
+        use alloc::{string::ToString, vec};
+        assert_eq!(
+            Command::publish("t", b"p".to_vec(), QoS::AtLeastOnce, true),
+            Command::Publish {
+                topic: "t".to_string(),
+                payload: b"p".to_vec(),
+                qos: QoS::AtLeastOnce,
+                retain: true,
+            }
+        );
+        let filters = vec![("a/#".to_string(), QoS::ExactlyOnce)];
+        assert_eq!(
+            Command::subscribe(filters.clone()),
+            Command::Subscribe { filters }
+        );
+        assert_eq!(
+            Command::unsubscribe(vec!["a/#".to_string()]),
+            Command::Unsubscribe {
+                filters: vec!["a/#".to_string()],
+            }
+        );
+        let will = LastWill::new("w", b"lost".to_vec(), QoS::AtMostOnce, false);
+        assert_eq!(
+            (
+                will.topic.as_str(),
+                will.payload.as_slice(),
+                will.qos,
+                will.retain
+            ),
+            ("w", &b"lost"[..], QoS::AtMostOnce, false)
+        );
+        assert_eq!(
+            Link::up(true),
+            Link::Up {
+                session_present: true
+            }
+        );
+        assert_eq!(
+            Message::new("t", b"p", Some(false)),
+            Message {
+                topic: "t",
+                payload: b"p",
+                retain: Some(false),
+            }
+        );
+    }
+
     #[test]
     fn message_is_copy() {
         let m = Message {
@@ -189,3 +341,7 @@ mod tests {
         assert_eq!(m, n);
     }
 }
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

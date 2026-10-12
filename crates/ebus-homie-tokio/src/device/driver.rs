@@ -257,19 +257,15 @@ impl<R: Roles> Driver<R> {
                 if let (Some(ctl), Some(core)) = (self.ctl.as_mut(), self.roles.controller()) {
                     ctl.before_message(core, &self.shared);
                 }
-                self.roles.handle_message(
-                    now,
-                    Message {
-                        topic: &topic,
-                        payload: &payload,
-                        retain,
-                    },
-                );
+                self.roles
+                    .handle_message(now, Message::new(&topic, &payload, retain));
                 if let Some(ctl) = self.ctl.as_mut() {
                     ctl.touch_topic(&topic);
                 }
             }
-            Inbound::Link(Link::Up { session_present }) => {
+            Inbound::Link(Link::Up {
+                session_present, ..
+            }) => {
                 self.link_up(now, session_present, false);
             }
             Inbound::Link(Link::Down) => {
@@ -281,6 +277,7 @@ impl<R: Roles> Driver<R> {
                     ctl.touch_all();
                 }
             }
+            Inbound::Link(_) => {}
             Inbound::CommandFailed(cmd) => self.roles.handle_command_failed(now, cmd),
             Inbound::Receipt(r) => self.roles.handle_receipt(now, &r),
             Inbound::Wake => {}
@@ -303,7 +300,7 @@ impl<R: Roles> Driver<R> {
             self.shared.link_up(self.out.sent);
         }
         self.up = true;
-        self.roles.handle_link(now, Link::Up { session_present });
+        self.roles.handle_link(now, Link::up(session_present));
         if let Some(ctl) = self.ctl.as_mut() {
             ctl.touch_all();
         }
@@ -409,14 +406,20 @@ impl<R: Roles> Driver<R> {
     fn device_events(&mut self) {
         while let Some(e) = self.roles.tree().poll_event() {
             match e {
-                DeviceEvent::Set { slot, value, raw } => self.reg.deliver(slot, &value, raw),
-                DeviceEvent::Broadcast { subtopic, payload } => {
+                DeviceEvent::Set {
+                    slot, value, raw, ..
+                } => self.reg.deliver(slot, &value, raw),
+                DeviceEvent::Broadcast {
+                    subtopic, payload, ..
+                } => {
                     let payload = Bytes::from(payload.into_vec());
                     if self.broadcasts.try_send((subtopic, payload)).is_err() {
                         log::warn!("reason=broadcastDropped");
                     }
                 }
-                DeviceEvent::StateReasserted { attempt, gave_up } => {
+                DeviceEvent::StateReasserted {
+                    attempt, gave_up, ..
+                } => {
                     log::info!("reason=stateReasserted,attempt={attempt},gave_up={gave_up}");
                 }
                 _ => {}

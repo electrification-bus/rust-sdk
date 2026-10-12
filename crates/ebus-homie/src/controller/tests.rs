@@ -49,7 +49,7 @@ impl H {
     }
 
     fn up(&mut self, session_present: bool) {
-        self.c.handle_link(self.now, Link::Up { session_present });
+        self.c.handle_link(self.now, Link::up(session_present));
     }
 
     fn down(&mut self) {
@@ -57,14 +57,8 @@ impl H {
     }
 
     fn send(&mut self, topic: &str, payload: &[u8], retain: Option<bool>) -> Handled {
-        self.c.handle_message(
-            self.now,
-            Message {
-                topic,
-                payload,
-                retain,
-            },
-        )
+        self.c
+            .handle_message(self.now, Message::new(topic, payload, retain))
     }
 
     /// A retained message.
@@ -162,21 +156,22 @@ fn ints(count: usize) -> String {
 }
 
 fn sub(filters: &[&str]) -> Command {
-    Command::Subscribe {
-        filters: filters.iter().map(|f| (f.to_string(), Q2)).collect(),
-    }
+    Command::subscribe(
+        filters
+            .iter()
+            .map(|f| (f.to_string(), Q2))
+            .collect::<Vec<_>>(),
+    )
 }
 
 fn unsub(filters: &[&str]) -> Command {
-    Command::Unsubscribe {
-        filters: filters.iter().map(|f| f.to_string()).collect(),
-    }
+    Command::unsubscribe(filters.iter().map(|f| f.to_string()).collect::<Vec<_>>())
 }
 
 fn subscribed(cmds: &[Command]) -> Vec<String> {
     cmds.iter()
         .filter_map(|c| match c {
-            Command::Subscribe { filters } => Some(filters.iter().map(|(f, _)| f.clone())),
+            Command::Subscribe { filters, .. } => Some(filters.iter().map(|(f, _)| f.clone())),
             _ => None,
         })
         .flatten()
@@ -186,7 +181,7 @@ fn subscribed(cmds: &[Command]) -> Vec<String> {
 fn unsubscribed(cmds: &[Command]) -> Vec<String> {
     cmds.iter()
         .filter_map(|c| match c {
-            Command::Unsubscribe { filters } => Some(filters.iter().cloned()),
+            Command::Unsubscribe { filters, .. } => Some(filters.iter().cloned()),
             _ => None,
         })
         .flatten()
@@ -330,12 +325,7 @@ fn nothing_is_subscribed_before_the_first_link_up() {
     assert_eq!(h.c.poll_timeout(), None);
     h.up(false);
     assert_eq!(h.cmds(), [sub(&["ebus/5/+/$state"])]);
-    assert_eq!(
-        h.events(),
-        [Event::Link(Link::Up {
-            session_present: false
-        })]
-    );
+    assert_eq!(h.events(), [Event::Link(Link::up(false))]);
     assert!(h.c.is_connected());
 }
 
@@ -1281,12 +1271,7 @@ fn failed_commands_are_retried_with_backoff() {
     // A /set is never retried.
     h.c.handle_command_failed(
         h.now,
-        Command::Publish {
-            topic: t("d1", "n/p/set"),
-            payload: b"1".to_vec(),
-            qos: Q0,
-            retain: false,
-        },
+        Command::publish(t("d1", "n/p/set"), b"1".to_vec(), Q0, false),
     );
     h.advance(60_000);
     assert!(
@@ -1318,12 +1303,7 @@ fn a_clean_reconnect_repaces_every_device() {
             sub(&[&t("d2", "$description")])
         ]
     );
-    assert_eq!(
-        h.events(),
-        [Event::Link(Link::Up {
-            session_present: false
-        })]
-    );
+    assert_eq!(h.events(), [Event::Link(Link::up(false))]);
     assert!(h.c.devices().all(|v| !v.confirmed && !v.synced));
     // The replayed $description is required before properties are paced.
     h.r(&t("d1", "$state"), "ready");
@@ -1376,12 +1356,7 @@ fn a_trusted_session_keeps_everything() {
     assert!(h.cmds().is_empty());
     assert_eq!(
         h.events(),
-        [
-            Event::Link(Link::Down),
-            Event::Link(Link::Up {
-                session_present: true
-            })
-        ]
+        [Event::Link(Link::Down), Event::Link(Link::up(true))]
     );
     assert!(h.c.device("d1").is_some_and(|v| v.confirmed));
     // A clean session is still re-paced.
@@ -1397,12 +1372,7 @@ fn a_message_while_down_is_an_implicit_link_up() {
     h.down();
     h.drain();
     assert_eq!(h.r(&t("d1", "$state"), "ready"), Handled::Consumed);
-    assert_eq!(
-        h.events(),
-        [Event::Link(Link::Up {
-            session_present: false
-        })]
-    );
+    assert_eq!(h.events(), [Event::Link(Link::up(false))]);
     // The broker may still hold the property filters, so releasing them for
     // the re-pace unsubscribes them.
     assert_eq!(
@@ -1827,12 +1797,12 @@ fn any_domain_sets_in_the_devices_own_domain() {
     );
     assert_eq!(
         h.cmds(),
-        [Command::Publish {
-            topic: "homie/5/d1/n/p/set".into(),
-            payload: b"true".to_vec(),
-            qos: Q0,
-            retain: false
-        }]
+        [Command::publish(
+            "homie/5/d1/n/p/set",
+            b"true".to_vec(),
+            Q0,
+            false
+        )]
     );
 }
 
@@ -1934,12 +1904,12 @@ fn set_rejections_in_order() {
     );
     assert_eq!(
         h.cmds(),
-        [Command::Publish {
-            topic: t("d1", "n/i/set"),
-            payload: b"bad".to_vec(),
-            qos: Q0,
-            retain: false
-        }]
+        [Command::publish(
+            t("d1", "n/i/set"),
+            b"bad".to_vec(),
+            Q0,
+            false
+        )]
     );
 }
 
@@ -1954,18 +1924,8 @@ fn set_sends_the_callers_bytes() {
     assert_eq!(
         h.cmds(),
         [
-            Command::Publish {
-                topic: t("d1", "n/i/set"),
-                payload: b"3".to_vec(),
-                qos: Q0,
-                retain: false
-            },
-            Command::Publish {
-                topic: t("d1", "n/s/set"),
-                payload: vec![0],
-                qos: Q0,
-                retain: false
-            },
+            Command::publish(t("d1", "n/i/set"), b"3".to_vec(), Q0, false),
+            Command::publish(t("d1", "n/s/set"), vec![0], Q0, false),
         ]
     );
     // A lost root makes the device not ready.
@@ -2012,12 +1972,12 @@ fn broadcast_checks_the_subtopic() {
     assert_eq!(h.c.broadcast("alert/all", "hi"), Ok(()));
     assert_eq!(
         h.cmds(),
-        [Command::Publish {
-            topic: "ebus/5/$broadcast/alert/all".into(),
-            payload: b"hi".to_vec(),
-            qos: Q0,
-            retain: false
-        }]
+        [Command::publish(
+            "ebus/5/$broadcast/alert/all",
+            b"hi".to_vec(),
+            Q0,
+            false
+        )]
     );
     let mut cfg = Config::wildcard();
     cfg.domain = Domain::Any;
@@ -2742,12 +2702,7 @@ fn an_empty_set_payload_is_0x00_only_for_strings() {
     assert_eq!(h.c.set(&addr("d1", "n", "i"), "", unchecked), Ok(()));
     assert_eq!(
         h.cmds(),
-        [Command::Publish {
-            topic: t("d1", "n/i/set"),
-            payload: Vec::new(),
-            qos: Q0,
-            retain: false
-        }]
+        [Command::publish(t("d1", "n/i/set"), Vec::new(), Q0, false)]
     );
 }
 

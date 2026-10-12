@@ -112,7 +112,9 @@ impl Controller {
                 crate::log::info!("controllerDisconnect");
                 self.connected = false;
             }
-            Link::Up { session_present } => {
+            Link::Up {
+                session_present, ..
+            } => {
                 let first = !self.ever_up;
                 self.ever_up = true;
                 self.connected = true;
@@ -133,6 +135,7 @@ impl Controller {
                     self.repace(now);
                 }
             }
+            _ => return,
         }
         self.events.push_back(Event::Link(link));
     }
@@ -784,7 +787,7 @@ impl Controller {
                 crate::log::warn!("setDropped", topic = topic);
             }
             c @ (Command::Subscribe { .. } | Command::Unsubscribe { .. }) => {
-                if let Command::Subscribe { filters } = &c {
+                if let Command::Subscribe { filters, .. } = &c {
                     self.unnumber_subscribe(filters);
                 }
                 crate::log::warn!("commandRetry", delay_ms = self.backoff_ms);
@@ -807,11 +810,11 @@ impl Controller {
         self.retries = later;
         for (_, cmd) in due {
             match cmd {
-                Command::Subscribe { filters } => {
+                Command::Subscribe { filters, .. } => {
                     let cmd = self.ledger.resubscribe(filters.iter().map(|(f, _)| f));
                     self.push(cmd);
                 }
-                Command::Unsubscribe { filters } => {
+                Command::Unsubscribe { filters, .. } => {
                     let filters: Vec<_> = filters
                         .into_iter()
                         .filter(|f| {
@@ -819,7 +822,7 @@ impl Controller {
                         })
                         .collect();
                     if !filters.is_empty() {
-                        self.commands.push_back(Command::Unsubscribe { filters });
+                        self.commands.push_back(Command::unsubscribe(filters));
                     }
                 }
                 _ => {}

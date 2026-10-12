@@ -7,14 +7,14 @@ use std::sync::atomic::Ordering;
 use std::time::Duration;
 
 use bytes::Bytes;
-use ebus_homie::controller::{Config, Event, PropertyAddr, PropertyView, SetError};
+use ebus_homie::controller::{Config, DeviceView, Event, PropertyAddr, PropertyView, SetError};
 use ebus_homie::state::DeviceState;
 use ebus_mqtt::{Command, Link, QoS};
 use tokio::task::JoinHandle;
 
 use crate::{
-    AttachOptions, Attached, Commands, ControllerHandle, Delivered, DeviceSnapshot, DriverError,
-    EventReceiver, Inbox, attach,
+    AttachedController, Commands, ControllerHandle, ControllerOptions, Delivered, DriverError,
+    EventReceiver, Inbox, attach_controller,
 };
 
 fn t(id: &str, rest: &str) -> String {
@@ -32,12 +32,12 @@ struct Fake {
 }
 
 impl Fake {
-    fn start(cfg: Config, opts: AttachOptions) -> Self {
-        let a = attach(cfg, opts).expect("valid config");
+    fn start(cfg: Config, opts: ControllerOptions) -> Self {
+        let a = attach_controller(cfg, opts).expect("valid config");
         Fake::spawn(a)
     }
 
-    fn spawn(a: Attached) -> Self {
+    fn spawn(a: AttachedController) -> Self {
         Fake {
             handle: a.handle,
             inbox: a.inbox,
@@ -49,7 +49,7 @@ impl Fake {
 
     /// Wildcard, connected, with the link-up output read.
     async fn connected() -> Self {
-        let mut f = Fake::start(Config::wildcard(), AttachOptions::default());
+        let mut f = Fake::start(Config::wildcard(), ControllerOptions::default());
         f.inbox.connected(false);
         settle().await;
         f.cmds();
@@ -102,7 +102,7 @@ async fn seen_last(handle: &mut ControllerHandle) {
 fn subscribed(cmds: &[Command]) -> Vec<String> {
     cmds.iter()
         .filter_map(|c| match c {
-            Command::Subscribe { filters } => Some(filters.iter().map(|(f, _)| f.clone())),
+            Command::Subscribe { filters, .. } => Some(filters.iter().map(|(f, _)| f.clone())),
             _ => None,
         })
         .flatten()
@@ -119,7 +119,8 @@ fn handle_and_driver_are_send_and_sync() {
     fn send<T: Send>(_: &T) {}
     send_sync::<ControllerHandle>();
     send_sync::<Inbox>();
-    let a = attach(Config::wildcard(), AttachOptions::default()).expect("valid config");
+    let a =
+        attach_controller(Config::wildcard(), ControllerOptions::default()).expect("valid config");
     send(&a.driver.run());
 }
 
@@ -127,12 +128,12 @@ fn handle_and_driver_are_send_and_sync() {
 fn invalid_config_is_refused() {
     let mut cfg = Config::wildcard();
     cfg.host_filters = vec!["a/#/b".into()];
-    assert!(attach(cfg, AttachOptions::default()).is_err());
+    assert!(attach_controller(cfg, ControllerOptions::default()).is_err());
 }
 
 #[tokio::test(start_paused = true)]
 async fn link_up_subscribes_discovery_and_reports_connected() {
-    let mut f = Fake::start(Config::wildcard(), AttachOptions::default());
+    let mut f = Fake::start(Config::wildcard(), ControllerOptions::default());
     assert!(!f.handle.is_connected());
     f.inbox.connected(false);
     assert!(f.handle.changed().await);
@@ -140,15 +141,14 @@ async fn link_up_subscribes_discovery_and_reports_connected() {
     let cmds = f.cmds();
     assert_eq!(
         cmds,
-        vec![Command::Subscribe {
-            filters: vec![("ebus/5/+/$state".into(), QoS::ExactlyOnce)]
-        }]
+        vec![Command::subscribe(vec![(
+            "ebus/5/+/$state".into(),
+            QoS::ExactlyOnce
+        )])]
     );
     assert_eq!(
         f.events(),
-        vec![Delivered::Event(Event::Link(Link::Up {
-            session_present: false
-        }))]
+        vec![Delivered::Event(Event::Link(Link::up(false)))]
     );
     f.inbox.disconnected();
     settle().await;
@@ -248,6 +248,7 @@ async fn set_and_try_set_queue_publishes() {
                 payload,
                 qos: QoS::AtMostOnce,
                 retain: false,
+                ..
             } => Some((topic, payload)),
             _ => None,
         })
@@ -300,11 +301,11 @@ async fn set_and_try_set_queue_publishes() {
 
 #[tokio::test(start_paused = true)]
 async fn inbox_over_its_byte_cap_drops_and_resubscribes() {
-    let opts = AttachOptions {
+    let opts = ControllerOptions {
         inbox_bytes: 64,
-        ..AttachOptions::default()
+        ..ControllerOptions::default()
     };
-    let a = attach(Config::wildcard(), opts).expect("valid config");
+    let a = attach_controller(Config::wildcard(), opts).expect("valid config");
     let inbox = a.inbox.clone();
     inbox.connected(false);
     assert!(inbox.message(t("d1", "$state"), Bytes::from_static(b"ready"), Some(true)));
@@ -345,9 +346,9 @@ async fn inbox_over_its_byte_cap_drops_and_resubscribes() {
 
 #[tokio::test(start_paused = true)]
 async fn dropped_state_of_unknown_device_resubscribes_discovery() {
-    let opts = AttachOptions {
+    let opts = ControllerOptions {
         inbox_bytes: 32,
-        ..AttachOptions::default()
+        ..ControllerOptions::default()
     };
     let mut f = Fake::start(Config::wildcard(), opts);
     f.inbox.connected(false);
@@ -366,9 +367,9 @@ async fn dropped_state_of_unknown_device_resubscribes_discovery() {
 async fn a_drop_reported_late_does_not_let_a_later_marker_clear() {
     let mut cfg = Config::wildcard();
     cfg.pacing = None;
-    let opts = AttachOptions {
+    let opts = ControllerOptions {
         inbox_bytes: 512,
-        ..AttachOptions::default()
+        ..ControllerOptions::default()
     };
     let mut f = Fake::start(cfg, opts);
     f.inbox.connected(false);
@@ -404,9 +405,9 @@ async fn a_drop_reported_late_does_not_let_a_later_marker_clear() {
 
 #[tokio::test(start_paused = true)]
 async fn a_message_larger_than_the_inbox_is_not_healed() {
-    let opts = AttachOptions {
+    let opts = ControllerOptions {
         inbox_bytes: 1024,
-        ..AttachOptions::default()
+        ..ControllerOptions::default()
     };
     let mut f = Fake::start(Config::wildcard(), opts);
     f.inbox.connected(false);
@@ -432,7 +433,8 @@ fn the_driver_yields_between_batches() {
         .build()
         .expect("runtime");
     rt.block_on(async {
-        let a = attach(Config::wildcard(), AttachOptions::default()).expect("valid config");
+        let a = attach_controller(Config::wildcard(), ControllerOptions::default())
+            .expect("valid config");
         let inbox = a.inbox.clone();
         inbox.connected(false);
         for i in 0..5_000 {
@@ -459,9 +461,9 @@ fn the_driver_yields_between_batches() {
 
 #[tokio::test(start_paused = true)]
 async fn full_event_channel_reports_overflow() {
-    let opts = AttachOptions {
+    let opts = ControllerOptions {
         event_capacity: 2,
-        ..AttachOptions::default()
+        ..ControllerOptions::default()
     };
     let mut f = Fake::start(Config::wildcard(), opts);
     f.inbox.connected(false);
@@ -495,7 +497,7 @@ async fn full_event_channel_reports_overflow() {
 async fn deadlines_fire_on_the_tokio_clock() {
     let mut f = Fake::start(
         Config::tree("root").expect("valid"),
-        AttachOptions::default(),
+        ControllerOptions::default(),
     );
     f.inbox.connected(false);
     settle().await;
@@ -525,7 +527,7 @@ async fn shutdown_unsubscribes_and_stops_the_driver() {
     let unsubs: Vec<&String> = cmds
         .iter()
         .filter_map(|c| match c {
-            Command::Unsubscribe { filters } => Some(filters.iter()),
+            Command::Unsubscribe { filters, .. } => Some(filters.iter()),
             _ => None,
         })
         .flatten()
@@ -545,7 +547,7 @@ async fn shutdown_unsubscribes_and_stops_the_driver() {
 
 #[tokio::test(start_paused = true)]
 async fn dropping_every_inbox_stops_the_driver() {
-    let f = Fake::start(Config::wildcard(), AttachOptions::default());
+    let f = Fake::start(Config::wildcard(), ControllerOptions::default());
     let Fake { inbox, join, .. } = f;
     drop(inbox);
     assert_eq!(join.await.expect("driver task"), Ok(()));
@@ -553,7 +555,7 @@ async fn dropping_every_inbox_stops_the_driver() {
 
 #[tokio::test(start_paused = true)]
 async fn dropped_command_receiver_is_an_error() {
-    let f = Fake::start(Config::wildcard(), AttachOptions::default());
+    let f = Fake::start(Config::wildcard(), ControllerOptions::default());
     let Fake {
         inbox,
         commands,
@@ -570,7 +572,8 @@ async fn dropped_command_receiver_is_an_error() {
 
 #[tokio::test(start_paused = true)]
 async fn cancelled_driver_releases_the_handles() {
-    let a = attach(Config::wildcard(), AttachOptions::default()).expect("valid config");
+    let a =
+        attach_controller(Config::wildcard(), ControllerOptions::default()).expect("valid config");
     let mut handle = a.handle.clone();
     let mut events = a.events;
     let inbox = a.inbox.clone();
@@ -604,7 +607,7 @@ async fn cancelled_driver_releases_the_handles() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn inbox_works_from_a_std_thread() {
-    let mut f = Fake::start(Config::wildcard(), AttachOptions::default());
+    let mut f = Fake::start(Config::wildcard(), ControllerOptions::default());
     let inbox = f.inbox.clone();
     let reader = std::thread::spawn(move || {
         inbox.connected(false);
@@ -629,7 +632,7 @@ async fn inbox_works_from_a_std_thread() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn snapshot_reflects_an_event_when_it_is_delivered() {
-    let mut f = Fake::start(Config::wildcard(), AttachOptions::default());
+    let mut f = Fake::start(Config::wildcard(), ControllerOptions::default());
     f.inbox.connected(false);
     for i in 0..50 {
         f.r(&format!("d{i}"), "$state", "ready");
@@ -659,9 +662,9 @@ async fn a_changed_device_shares_its_unchanged_values() {
     settle().await;
     let after = f.handle.device("d1").expect("d1");
     assert!(!Arc::ptr_eq(&before, &after));
-    let p = |d: &DeviceSnapshot| d.property("n", "p").expect("declared") as *const PropertyView;
+    let p = |d: &DeviceView| d.property("n", "p").expect("declared") as *const PropertyView;
     assert_eq!(p(&before), p(&after), "the unchanged slot was copied");
-    let raw = |d: &DeviceSnapshot| {
+    let raw = |d: &DeviceView| {
         d.property("n", "p")
             .and_then(|v| v.value.as_ref())
             .map(|v| Arc::clone(&v.raw))
@@ -692,7 +695,7 @@ async fn a_changed_device_shares_its_unchanged_values() {
 async fn subscribes_queued_before_a_clean_link_up_are_skipped() {
     let mut cfg = Config::wildcard();
     cfg.link_up_discards_queued = true;
-    let mut f = Fake::start(cfg, AttachOptions::default());
+    let mut f = Fake::start(cfg, ControllerOptions::default());
     f.inbox.connected(false);
     settle().await;
     f.cmds();
@@ -744,7 +747,7 @@ async fn a_queued_subscribe_is_skipped_only_when_the_host_discards() {
     for discards in [false, true] {
         let mut cfg = Config::device("d1").expect("valid");
         cfg.link_up_discards_queued = discards;
-        let mut f = Fake::start(cfg, AttachOptions::default());
+        let mut f = Fake::start(cfg, ControllerOptions::default());
         f.inbox.connected(false);
         settle().await;
         let mut retained = vec![
@@ -770,7 +773,7 @@ async fn a_queued_subscribe_is_skipped_only_when_the_host_discards() {
         }
         answer(&mut f, &retained).await;
         let cleared = f.events().iter().any(|d| {
-            matches!(d, Delivered::Event(Event::PropertyCleared { addr }) if addr.property.as_str() == "p")
+            matches!(d, Delivered::Event(Event::PropertyCleared { addr, .. }) if addr.property.as_str() == "p")
         });
         assert!(cleared, "discards={discards}");
         let d = f.handle.device("d1").expect("d1");
@@ -798,7 +801,7 @@ async fn a_description_change_shares_the_unchanged_slots() {
         after.property("n", "r").is_some(),
         "the new description applied"
     );
-    let p = |d: &DeviceSnapshot, prop: &str| {
+    let p = |d: &DeviceView, prop: &str| {
         d.property("n", prop).expect("declared") as *const PropertyView
     };
     assert_eq!(p(&before, "p"), p(&after, "p"));

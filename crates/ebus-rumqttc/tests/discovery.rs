@@ -24,7 +24,7 @@ use ebus_discovery_tokio::{
 };
 use ebus_rumqttc::Reresolve;
 use ebus_rumqttc::RunningDevice;
-use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ControllerOptions;
 use ebus_rumqttc::ebus_homie_tokio::device::{
     DeviceOptions, DeviceSpec, NodeSpec, PropSpec, Property, TreeBuilder, TreeConfig,
 };
@@ -153,7 +153,7 @@ fn controller(root: &str, mqtt: MqttOptions, hook: Option<Reresolve>) -> Ctl {
     let run = ebus_rumqttc::controller(
         mqtt,
         Config::tree(root).expect("valid root"),
-        AttachOptions::default(),
+        ControllerOptions::default(),
     )
     .expect("controller");
     let task = match hook {
@@ -221,7 +221,11 @@ async fn two_advertised_brokers() {
     let root = format!("rs-disc-{id}");
     let (dev, level) = device(&root, options_for(&first, &root));
     let dev_task = tokio::spawn(dev.task.run());
-    let mut ctl = controller(&root, options_for(&first, &ebus_rumqttc::client_id()), None);
+    let mut ctl = controller(
+        &root,
+        options_for(&first, &ebus_rumqttc::controller_client_id()),
+        None,
+    );
     ctl.synced(15, &[&root]).await;
     assert_eq!(ctl.value(&root, "n", "level").as_deref(), Some("1"));
     level.set(2).expect("level");
@@ -246,7 +250,7 @@ async fn two_advertised_brokers() {
     let dev_task = tokio::spawn(dev.task.run());
     let mut ctl = controller(
         &root_b,
-        options_for(&other, &ebus_rumqttc::client_id()),
+        options_for(&other, &ebus_rumqttc::controller_client_id()),
         None,
     );
     ctl.synced(15, &[&root_b]).await;
@@ -290,7 +294,7 @@ async fn fallback_to_an_unadvertised_configured_broker() {
     let dev_task = tokio::spawn(dev.task.run());
     let mut ctl = controller(
         &root,
-        options_for(&chosen, &ebus_rumqttc::client_id()),
+        options_for(&chosen, &ebus_rumqttc::controller_client_id()),
         None,
     );
     ctl.synced(15, &[&root]).await;
@@ -410,7 +414,7 @@ async fn reresolve_follows_a_broker_to_its_new_address() {
             .run(),
     );
     let ctl_calls = Arc::new(AtomicUsize::new(0));
-    let ctl_id = ebus_rumqttc::client_id();
+    let ctl_id = ebus_rumqttc::controller_client_id();
     let mut ctl = controller(
         &root,
         options_for(&broker, &ctl_id),

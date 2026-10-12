@@ -32,6 +32,7 @@ fn show(c: &Command) -> String {
             payload,
             qos,
             retain,
+            ..
         } => {
             let text = String::from_utf8_lossy(payload);
             if !retain {
@@ -44,11 +45,11 @@ fn show(c: &Command) -> String {
                 std::format!("{topic}={text}")
             }
         }
-        Command::Subscribe { filters } => {
+        Command::Subscribe { filters, .. } => {
             let f: Vec<&str> = filters.iter().map(|(f, _)| f.as_str()).collect();
             std::format!("SUB {}", f.join(","))
         }
-        Command::Unsubscribe { filters } => std::format!("UNSUB {}", filters.join(",")),
+        Command::Unsubscribe { filters, .. } => std::format!("UNSUB {}", filters.join(",")),
         _ => String::from("?"),
     }
 }
@@ -95,12 +96,7 @@ impl H {
     }
 
     fn up(&mut self) {
-        self.t.handle_link(
-            self.now,
-            Link::Up {
-                session_present: false,
-            },
-        );
+        self.t.handle_link(self.now, Link::up(false));
     }
 
     fn down(&mut self) {
@@ -125,14 +121,8 @@ impl H {
     }
 
     fn send(&mut self, topic: &str, payload: &[u8], retain: Option<bool>) -> Handled {
-        self.t.handle_message(
-            self.now,
-            Message {
-                topic,
-                payload,
-                retain,
-            },
-        )
+        self.t
+            .handle_message(self.now, Message::new(topic, payload, retain))
     }
 
     fn receipt(&mut self, r: Receipt) {
@@ -210,12 +200,7 @@ fn boot_publishes_the_tree_in_order() {
     h.t.set_value(h.s, ValueRef::Boolean(false)).expect("s");
     h.up();
     assert_eq!(h.drain(), boot_sequence());
-    assert_eq!(
-        h.events(),
-        [DeviceEvent::Link(Link::Up {
-            session_present: false
-        })]
-    );
+    assert_eq!(h.events(), [DeviceEvent::Link(Link::up(false))]);
     assert!(h.t.is_connected());
 }
 
@@ -245,12 +230,7 @@ fn reconnect_without_a_description_change_sends_no_init() {
     assert_eq!(h.events(), [DeviceEvent::Link(Link::Down)]);
     h.down();
     assert!(h.events().is_empty(), "a second Down changes nothing");
-    h.t.handle_link(
-        h.now,
-        Link::Up {
-            session_present: true,
-        },
-    );
+    h.t.handle_link(h.now, Link::up(true));
     assert_eq!(h.drain(), reconnect_sequence());
 }
 
@@ -346,12 +326,7 @@ fn implicit_link_up_on_a_message_while_down() {
         Handled::Consumed
     );
     let ev = h.events();
-    assert_eq!(
-        ev[0],
-        DeviceEvent::Link(Link::Up {
-            session_present: false
-        })
-    );
+    assert_eq!(ev[0], DeviceEvent::Link(Link::up(false)));
     assert!(matches!(ev[1], DeviceEvent::Set { .. }));
     assert_eq!(h.drain(), reconnect_sequence());
 }
@@ -361,12 +336,7 @@ fn last_will_is_the_roots_lost() {
     let h = H::new(cfg());
     assert_eq!(
         h.t.last_will(),
-        LastWill {
-            topic: "ebus/5/r/$state".to_string(),
-            payload: b"lost".to_vec(),
-            qos: Q2,
-            retain: true,
-        }
+        LastWill::new("ebus/5/r/$state".to_string(), b"lost".to_vec(), Q2, true)
     );
 }
 
@@ -1655,11 +1625,8 @@ fn shutdown_while_down_publishes_nothing() {
 #[test]
 fn failed_commands_are_requeued_by_kind() {
     let mut h = H::up_drained(cfg());
-    let publish = |topic: &str, payload: &[u8], retain: bool| Command::Publish {
-        topic: topic.to_string(),
-        payload: payload.to_vec(),
-        qos: Q2,
-        retain,
+    let publish = |topic: &str, payload: &[u8], retain: bool| {
+        Command::publish(topic.to_string(), payload.to_vec(), Q2, retain)
     };
     h.t.set_value(h.p, ValueRef::Float(5.0)).expect("p");
     h.t.handle_command_failed(h.now, publish("ebus/5/r/n/p", b"4.0", true));
@@ -1676,9 +1643,7 @@ fn failed_commands_are_requeued_by_kind() {
     );
     h.t.handle_command_failed(
         h.now,
-        Command::Subscribe {
-            filters: vec![("ebus/5/c/+/+/set".to_string(), Q2)],
-        },
+        Command::subscribe(vec![("ebus/5/c/+/+/set".to_string(), Q2)]),
     );
     assert!(h.drain().is_empty());
     h.advance(1_000);
@@ -1692,12 +1657,7 @@ fn failed_clear_is_resent_while_it_is_a_tombstone() {
     h.drain();
     h.t.handle_command_failed(
         h.now,
-        Command::Publish {
-            topic: "ebus/5/r/n/p".to_string(),
-            payload: vec![],
-            qos: Q2,
-            retain: true,
-        },
+        Command::publish("ebus/5/r/n/p".to_string(), vec![], Q2, true),
     );
     assert_eq!(h.drain(), ["ebus/5/r/n/p=<clear>"]);
 }
@@ -1756,19 +1716,12 @@ fn broadcast_subtopic_ending_in_set() {
 #[test]
 fn tree_owns_its_commands_only() {
     let h = H::new(cfg());
-    let publish = |topic: &str| Command::Publish {
-        topic: topic.to_string(),
-        payload: vec![],
-        qos: Q2,
-        retain: true,
-    };
+    let publish = |topic: &str| Command::publish(topic.to_string(), vec![], Q2, true);
     assert!(Role::owns(&h.t, &publish("ebus/5/r/$state")));
     assert!(!Role::owns(&h.t, &publish("ebus/5/x/n/p/set")));
     assert!(!Role::owns(&h.t, &publish("ebus/5/$broadcast/a")));
     assert!(!Role::owns(&h.t, &publish("homie/5/r/$state")));
-    let sub = |f: &str| Command::Subscribe {
-        filters: vec![(f.to_string(), Q2)],
-    };
+    let sub = |f: &str| Command::subscribe(vec![(f.to_string(), Q2)]);
     assert!(Role::owns(&h.t, &sub("ebus/5/r/+/+/set")));
     assert!(!Role::owns(&h.t, &sub("ebus/5/r/$description")));
     assert!(Role::holds(&h.t, "ebus/5/c/+/+/set"));
@@ -1791,12 +1744,7 @@ fn drain_pair(p: &mut Pair<Tree, Controller>) -> Vec<String> {
 #[test]
 fn pair_up_sends_the_device_refresh_first() {
     let mut p = pair(false);
-    p.handle_link(
-        Instant(0),
-        Link::Up {
-            session_present: false,
-        },
-    );
+    p.handle_link(Instant(0), Link::up(false));
     assert_eq!(
         drain_pair(&mut p),
         [
@@ -1812,12 +1760,7 @@ fn pair_up_sends_the_device_refresh_first() {
 #[test]
 fn pair_controller_shutdown_keeps_the_devices_state_filter() {
     let mut p = pair(true);
-    p.handle_link(
-        Instant(0),
-        Link::Up {
-            session_present: false,
-        },
-    );
+    p.handle_link(Instant(0), Link::up(false));
     drain_pair(&mut p);
     p.b.shutdown();
     assert_eq!(
@@ -1837,11 +1780,7 @@ fn pair_routes_failures_receipts_and_implicit_link_up() {
     // A /set while down brings both roles up before it is routed.
     p.handle_message(
         Instant(0),
-        Message {
-            topic: "ebus/5/r/n/p/set",
-            payload: b"1",
-            retain: Some(false),
-        },
+        Message::new("ebus/5/r/n/p/set", b"1", Some(false)),
     );
     assert!(p.a.is_connected() && p.b.is_connected());
     let out = drain_pair(&mut p);
@@ -1862,20 +1801,13 @@ fn pair_routes_failures_receipts_and_implicit_link_up() {
     // A failed device publish goes back to the device.
     p.handle_command_failed(
         Instant(0),
-        Command::Publish {
-            topic: "ebus/5/r/$state".to_string(),
-            payload: b"ready".to_vec(),
-            qos: Q2,
-            retain: true,
-        },
+        Command::publish("ebus/5/r/$state".to_string(), b"ready".to_vec(), Q2, true),
     );
     assert_eq!(drain_pair(&mut p), ["ebus/5/r/$state=ready"]);
     // A failed controller SUBSCRIBE goes to the controller, which retries.
     p.handle_command_failed(
         Instant(0),
-        Command::Subscribe {
-            filters: vec![("ebus/5/r/$description".to_string(), Q2)],
-        },
+        Command::subscribe(vec![("ebus/5/r/$description".to_string(), Q2)]),
     );
     assert!(drain_pair(&mut p).is_empty());
     let due = p.poll_timeout().expect("retry armed");
@@ -1930,19 +1862,12 @@ fn moved_types_keep_their_controller_paths() {
 #[test]
 fn controller_owns_set_publishes_and_its_own_filters() {
     let ctl = Controller::new(Config::wildcard()).expect("ctl");
-    let publish = |topic: &str| Command::Publish {
-        topic: topic.to_string(),
-        payload: vec![],
-        qos: QoS::AtMostOnce,
-        retain: false,
-    };
+    let publish = |topic: &str| Command::publish(topic.to_string(), vec![], QoS::AtMostOnce, false);
     assert!(Role::owns(&ctl, &publish("ebus/5/d/n/p/set")));
     assert!(Role::owns(&ctl, &publish("ebus/5/$broadcast/x")));
     assert!(!Role::owns(&ctl, &publish("ebus/5/d/$state")));
     assert!(!Role::owns(&ctl, &publish("homie/5/d/n/p/set")));
-    let sub = |f: &str| Command::Subscribe {
-        filters: vec![(f.to_string(), Q2)],
-    };
+    let sub = |f: &str| Command::subscribe(vec![(f.to_string(), Q2)]);
     assert!(Role::owns(&ctl, &sub("ebus/5/+/$state")));
     assert!(!Role::owns(&ctl, &sub("ebus/5/d/+/+/set")));
     assert!(
@@ -1956,7 +1881,7 @@ fn controller_owns_set_publishes_and_its_own_filters() {
 #[test]
 fn builder_tree_matches_a_reconfigured_tree() {
     let built = H::new(cfg()).t;
-    let mut b = Builder::new(cfg(), "r", DeviceSpec::default()).expect("builder");
+    let mut b = TreeBuilder::new(cfg(), "r", DeviceSpec::default()).expect("builder");
     let mut e = b.edit();
     let n = e.add_node(e.root(), "n", NodeSpec::default()).expect("n");
     e.add_typed::<f64>(n, "p", PropSpec::new()).expect("p");
@@ -1978,12 +1903,7 @@ fn builder_tree_matches_a_reconfigured_tree() {
     }
     let order: Vec<u16> = t.devices().map(DevIdx::index).collect();
     assert_eq!(order, [t.root().index(), c.index()]);
-    t.handle_link(
-        Instant(0),
-        Link::Up {
-            session_present: false,
-        },
-    );
+    t.handle_link(Instant(0), Link::up(false));
     let first = t.poll_command().map(|c| show(&c));
     assert_eq!(
         first.as_deref(),
@@ -1996,7 +1916,7 @@ fn builder_tree_matches_a_reconfigured_tree() {
 fn builder_checks_descriptions_at_finish() {
     let mut c = cfg();
     c.max_description_bytes = 200;
-    let mut b = Builder::new(c, "r", DeviceSpec::default()).expect("builder");
+    let mut b = TreeBuilder::new(c, "r", DeviceSpec::default()).expect("builder");
     let mut e = b.edit();
     let n = e.add_node(e.root(), "n", NodeSpec::default()).expect("n");
     for i in 0..10 {
@@ -2011,7 +1931,7 @@ fn builder_checks_descriptions_at_finish() {
 
 #[test]
 fn builder_sets_receipts() {
-    let mut b = Builder::new(cfg(), "r", DeviceSpec::default()).expect("builder");
+    let mut b = TreeBuilder::new(cfg(), "r", DeviceSpec::default()).expect("builder");
     assert!(!b.config().receipts);
     b.set_receipts(true);
     assert!(b.finish().expect("tree").config().receipts);

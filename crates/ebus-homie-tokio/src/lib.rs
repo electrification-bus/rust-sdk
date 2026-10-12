@@ -3,13 +3,13 @@
 //! Drives the sans-IO [`Controller`] over an MQTT connection the host owns, or
 //! one the `ebus-rumqttc` crate bundles; the [`device`] module does the same
 //! for a device tree, alone or with a controller on one connection.
-//! [`attach`] returns the controller's pieces:
+//! [`attach_controller`] returns the controller's pieces:
 //!
 //! | Piece | Who uses it |
 //! |---|---|
 //! | [`ControllerDriver`] | The host spawns [`ControllerDriver::run`] on its runtime; the SDK spawns nothing. |
 //! | [`Inbox`] | The host's MQTT reader forwards CONNACKs, lost connections and messages; synchronous and never waits. |
-//! | [`Attached::commands`] | The host's executor hands each [`Command`](ebus_mqtt::Command) to its client and reports failures through [`Inbox::command_failed`]. |
+//! | [`AttachedController::commands`] | The host's executor hands each [`Command`](ebus_mqtt::Command) to its client and reports failures through [`Inbox::command_failed`]. |
 //! | [`ControllerHandle`] | The application reads snapshots and sends `/set` and `$broadcast`. |
 //! | [`EventReceiver`] | The application reads events; a full channel yields [`Delivered::Overflow`]. |
 //!
@@ -51,7 +51,7 @@
 //!
 //! use ebus_homie_tokio::ebus_homie::controller::{Config, PropertyAddr};
 //! use ebus_homie_tokio::ebus_mqtt::{Command, QoS};
-//! use ebus_homie_tokio::{AttachOptions, attach};
+//! use ebus_homie_tokio::{ControllerOptions, attach_controller};
 //!
 //! /// What the host's MQTT reader yields.
 //! enum HostEvent {
@@ -72,7 +72,7 @@
 //! # -> Result<(), Box<dyn std::error::Error>> {
 //! let mut cfg = Config::tree("panel-1")?;
 //! cfg.host_filters = vec!["ebus/5/+/$description".into()];
-//! let ebus = attach(cfg, AttachOptions::default())?;
+//! let ebus = attach_controller(cfg, ControllerOptions::default())?;
 //! tokio::spawn(ebus.driver.run());
 //!
 //! // The host's existing reader thread, with the eBus arms added.
@@ -99,11 +99,11 @@
 //!         let res = {
 //!             let mut c = client.lock().unwrap_or_else(|p| p.into_inner());
 //!             match &cmd {
-//!                 Command::Subscribe { filters } => c.try_subscribe_many(filters),
-//!                 Command::Unsubscribe { filters } => {
+//!                 Command::Subscribe { filters, .. } => c.try_subscribe_many(filters),
+//!                 Command::Unsubscribe { filters, .. } => {
 //!                     filters.iter().try_for_each(|f| c.try_unsubscribe(f))
 //!                 }
-//!                 Command::Publish { topic, payload, qos, retain } => {
+//!                 Command::Publish { topic, payload, qos, retain, .. } => {
 //!                     c.try_publish(topic, *qos, *retain, payload)
 //!                 }
 //!                 _ => Ok(()),
@@ -132,6 +132,8 @@ mod tests;
 
 use std::sync::Arc;
 
+/// The `bytes` crate whose [`Bytes`](bytes::Bytes) this crate takes and returns.
+pub use bytes;
 pub use ebus_homie;
 pub use ebus_mqtt;
 
@@ -141,14 +143,14 @@ use tokio::sync::{mpsc, watch};
 pub use commands::Commands;
 pub use driver::{ControllerDriver, DriverError};
 pub use events::{Delivered, EventReceiver};
-pub use handle::{ControllerHandle, DeviceSnapshot};
+pub use handle::ControllerHandle;
 pub use inbox::Inbox;
 
-/// Sizes for [`attach`]. Start from [`AttachOptions::default`] and set the
-/// fields.
+/// Sizes for [`attach_controller`]. Start from [`ControllerOptions::default`]
+/// and set the fields.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
-pub struct AttachOptions {
+pub struct ControllerOptions {
     /// Most bytes of topic plus payload queued in the [`Inbox`]; a message
     /// past it is dropped and its device resubscribed, and a message larger
     /// than it on its own is dropped for good. Default 4 MiB.
@@ -157,9 +159,9 @@ pub struct AttachOptions {
     pub event_capacity: usize,
 }
 
-impl Default for AttachOptions {
+impl Default for ControllerOptions {
     fn default() -> Self {
-        AttachOptions {
+        ControllerOptions {
             inbox_bytes: 4 * 1024 * 1024,
             event_capacity: 1024,
         }
@@ -168,7 +170,8 @@ impl Default for AttachOptions {
 
 /// The pieces of an attached controller; see the [crate documentation](crate).
 #[derive(Debug)]
-pub struct Attached {
+#[non_exhaustive]
+pub struct AttachedController {
     /// Snapshot reads, `/set` and `$broadcast`.
     pub handle: ControllerHandle,
     /// Where the host's MQTT reader feeds the controller.
@@ -184,7 +187,10 @@ pub struct Attached {
 
 /// Builds a controller for `config` and the pieces that drive it. Nothing
 /// runs until the host spawns [`ControllerDriver::run`].
-pub fn attach(config: Config, opts: AttachOptions) -> Result<Attached, ConfigError> {
+pub fn attach_controller(
+    config: Config,
+    opts: ControllerOptions,
+) -> Result<AttachedController, ConfigError> {
     let skip_stale = config.link_up_discards_queued;
     let core = Controller::new(config)?;
     let (in_tx, in_rx) = mpsc::unbounded_channel();
@@ -193,7 +199,7 @@ pub fn attach(config: Config, opts: AttachOptions) -> Result<Attached, ConfigErr
     let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
     let (ev_tx, ev_rx) = events::channel(opts.event_capacity);
     let (snap_tx, snap_rx) = watch::channel(Arc::new(handle::Snapshot::default()));
-    Ok(Attached {
+    Ok(AttachedController {
         handle: ControllerHandle {
             requests: req_tx,
             snap: snap_rx,
@@ -219,3 +225,7 @@ pub fn attach(config: Config, opts: AttachOptions) -> Result<Attached, ConfigErr
         },
     })
 }
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

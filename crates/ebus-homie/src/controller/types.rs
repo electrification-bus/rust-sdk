@@ -208,8 +208,7 @@ impl fmt::Display for ConfigError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for ConfigError {}
+impl core::error::Error for ConfigError {}
 
 /// Where a property message came from, read from [`ebus_mqtt::Message::retain`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -234,6 +233,7 @@ impl Origin {
 
 /// A received value or `$target`, delivered unmodified (convention.md:78).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct Value {
     /// The payload text, with a single `0x00` byte decoded to `""`.
     pub raw: Arc<str>,
@@ -255,12 +255,16 @@ pub enum Missing {
 
 /// Something the controller observed. Events are hints; the views returned by
 /// [`Controller::device`](super::Controller::device) are the truth.
+///
+/// Each struct variant is `#[non_exhaustive]`, so a pattern names the fields
+/// it needs and ends with `..`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum Event {
     /// The broker link changed, emitted after the commands it caused are queued.
     Link(Link),
     /// A device's first valid `$state`.
+    #[non_exhaustive]
     DeviceDiscovered {
         /// Device id.
         device: Id,
@@ -269,6 +273,7 @@ pub enum Event {
     },
     /// A device's `$state` changed; also emitted, with `old: None`, after
     /// [`Event::DeviceDiscovered`].
+    #[non_exhaustive]
     StateChanged {
         /// Device id.
         device: Id,
@@ -281,6 +286,7 @@ pub enum Event {
     },
     /// A device's effective state changed while its own `$state` did not:
     /// its root changed state or went away.
+    #[non_exhaustive]
     EffectiveStateChanged {
         /// Device id.
         device: Id,
@@ -292,6 +298,7 @@ pub enum Event {
     /// A device announced a description: on its ready edge, or at once when
     /// it changed it while `ready`. A change while `sleeping` is announced on
     /// the next ready edge.
+    #[non_exhaustive]
     DescriptionChanged {
         /// Device id.
         device: Id,
@@ -305,6 +312,7 @@ pub enum Event {
     },
     /// A `$description` with an illegal device-level field. The device keeps
     /// its `$state` and has no model.
+    #[non_exhaustive]
     DescriptionRejected {
         /// Device id.
         device: Id,
@@ -312,6 +320,7 @@ pub enum Event {
         error: DescriptionError,
     },
     /// A retained property's value changed.
+    #[non_exhaustive]
     PropertyChanged {
         /// The property.
         addr: PropertyAddr,
@@ -324,6 +333,7 @@ pub enum Event {
     /// (convention.md:370-371). An event with [`Origin::Retained`] is a stale
     /// copy the broker replayed on a subscribe, which convention.md:50 forbids
     /// devices to publish.
+    #[non_exhaustive]
     PropertyEvent {
         /// The property.
         addr: PropertyAddr,
@@ -334,11 +344,13 @@ pub enum Event {
     },
     /// A property's value was cleared: by a zero-length payload, or because
     /// a re-sync found it no longer retained.
+    #[non_exhaustive]
     PropertyCleared {
         /// The property.
         addr: PropertyAddr,
     },
     /// A property's `$target` changed; `None` when it was cleared.
+    #[non_exhaustive]
     TargetChanged {
         /// The property.
         addr: PropertyAddr,
@@ -346,6 +358,7 @@ pub enum Event {
         target: Option<Value>,
     },
     /// A device's `$alert` changed.
+    #[non_exhaustive]
     Alert {
         /// Device id.
         device: Id,
@@ -358,6 +371,7 @@ pub enum Event {
     /// retained property it declares has a value (`missing: 0`), or
     /// [`Config::sync_timeout_ms`] passed with `missing` still absent.
     /// Re-armed by a description change and by a link-up.
+    #[non_exhaustive]
     DeviceSynced {
         /// Device id.
         device: Id,
@@ -365,6 +379,7 @@ pub enum Event {
         missing: u32,
     },
     /// A device's retained messages did not arrive in time.
+    #[non_exhaustive]
     DeviceStuck {
         /// Device id.
         device: Id,
@@ -379,31 +394,52 @@ pub enum Event {
     /// link-up. It stays known and heals on its next message. This is also
     /// the only signal for a device whose `$state` was deleted while the
     /// controller did not hear it, since nothing retained is replayed for it.
+    #[non_exhaustive]
     DeviceAbsent {
         /// Device id.
         device: Id,
     },
     /// A device left the registry: a zero-length `$state`, or, in tree mode,
     /// its parent no longer declares it.
+    #[non_exhaustive]
     DeviceRemoved {
         /// Device id.
         device: Id,
     },
     /// Every device declared under a root has published its description.
     /// Fires on each incomplete-to-complete edge.
+    #[non_exhaustive]
     TreeComplete {
         /// The root.
         root: Id,
     },
 }
 
-/// Options for [`Controller::set`](super::Controller::set).
+/// Options for [`Controller::set`](super::Controller::set). Start from
+/// [`SetOptions::default`] and set the fields or chain the setters.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct SetOptions {
     /// Send even when the device's effective state is not `ready`.
     pub allow_not_ready: bool,
     /// Skip the payload check.
     pub unchecked: bool,
+}
+
+impl SetOptions {
+    /// With `allow_not_ready` set.
+    #[must_use]
+    pub const fn allow_not_ready(mut self, allow: bool) -> Self {
+        self.allow_not_ready = allow;
+        self
+    }
+
+    /// With `unchecked` set.
+    #[must_use]
+    pub const fn unchecked(mut self, unchecked: bool) -> Self {
+        self.unchecked = unchecked;
+        self
+    }
 }
 
 /// Why a `/set` or `$broadcast` was not sent.
@@ -452,11 +488,11 @@ impl fmt::Display for SetError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for SetError {}
+impl core::error::Error for SetError {}
 
 /// What the controller knows about one property.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct PropertyView {
     /// The last value, checked; always `None` for a `retained: false` property.
     pub value: Option<Value>,

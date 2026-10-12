@@ -1,12 +1,11 @@
 //! Lock-free dirty marks: set from any thread, drained by the owner.
 
-use alloc::{boxed::Box, vec::Vec};
-use core::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 
 /// One bit per slot. [`mark`](Self::mark) is safe from any thread;
 /// [`drain`](Self::drain) is for the one owner.
 #[derive(Debug)]
-pub struct DirtySet {
+pub(crate) struct DirtySet {
     words: Box<[AtomicU32]>,
     bits: usize,
     cursor: AtomicUsize,
@@ -14,7 +13,7 @@ pub struct DirtySet {
 
 impl DirtySet {
     /// A set for indices `0..slots`, all clear.
-    pub fn new(slots: usize) -> Self {
+    pub(crate) fn new(slots: usize) -> Self {
         let words: Vec<AtomicU32> = (0..slots.div_ceil(32)).map(|_| AtomicU32::new(0)).collect();
         DirtySet {
             words: words.into_boxed_slice(),
@@ -23,14 +22,9 @@ impl DirtySet {
         }
     }
 
-    /// The number of indices the set holds.
-    pub fn capacity(&self) -> usize {
-        self.bits
-    }
-
     /// Sets bit `i`; true when it was clear, so the owner needs a wake. An
-    /// index past [`capacity`](Self::capacity) is ignored and returns false.
-    pub fn mark(&self, i: u32) -> bool {
+    /// index past the set's size is ignored and returns false.
+    pub(crate) fn mark(&self, i: u32) -> bool {
         let i = i as usize;
         if i >= self.bits {
             return false;
@@ -44,7 +38,7 @@ impl DirtySet {
     /// Clears and visits set bits, starting at the word where the last drain
     /// stopped, so low indices cannot starve high ones. `f` returning false
     /// stops after that index; the bits not yet visited stay set.
-    pub fn drain(&self, mut f: impl FnMut(u32) -> bool) {
+    pub(crate) fn drain(&self, mut f: impl FnMut(u32) -> bool) {
         let n = self.words.len();
         if n == 0 {
             return;
@@ -81,7 +75,6 @@ impl DirtySet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec;
 
     fn all(s: &DirtySet) -> Vec<u32> {
         let mut out = Vec::new();

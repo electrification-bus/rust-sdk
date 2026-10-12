@@ -507,6 +507,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "guide-doctest"
+version = "0.1.0"
+dependencies = [
+ "ebus-discovery-tokio",
+ "ebus-rumqttc",
+ "rumqttc 0.25.1",
+ "tokio",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

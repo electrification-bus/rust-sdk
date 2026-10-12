@@ -10,8 +10,50 @@
 //! The crate performs no I/O and reads no clock: backends in a runtime crate
 //! feed it sightings and the time as an [`Instant`]. Where the specification
 //! leaves a choice open it follows python-service-discovery.
+//!
+//! A search for a plain MQTT broker, fed one sighting by hand where a backend
+//! would report it:
+//!
+//! ```
+//! use ebus_discovery::{
+//!     BrokerConfig, BrokerSearch, Instant, InstanceKey, ScopedAddr, Sighting, Slot, TxtRecord,
+//! };
+//!
+//! let mut search = BrokerSearch::new(Instant(0), BrokerConfig::default())?;
+//! search.handle(
+//!     Instant(0),
+//!     Sighting::Seen {
+//!         key: InstanceKey {
+//!             service_type: "_mqtt._tcp".into(),
+//!             name: "site-broker".into(),
+//!         },
+//!         slot: Slot::Whole,
+//!         server: "broker.local.".into(),
+//!         port: 1883,
+//!         txt: TxtRecord::new(),
+//!         addrs: vec![ScopedAddr::new([192, 168, 1, 10].into())],
+//!     },
+//! );
+//! while let Some(at) = search.poll_timeout() {
+//!     search.handle_timeout(at);
+//!     if search.result().is_some() {
+//!         break;
+//!     }
+//! }
+//! let broker = search.result().expect("a broker");
+//! assert_eq!((broker.host.as_str(), broker.port), ("broker.local", 1883));
+//! # Ok::<(), ebus_discovery::BrokerConfigError>(())
+//! ```
+//!
+//! # Features
+//!
+//! - `std` (default): links `std`; implies `alloc`.
+//! - `alloc`: everything that allocates: TXT records, the advertisement
+//!   model, instances, broker ranking and [`BrokerSearch`].
+//! - `log`: diagnostics through the `log` crate.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -44,7 +86,7 @@ pub use broker::{BrokerEndpoint, UrlError, Wanted, match_configured, rank_broker
 #[cfg(feature = "alloc")]
 pub use instance::{Instance, InstanceKey, InstanceTable, Sighting, Slot};
 #[cfg(feature = "alloc")]
-pub use search::{BrokerConfig, BrokerSearch, ConfigError};
+pub use search::{BrokerConfig, BrokerConfigError, BrokerSearch};
 #[cfg(feature = "alloc")]
 pub use txt::{
     EbusTxt, TXT_STRING_MAX, TXT_STRING_WARN, TXT_TOTAL_WARN, TxtError, TxtRecord, TxtReport,
@@ -78,6 +120,7 @@ pub const ROLE_BROKER_HOST: &str = "broker-host";
 /// (framework.md:330-335), so `Ord` ranks the most preferred first. That
 /// order is the default; a client sets its own with [`BrokerConfig::accept`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum BrokerType {
     /// `_secure-mqtt._tcp`: MQTT over TLS.
     SecureMqtt,
@@ -90,7 +133,7 @@ pub enum BrokerType {
 }
 
 /// Every broker type, in the specification's preference order.
-pub const BROKER_TYPES: [BrokerType; 4] = [
+pub const BROKER_TYPES: &[BrokerType] = &[
     BrokerType::SecureMqtt,
     BrokerType::MqttWss,
     BrokerType::MqttWs,
@@ -99,7 +142,7 @@ pub const BROKER_TYPES: [BrokerType; 4] = [
 
 /// The broker types an MQTT-over-TCP client can use; the accepted types when
 /// no TLS is configured (ebus.py:54).
-pub const TCP_BROKER_TYPES: [BrokerType; 2] = [BrokerType::SecureMqtt, BrokerType::Mqtt];
+pub const TCP_BROKER_TYPES: &[BrokerType] = &[BrokerType::SecureMqtt, BrokerType::Mqtt];
 
 impl BrokerType {
     /// The DNS-SD service type, without a domain.
@@ -123,7 +166,8 @@ impl BrokerType {
             _ => t,
         };
         BROKER_TYPES
-            .into_iter()
+            .iter()
+            .copied()
             .find(|b| b.as_str().eq_ignore_ascii_case(t))
     }
 
@@ -261,7 +305,7 @@ mod tests {
 
     #[test]
     fn broker_type_parse() {
-        for t in BROKER_TYPES {
+        for &t in BROKER_TYPES {
             assert_eq!(BrokerType::parse(t.as_str()), Some(t));
         }
         assert_eq!(
@@ -281,10 +325,10 @@ mod tests {
 
     #[test]
     fn broker_type_properties() {
-        let ports: [u16; 4] = BROKER_TYPES.map(BrokerType::default_port);
-        assert_eq!(ports, [8883, 9002, 9001, 1883]);
-        let tls = BROKER_TYPES.map(BrokerType::uses_tls);
-        assert_eq!(tls, [true, true, false, false]);
+        let ports = BROKER_TYPES.iter().map(|t| t.default_port());
+        assert!(ports.eq([8883, 9002, 9001, 1883]));
+        let tls = BROKER_TYPES.iter().map(|t| t.uses_tls());
+        assert!(tls.eq([true, true, false, false]));
     }
 
     #[test]
@@ -309,3 +353,7 @@ mod tests {
         assert_eq!(strip_dot("a.local.."), "a.local.");
     }
 }
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

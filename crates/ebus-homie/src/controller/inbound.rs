@@ -169,13 +169,7 @@ impl Controller {
         }
         if !self.connected {
             crate::log::warn!("implicitLinkUp", topic = msg.topic);
-            self.link(
-                now,
-                Link::Up {
-                    session_present: false,
-                },
-                true,
-            );
+            self.link(now, Link::up(false), true);
         }
         match t.kind {
             TopicKind::DeviceState => self.on_state(now, t.domain, device, msg.payload),

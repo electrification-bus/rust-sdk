@@ -9,11 +9,13 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError, RwLock};
 use bytes::Bytes;
 use ebus_homie::datatype::{Datatype, SetValue};
 use ebus_homie::device::{
-    AlertError, BuildError, DevIdx, DirtySet, HomieValue, NodeIdx, Presence, PropSpec, Reconfigure,
-    Shutdown, SlotId, Tree, ValueCheck, ValueError,
+    AlertError, BuildError, DevIdx, HomieValue, NodeIdx, Presence, PropSpec, Reconfigure, Shutdown,
+    SlotId, Tree, ValueCheck, ValueError,
 };
 use ebus_homie::state::DeviceState;
 use tokio::sync::{Notify, mpsc, oneshot, watch};
+
+use super::dirty::DirtySet;
 
 /// Slots per dirty set; the registry adds a set when a slot index needs one.
 const CHUNK: u32 = 256;

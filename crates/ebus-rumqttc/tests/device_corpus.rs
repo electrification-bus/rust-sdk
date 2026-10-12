@@ -24,7 +24,7 @@ use std::time::Duration;
 
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::datatype::Datatype;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::device::{
-    Builder, DevIdx, DeviceSpec, NodeSpec, PropSpec, SlotId, Tree, TreeConfig, ValueRef,
+    DevIdx, DeviceSpec, NodeSpec, PropSpec, SlotId, Tree, TreeBuilder, TreeConfig, ValueRef,
 };
 use ebus_rumqttc::ebus_homie_tokio::ebus_mqtt::{Command, Instant, Link};
 use rumqttc::{AsyncClient, MqttOptions, Packet, SubscribeFilter};
@@ -87,10 +87,11 @@ fn rebuild(devices: &Map<String, Value>) -> (Tree, Expected) {
         .find(|(_, d)| d["description"].get("parent").is_none())
         .map(|(id, _)| id.clone())
         .expect("a root");
-    let spec = |desc: &Value| DeviceSpec {
-        name: text(desc, "name"),
-        r#type: text(desc, "type"),
-        extensions: desc["extensions"]
+    let spec = |desc: &Value| {
+        let mut s = DeviceSpec::default();
+        s.name = text(desc, "name");
+        s.r#type = text(desc, "type");
+        s.extensions = desc["extensions"]
             .as_array()
             .map(|a| {
                 a.iter()
@@ -98,16 +99,17 @@ fn rebuild(devices: &Map<String, Value>) -> (Tree, Expected) {
                     .map(str::to_owned)
                     .collect()
             })
-            .unwrap_or_default(),
-        extras: desc
+            .unwrap_or_default();
+        s.extras = desc
             .as_object()
             .expect("description object")
             .iter()
             .filter(|(k, _)| !DEVICE_FIELDS.contains(&k.as_str()))
             .map(|(k, v)| (k.clone(), v.clone()))
-            .collect(),
+            .collect();
+        s
     };
-    let mut b = Builder::new(
+    let mut b = TreeBuilder::new(
         TreeConfig::default(),
         &root,
         spec(&devices[&root]["description"]),
@@ -124,14 +126,12 @@ fn rebuild(devices: &Map<String, Value>) -> (Tree, Expected) {
         for (node_id, node) in desc["nodes"].as_object().expect("nodes") {
             let n = b
                 .edit()
-                .add_node(
-                    idx,
-                    node_id,
-                    NodeSpec {
-                        name: text(node, "name"),
-                        r#type: text(node, "type"),
-                    },
-                )
+                .add_node(idx, node_id, {
+                    let mut s = NodeSpec::default();
+                    s.name = text(node, "name");
+                    s.r#type = text(node, "type");
+                    s
+                })
                 .expect("node");
             for (prop_id, p) in node["properties"].as_object().expect("properties") {
                 let datatype = Datatype::parse(p["datatype"].as_str().expect("datatype"))
@@ -257,10 +257,10 @@ async fn publish(port: u16, mut tree: Tree, id: &str) -> JoinHandle<()> {
         .await
         .expect("CONNACK in time")
         .expect("poller running");
-    tree.handle_link(Instant(0), Link::Up { session_present });
+    tree.handle_link(Instant(0), Link::up(session_present));
     while let Some(cmd) = tree.poll_command() {
         match cmd {
-            Command::Subscribe { filters } => client
+            Command::Subscribe { filters, .. } => client
                 .subscribe_many(
                     filters
                         .into_iter()
@@ -273,6 +273,7 @@ async fn publish(port: u16, mut tree: Tree, id: &str) -> JoinHandle<()> {
                 payload,
                 qos: q,
                 retain,
+                ..
             } => client
                 .publish(topic, qos(q), retain, payload)
                 .await

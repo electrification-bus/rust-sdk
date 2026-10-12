@@ -210,7 +210,7 @@ impl fmt::Debug for Inbox {
 impl Inbox {
     /// Queues a received message. Returns `false` when it was dropped: its
     /// topic and payload would take the queued bytes past
-    /// [`AttachOptions::inbox_bytes`](crate::AttachOptions::inbox_bytes), or
+    /// [`ControllerOptions::inbox_bytes`](crate::ControllerOptions::inbox_bytes), or
     /// the driver has stopped. The controller resubscribes the device a
     /// dropped message addressed once the backlog drains, so the broker
     /// replays its retained messages. A message larger than the cap on its
@@ -270,7 +270,7 @@ impl Inbox {
         if !session_present {
             self.shared.connacks.fetch_add(1, Ordering::AcqRel);
         }
-        let _ = self.tx.send(Inbound::Link(Link::Up { session_present }));
+        let _ = self.tx.send(Inbound::Link(Link::up(session_present)));
     }
 
     /// Reports a lost connection. Never dropped.

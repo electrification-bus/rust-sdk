@@ -24,6 +24,7 @@ const PACKET_OVERHEAD: usize = 1024;
 
 /// A device tree with its own connection.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct RunningDevice {
     /// Presence, alerts, reconfiguration and shutdown.
     pub handle: DeviceHandle,
@@ -33,6 +34,7 @@ pub struct RunningDevice {
 
 /// A device tree and a controller sharing one connection.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct RunningPair {
     /// The device's handle.
     pub device: DeviceHandle,
@@ -235,12 +237,12 @@ mod tests {
     fn device_connections_carry_the_will_and_the_limits() {
         let mut mqtt = MqttOptions::new("r", "localhost", 1883);
         mqtt.set_clean_session(false);
-        let will = LastWill {
-            topic: "ebus/5/r/$state".into(),
-            payload: b"lost".to_vec(),
-            qos: ebus_homie_tokio::ebus_mqtt::QoS::ExactlyOnce,
-            retain: true,
-        };
+        let will = LastWill::new(
+            "ebus/5/r/$state",
+            b"lost".to_vec(),
+            ebus_homie_tokio::ebus_mqtt::QoS::ExactlyOnce,
+            true,
+        );
         configure(&mut mqtt, &will, 10_000);
         let w = mqtt.last_will().expect("will");
         assert_eq!(w.topic, "ebus/5/r/$state");
@@ -279,12 +281,12 @@ mod tests {
         });
         let mut mqtt = MqttOptions::new("r", "127.0.0.1", port);
         if device {
-            let will = LastWill {
-                topic: "ebus/5/r/$state".into(),
-                payload: b"lost".to_vec(),
-                qos: ebus_homie_tokio::ebus_mqtt::QoS::AtLeastOnce,
-                retain: true,
-            };
+            let will = LastWill::new(
+                "ebus/5/r/$state",
+                b"lost".to_vec(),
+                ebus_homie_tokio::ebus_mqtt::QoS::AtLeastOnce,
+                true,
+            );
             configure(&mut mqtt, &will, payload);
         }
         let (client, mut eventloop) = AsyncClient::new(mqtt, 4);

@@ -21,13 +21,11 @@
 //! A value equal to the one held publishes nothing. Nothing is published
 //! before the first link-up; values set before it go out in its refresh.
 
-mod dirty;
 mod model;
 #[cfg(test)]
 mod tests;
 mod value;
 
-pub use dirty::DirtySet;
 pub use model::{BuildError, DevIdx, DeviceSpec, NodeIdx, NodeSpec, PropSpec, Reconfigure, SlotId};
 pub use value::{Color, Datetime, HomieEnum, HomieValue, ValueError, ValueRef};
 
@@ -162,14 +160,17 @@ impl fmt::Display for AlertError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for AlertError {}
+impl core::error::Error for AlertError {}
 
 /// Something the application acts on.
+///
+/// Each struct variant is `#[non_exhaustive]`, so a pattern names the fields
+/// it needs and ends with `..`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum DeviceEvent {
     /// An accepted `/set`.
+    #[non_exhaustive]
     Set {
         /// The property.
         slot: SlotId,
@@ -179,6 +180,7 @@ pub enum DeviceEvent {
         raw: Box<[u8]>,
     },
     /// A `$broadcast` message, with [`TreeConfig::broadcast`].
+    #[non_exhaustive]
     Broadcast {
         /// Everything after `$broadcast/`.
         subtopic: String,
@@ -187,6 +189,7 @@ pub enum DeviceEvent {
     },
     /// The root's `$state` was re-published over a `lost` the device did not
     /// declare, with [`TreeConfig::watch_own_state`].
+    #[non_exhaustive]
     StateReasserted {
         /// Re-asserts in this link-up.
         attempt: u8,
@@ -383,12 +386,12 @@ impl ValueCheck {
 /// device in [`finish`](Self::finish), so building a large tree costs one
 /// description per device instead of one per change.
 #[derive(Debug)]
-pub struct Builder {
+pub struct TreeBuilder {
     cfg: TreeConfig,
     m: Model,
 }
 
-impl Builder {
+impl TreeBuilder {
     /// A tree with one root device and no nodes.
     pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError> {
         if !is_valid_id(&cfg.domain) {
@@ -396,7 +399,7 @@ impl Builder {
         }
         let prefix = format!("{}/{HOMIE_TOPIC_VERSION}/", cfg.domain);
         let m = Model::new(prefix, root_id, root)?;
-        Ok(Builder { cfg, m })
+        Ok(TreeBuilder { cfg, m })
     }
 
     /// The configuration in use.
@@ -433,7 +436,7 @@ impl Builder {
 
     /// Builds and checks every device's description and returns the tree.
     pub fn finish(self) -> Result<Tree, BuildError> {
-        let Builder { cfg, mut m } = self;
+        let TreeBuilder { cfg, mut m } = self;
         for d in m.preorder() {
             m.rebuild(d, cfg.max_description_bytes)?;
         }
@@ -446,7 +449,7 @@ impl Tree {
     /// A tree with one root device and no nodes. Nothing is published until
     /// the first [`handle_link`](Self::handle_link) `Up`.
     pub fn new(cfg: TreeConfig, root_id: &str, root: DeviceSpec) -> Result<Self, BuildError> {
-        Builder::new(cfg, root_id, root)?.finish()
+        TreeBuilder::new(cfg, root_id, root)?.finish()
     }
 
     fn from_model(cfg: TreeConfig, m: Model) -> Result<Self, BuildError> {
@@ -513,16 +516,15 @@ impl Tree {
     /// The will to register on the connection: the root's `$state` set to
     /// `lost`, retained, at the tree QoS (convention.md:56-58).
     pub fn last_will(&self) -> LastWill {
-        LastWill {
-            topic: self
-                .m
+        LastWill::new(
+            self.m
                 .dev(self.m.root)
                 .map(|d| d.state_topic.clone())
                 .unwrap_or_default(),
-            payload: b"lost".to_vec(),
-            qos: self.cfg.qos,
-            retain: true,
-        }
+            b"lost".to_vec(),
+            self.cfg.qos,
+            true,
+        )
     }
 
     /// Every device, in pre-order, root first.
@@ -614,6 +616,7 @@ impl Tree {
                 }
                 self.reset_link();
             }
+            _ => return,
         }
         self.events.push_back(DeviceEvent::Link(link));
     }
@@ -688,7 +691,7 @@ impl Tree {
     /// Queues `cmd` (a SUBSCRIBE from the ledger) with a gate when receipts
     /// are on; returns the gate.
     fn push_subscribe_cmd(&mut self, cmd: Option<Command>) -> Option<u64> {
-        let Some(Command::Subscribe { filters }) = cmd else {
+        let Some(Command::Subscribe { filters, .. }) = cmd else {
             return None;
         };
         let gate = self.cfg.receipts.then(|| self.ticket());
@@ -769,12 +772,7 @@ impl Tree {
     }
 
     fn retained(&self, topic: String, payload: Vec<u8>) -> Command {
-        Command::Publish {
-            topic,
-            payload,
-            qos: self.cfg.qos,
-            retain: true,
-        }
+        Command::publish(topic, payload, self.cfg.qos, true)
     }
 
     fn untomb(&mut self, topic: &str) {
@@ -792,9 +790,9 @@ impl Tree {
                     let names = filters.iter().map(|(f, _)| f.clone()).collect();
                     self.pending_subs.push_back((names, gate));
                 }
-                Some(Command::Subscribe { filters })
+                Some(Command::subscribe(filters))
             }
-            Step::Unsubscribe(filters) => Some(Command::Unsubscribe { filters }),
+            Step::Unsubscribe(filters) => Some(Command::unsubscribe(filters)),
             Step::Clear(topic) => {
                 if !self.tombs.contains_key(&topic) {
                     return None;
@@ -1186,12 +1184,12 @@ impl Tree {
             .slot(slot)
             .map(|s| s.topic.clone())
             .ok_or(ValueError::Gone)?;
-        self.steps.push_back(Step::Cmd(Command::Publish {
+        self.steps.push_back(Step::Cmd(Command::publish(
             topic,
-            payload: self.scratch.as_bytes().to_vec(),
-            qos: QoS::AtMostOnce,
-            retain: false,
-        }));
+            self.scratch.as_bytes().to_vec(),
+            QoS::AtMostOnce,
+            false,
+        )));
         Ok(Change::Queued)
     }
 
@@ -1409,7 +1407,7 @@ impl Tree {
         for t in removed.into_iter().flat_map(|r| r.clears) {
             self.issue_clear(t);
         }
-        if let Some(Command::Unsubscribe { filters }) = unsub {
+        if let Some(Command::Unsubscribe { filters, .. }) = unsub {
             self.steps.push_back(Step::Unsubscribe(filters));
         }
         Ok(r)
@@ -1547,12 +1545,7 @@ impl Tree {
         }
         if !self.connected {
             crate::log::warn!("implicitLinkUp", topic = msg.topic);
-            self.handle_link(
-                now,
-                Link::Up {
-                    session_present: false,
-                },
-            );
+            self.handle_link(now, Link::up(false));
         }
         let Ok(t) = topic::parse(msg.topic) else {
             crate::log::debug!("invalidTopic", topic = msg.topic);
@@ -1748,7 +1741,7 @@ impl Tree {
             return;
         }
         match cmd {
-            Command::Subscribe { filters } => {
+            Command::Subscribe { filters, .. } => {
                 let names: Vec<String> = filters.into_iter().map(|(f, _)| f).collect();
                 let gate = match self.pending_subs.iter().position(|(f, _)| *f == names) {
                     Some(i) => self.pending_subs.remove(i).and_then(|(_, g)| g),
@@ -1757,7 +1750,7 @@ impl Tree {
                 crate::log::warn!("commandRetry", delay_ms = self.backoff_ms);
                 self.schedule_subscribe(now, names, gate);
             }
-            Command::Unsubscribe { filters } => {
+            Command::Unsubscribe { filters, .. } => {
                 crate::log::warn!("commandRetry", delay_ms = self.backoff_ms);
                 self.retries
                     .push((now.add_ms(self.backoff_ms), Step::Unsubscribe(filters)));
@@ -2092,8 +2085,8 @@ impl ebus_mqtt::Role for Tree {
             Command::Publish { topic, .. } => topic
                 .strip_prefix(prefix)
                 .is_some_and(|rest| !rest.ends_with("/set") && !rest.starts_with("$broadcast/")),
-            Command::Subscribe { filters } => filters.iter().any(|(f, _)| mine(f)),
-            Command::Unsubscribe { filters } => filters.iter().any(|f| mine(f)),
+            Command::Subscribe { filters, .. } => filters.iter().any(|(f, _)| mine(f)),
+            Command::Unsubscribe { filters, .. } => filters.iter().any(|f| mine(f)),
             _ => false,
         }
     }

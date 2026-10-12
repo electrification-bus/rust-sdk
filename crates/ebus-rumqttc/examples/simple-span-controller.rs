@@ -49,7 +49,7 @@ use std::time::Duration;
 
 use ebus_discovery_tokio::Mdns;
 use ebus_discovery_tokio::ebus_discovery::{BrokerEndpoint, BrokerType};
-use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ControllerOptions;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::Config;
 use rumqttc::tokio_rustls::rustls::ClientConfig;
 use rumqttc::{MqttOptions, TlsConfiguration, Transport};
@@ -130,7 +130,7 @@ async fn run(args: Args) -> Result<(), String> {
     };
     let tls = span::tls::client_config(ca.as_deref(), &tls_name)?;
     let connect = {
-        let (id, serial) = (ebus_rumqttc::client_id(), args.serial.clone());
+        let (id, serial) = (ebus_rumqttc::controller_client_id(), args.serial.clone());
         move |ep: &BrokerEndpoint| options(&id, &serial, &password, ep, Arc::clone(&tls))
     };
 
@@ -152,7 +152,7 @@ async fn run(args: Args) -> Result<(), String> {
         _ => None,
     };
 
-    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())
+    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())
         .map_err(|e| e.to_string())?;
     let handle = run.handle;
     let mut events = run.events;
@@ -190,7 +190,11 @@ fn finished(
     res: Result<Result<(), ebus_rumqttc::Error>, tokio::task::JoinError>,
 ) -> Result<(), String> {
     match res {
-        Ok(r) => r.map_err(|e| e.to_string()),
+        Ok(Err(e)) => Err(match std::error::Error::source(&e) {
+            Some(s) => format!("{e}: {s}"),
+            None => e.to_string(),
+        }),
+        Ok(Ok(())) => Ok(()),
         Err(e) => Err(e.to_string()),
     }
 }

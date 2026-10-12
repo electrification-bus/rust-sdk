@@ -12,17 +12,17 @@
 //!
 //! ```no_run
 //! use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::{Config, Event};
-//! use ebus_rumqttc::ebus_homie_tokio::{AttachOptions, Delivered};
+//! use ebus_rumqttc::ebus_homie_tokio::{ControllerOptions, Delivered};
 //!
 //! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-//! let mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::client_id(), "localhost", 1883);
-//! let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())?;
+//! let mqtt = rumqttc::MqttOptions::new(ebus_rumqttc::controller_client_id(), "localhost", 1883);
+//! let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())?;
 //! tokio::spawn(run.task.run());
 //!
 //! let mut events = run.events;
 //! while let Some(d) = events.recv().await {
 //!     match d {
-//!         Delivered::Event(Event::DeviceSynced { device, missing: 0 }) => {
+//!         Delivered::Event(Event::DeviceSynced { device, missing: 0, .. }) => {
 //!             let _values = run.handle.device(&device);
 //!         }
 //!         Delivered::Overflow { .. } => {
@@ -48,6 +48,8 @@
 //! sent after it, and the controller runs with
 //! [`Config::link_up_discards_queued`] set.
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 mod conn;
 mod device;
 
@@ -64,8 +66,8 @@ pub use device::{DeviceTask, PairTask, RunningDevice, RunningPair, device, pair}
 
 use ebus_homie_tokio::ebus_homie::controller::{Config, ConfigError};
 use ebus_homie_tokio::{
-    AttachOptions, Commands, ControllerDriver, ControllerHandle, DriverError, EventReceiver, Inbox,
-    attach,
+    Commands, ControllerDriver, ControllerHandle, ControllerOptions, DriverError, EventReceiver,
+    Inbox, attach_controller,
 };
 use rumqttc::{AsyncClient, EventLoop, MqttOptions};
 
@@ -80,7 +82,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Driver(e) => write!(f, "driver: {e}"),
+            Error::Driver(_) => f.write_str("driver stopped"),
         }
     }
 }
@@ -101,7 +103,8 @@ impl From<DriverError> for Error {
 
 /// A controller with its own connection.
 #[derive(Debug)]
-pub struct Running {
+#[non_exhaustive]
+pub struct RunningController {
     /// Snapshot reads, `/set` and `$broadcast`.
     pub handle: ControllerHandle,
     /// The controller's events.
@@ -136,12 +139,12 @@ impl fmt::Debug for ControllerTask {
 pub fn controller(
     mqtt: MqttOptions,
     mut config: Config,
-    opts: AttachOptions,
-) -> Result<Running, ConfigError> {
+    opts: ControllerOptions,
+) -> Result<RunningController, ConfigError> {
     config.link_up_discards_queued = true;
-    let a = attach(config, opts)?;
+    let a = attach_controller(config, opts)?;
     let (client, eventloop) = AsyncClient::new(mqtt, conn::REQUEST_CAPACITY);
-    Ok(Running {
+    Ok(RunningController {
         handle: a.handle,
         events: a.events,
         task: ControllerTask {
@@ -157,7 +160,7 @@ pub fn controller(
 
 /// `ebus-controller-` and 16 random hex digits, after python-sdk's
 /// `homie-controller-{uuid}` (homie.py:3870).
-pub fn client_id() -> String {
+pub fn controller_client_id() -> String {
     let mut h = RandomState::new().build_hasher();
     h.write_u128(
         std::time::SystemTime::now()
@@ -234,9 +237,9 @@ mod tests {
 
     #[test]
     fn task_future_is_send() {
-        let mqtt = MqttOptions::new(client_id(), "localhost", 1883);
-        let run =
-            controller(mqtt, Config::wildcard(), AttachOptions::default()).expect("valid config");
+        let mqtt = MqttOptions::new(controller_client_id(), "localhost", 1883);
+        let run = controller(mqtt, Config::wildcard(), ControllerOptions::default())
+            .expect("valid config");
         send_check(
             &run.task
                 .reresolve(Box::new(|| Box::pin(async { None })))
@@ -245,9 +248,18 @@ mod tests {
     }
 
     #[test]
+    fn driver_error_is_reported_once() {
+        use std::error::Error as _;
+        let inner = DriverError::CommandsClosed;
+        let e = Error::from(inner);
+        assert!(!e.to_string().contains(&inner.to_string()), "{e}");
+        assert_eq!(e.source().map(ToString::to_string), Some(inner.to_string()));
+    }
+
+    #[test]
     fn client_ids_are_distinct_and_prefixed() {
-        let a = client_id();
-        let b = client_id();
+        let a = controller_client_id();
+        let b = controller_client_id();
         assert!(a.starts_with("ebus-controller-"));
         assert_eq!(a.len(), "ebus-controller-".len() + 16);
         assert_ne!(a, b);
@@ -269,21 +281,17 @@ mod tests {
         let mqtt = MqttOptions::new("t", "localhost", 1883);
         let (client, mut el) = AsyncClient::new(mqtt, 16);
         let cmds = [
-            Command::Subscribe {
-                filters: vec![
-                    ("ebus/5/+/$state".into(), ebus_mqtt::QoS::ExactlyOnce),
-                    ("ebus/5/d/+/+".into(), ebus_mqtt::QoS::AtLeastOnce),
-                ],
-            },
-            Command::Unsubscribe {
-                filters: vec!["a/b".into(), "c/d".into()],
-            },
-            Command::Publish {
-                topic: "ebus/5/d/n/p/set".into(),
-                payload: b"true".to_vec(),
-                qos: ebus_mqtt::QoS::AtMostOnce,
-                retain: false,
-            },
+            Command::subscribe(vec![
+                ("ebus/5/+/$state".into(), ebus_mqtt::QoS::ExactlyOnce),
+                ("ebus/5/d/+/+".into(), ebus_mqtt::QoS::AtLeastOnce),
+            ]),
+            Command::unsubscribe(vec!["a/b".into(), "c/d".into()]),
+            Command::publish(
+                "ebus/5/d/n/p/set",
+                b"true".to_vec(),
+                ebus_mqtt::QoS::AtMostOnce,
+                false,
+            ),
         ];
         for c in cmds {
             try_send(&client, c).expect("queued");
@@ -319,8 +327,9 @@ mod tests {
             .and_then(|l| l.local_addr())
             .expect("free port")
             .port();
-        let mqtt = MqttOptions::new(client_id(), "127.0.0.1", port);
-        let run = controller(mqtt, Config::wildcard(), AttachOptions::default()).expect("valid");
+        let mqtt = MqttOptions::new(controller_client_id(), "127.0.0.1", port);
+        let run =
+            controller(mqtt, Config::wildcard(), ControllerOptions::default()).expect("valid");
         // The controller believes it is connected and holds more filters than
         // rumqttc's request channel buffers, while no broker listens.
         let inbox = run.task.inbox.clone();
@@ -353,7 +362,7 @@ mod tests {
         // As `controller` configures it.
         let mut cfg = Config::wildcard();
         cfg.link_up_discards_queued = true;
-        let a = attach(cfg, AttachOptions::default()).expect("valid");
+        let a = attach_controller(cfg, ControllerOptions::default()).expect("valid");
         let inbox = a.inbox.clone();
         tokio::spawn(a.driver.run());
         let (client, mut el) = AsyncClient::new(MqttOptions::new("t", "localhost", 1883), 16);
@@ -397,17 +406,15 @@ mod tests {
         let mqtt = MqttOptions::new("t", "localhost", 1883);
         let (client, el) = AsyncClient::new(mqtt, 16);
         drop(el);
-        let cmd = Command::Unsubscribe {
-            filters: vec!["a".into(), "b".into()],
-        };
+        let cmd = Command::unsubscribe(vec!["a".into(), "b".into()]);
         assert_eq!(try_send(&client, cmd.clone()), Err(Unsent::Full(cmd)));
-        let cmd = Command::Subscribe {
-            filters: vec![("a".into(), ebus_mqtt::QoS::AtMostOnce)],
-        };
+        let cmd = Command::subscribe(vec![("a".into(), ebus_mqtt::QoS::AtMostOnce)]);
         assert_eq!(try_send(&client, cmd.clone()), Err(Unsent::Full(cmd)));
-        let cmd = Command::Subscribe {
-            filters: vec![("a/#/b".into(), ebus_mqtt::QoS::AtMostOnce)],
-        };
+        let cmd = Command::subscribe(vec![("a/#/b".into(), ebus_mqtt::QoS::AtMostOnce)]);
         assert_eq!(try_send(&client, cmd.clone()), Err(Unsent::Invalid(cmd)));
     }
 }
+
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;

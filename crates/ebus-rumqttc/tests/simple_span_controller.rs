@@ -15,7 +15,7 @@ mod span;
 use std::path::Path;
 use std::time::Duration;
 
-use ebus_rumqttc::ebus_homie_tokio::AttachOptions;
+use ebus_rumqttc::ebus_homie_tokio::ControllerOptions;
 use ebus_rumqttc::ebus_homie_tokio::ebus_homie::controller::Config;
 use rumqttc::MqttOptions;
 use serde_json::{Map, Value};
@@ -98,9 +98,13 @@ async fn monitor_reports_a_replayed_panel() {
         .map(|(id, _)| id.clone())
         .expect("a MID");
 
-    let mut mqtt = MqttOptions::new(ebus_rumqttc::client_id(), "127.0.0.1", broker.port);
+    let mut mqtt = MqttOptions::new(
+        ebus_rumqttc::controller_client_id(),
+        "127.0.0.1",
+        broker.port,
+    );
     mqtt.set_max_packet_size(span::MAX_PACKET, span::MAX_PACKET);
-    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), AttachOptions::default())
+    let run = ebus_rumqttc::controller(mqtt, Config::wildcard(), ControllerOptions::default())
         .expect("valid config");
     let task = tokio::spawn(run.task.run());
     let (tx, rx) = mpsc::unbounded_channel();
@@ -297,7 +301,7 @@ async fn connects(
     port: u16,
     tls: std::sync::Arc<rumqttc::tokio_rustls::rustls::ClientConfig>,
 ) -> bool {
-    let mut mqtt = MqttOptions::new(ebus_rumqttc::client_id(), "127.0.0.1", port);
+    let mut mqtt = MqttOptions::new(ebus_rumqttc::controller_client_id(), "127.0.0.1", port);
     mqtt.set_transport(rumqttc::Transport::tls_with_config(
         rumqttc::TlsConfiguration::Rustls(tls),
     ));

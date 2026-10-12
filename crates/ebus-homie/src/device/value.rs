@@ -91,8 +91,7 @@ impl fmt::Display for ValueError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for ValueError {}
+impl core::error::Error for ValueError {}
 
 /// A Rust type that a property holds.
 pub trait HomieValue: Clone + 'static {

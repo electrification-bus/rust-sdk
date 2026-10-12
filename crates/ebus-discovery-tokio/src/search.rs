@@ -140,7 +140,7 @@ pub async fn find_broker<B: Backend>(b: &B, cfg: BrokerConfig) -> Result<BrokerE
     if let Some(r) = search.result() {
         return Ok(r.clone());
     }
-    let mut browses = Browses::open(b, &search.browse_types()).await?;
+    let mut browses = Browses::open(b, search.browse_types()).await?;
     loop {
         if let Some(r) = search.result() {
             return Ok(r.clone());

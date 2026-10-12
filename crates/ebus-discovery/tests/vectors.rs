@@ -135,16 +135,16 @@ fn addr_text(a: &ScopedAddr) -> String {
 }
 
 fn instance(v: &Value) -> Instance {
-    Instance {
-        key: InstanceKey {
+    Instance::new(
+        InstanceKey {
             service_type: v["service_type"].as_str().unwrap().into(),
             name: v["instance_name"].as_str().unwrap().into(),
         },
-        server: v["server"].as_str().unwrap().into(),
-        port: v["port"].as_u64().unwrap() as u16,
-        txt: txt_from(&v["txt"]),
-        addrs: strs(&v["addresses"]).iter().map(|a| addr(a)).collect(),
-    }
+        v["server"].as_str().unwrap().into(),
+        v["port"].as_u64().unwrap() as u16,
+        txt_from(&v["txt"]),
+        strs(&v["addresses"]).iter().map(|a| addr(a)).collect(),
+    )
 }
 
 fn endpoints(instances: &Value) -> Vec<BrokerEndpoint> {
@@ -165,7 +165,8 @@ fn accept(v: &Value) -> Vec<BrokerType> {
             .collect()
     });
     BROKER_TYPES
-        .into_iter()
+        .iter()
+        .copied()
         .filter(|t| accepted.as_ref().is_none_or(|a| a.contains(t)))
         .collect()
 }
@@ -331,7 +332,7 @@ fn rank_brokers_vectors() {
 #[test]
 fn match_configured_vectors() {
     run("match-configured", |input| {
-        let ranked = rank_brokers(endpoints(&input["instances"]), &BROKER_TYPES);
+        let ranked = rank_brokers(endpoints(&input["instances"]), BROKER_TYPES);
         let conf = BrokerEndpoint::from_url(s(input, "url")?).map_err(|e| e.to_string())?;
         Ok(json!({"match": endpoint_out(match_configured(&conf, &ranked).as_ref())}))
     });

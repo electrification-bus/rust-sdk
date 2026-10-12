@@ -13,8 +13,8 @@ use std::time::Duration;
 use ebus_homie_tokio::ebus_homie::controller::{Config, Event};
 use ebus_homie_tokio::ebus_mqtt::{Command, QoS};
 use ebus_homie_tokio::{
-    AttachOptions, ControllerDriver, ControllerHandle, Delivered, DriverError, EventReceiver,
-    attach,
+    ControllerDriver, ControllerHandle, ControllerOptions, Delivered, DriverError, EventReceiver,
+    attach_controller,
 };
 use rumqttc::{Client, Connection, MqttOptions, Packet, SubscribeFilter};
 use tokio::sync::watch;
@@ -222,9 +222,9 @@ struct Host {
 fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
     let mut cfg = Config::wildcard();
     cfg.host_filters = host_filters.iter().map(|f| (*f).to_owned()).collect();
-    let mut opts = AttachOptions::default();
+    let mut opts = ControllerOptions::default();
     opts.inbox_bytes = inbox_bytes;
-    let ebus = attach(cfg, opts).expect("valid config");
+    let ebus = attach_controller(cfg, opts).expect("valid config");
     let (gate, gate_rx) = watch::channel(true);
     let driver = tokio::spawn(gated(ebus.driver, gate_rx));
 
@@ -291,12 +291,12 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
                 let res = {
                     let mut c = client.lock().unwrap_or_else(|p| p.into_inner());
                     match &cmd {
-                        Command::Subscribe { filters } => c.try_subscribe_many(
+                        Command::Subscribe { filters, .. } => c.try_subscribe_many(
                             filters
                                 .iter()
                                 .map(|(f, q)| SubscribeFilter::new(f.clone(), qos(*q))),
                         ),
-                        Command::Unsubscribe { filters } => filters.iter().try_for_each(|f| {
+                        Command::Unsubscribe { filters, .. } => filters.iter().try_for_each(|f| {
                             c.try_unsubscribe(f.clone())?;
                             unsubscribes.fetch_add(1, Ordering::AcqRel);
                             Ok(())
@@ -306,6 +306,7 @@ fn start_host(port: u16, host_filters: &[&str], inbox_bytes: usize) -> Host {
                             payload,
                             qos: q,
                             retain,
+                            ..
                         } => c.try_publish(topic.clone(), qos(*q), *retain, payload.clone()),
                         _ => Ok(()),
                     }
@@ -356,6 +357,7 @@ impl Host {
                     }
                 }
                 Delivered::Overflow { dropped } => panic!("event overflow: {dropped}"),
+                other => panic!("unexpected delivery: {other:?}"),
             }
         }
     }
@@ -368,7 +370,10 @@ impl Host {
                     matches!(e, Event::DeviceSynced { device, .. } if left.iter().any(|l| l == device.as_str()))
                 })
                 .await;
-            if let Event::DeviceSynced { device, missing } = e {
+            if let Event::DeviceSynced {
+                device, missing, ..
+            } = e
+            {
                 assert_eq!(missing, 0, "{device:?} synced with values missing");
                 left.retain(|l| l != device.as_str());
             }
@@ -464,7 +469,7 @@ async fn host_filters_survive_controller_unsubscribes() {
     host.until(
         5,
         "DeviceRemoved h1",
-        |e| matches!(e, Event::DeviceRemoved { device } if device.as_str() == "h1"),
+        |e| matches!(e, Event::DeviceRemoved { device, .. } if device.as_str() == "h1"),
     )
     .await;
     while host.own.try_recv().is_ok() {}
@@ -473,7 +478,7 @@ async fn host_filters_survive_controller_unsubscribes() {
     let subscribed: Vec<&str> = sent
         .iter()
         .filter_map(|c| match c {
-            Command::Subscribe { filters } => Some(filters),
+            Command::Subscribe { filters, .. } => Some(filters),
             _ => None,
         })
         .flatten()
@@ -482,7 +487,7 @@ async fn host_filters_survive_controller_unsubscribes() {
     let unsubscribed: Vec<&str> = sent
         .iter()
         .filter_map(|c| match c {
-            Command::Unsubscribe { filters } => Some(filters),
+            Command::Unsubscribe { filters, .. } => Some(filters),
             _ => None,
         })
         .flatten()

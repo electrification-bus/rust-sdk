@@ -53,14 +53,18 @@ pub struct SlotId {
 }
 
 impl SlotId {
-    /// The slot's index, dense from 0, for a [`DirtySet`](super::DirtySet).
+    /// The slot's index, dense from 0, for a runtime's per-slot bitset.
     pub fn index(self) -> u32 {
         self.index
     }
 }
 
 /// A device's own `$description` fields.
+///
+/// Built from [`DeviceSpec::typed`] or `DeviceSpec::default()` and the
+/// chained setters outside this crate.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[non_exhaustive]
 pub struct DeviceSpec {
     /// Friendly name; the id when `None`, as python-sdk writes it.
     pub name: Option<String>,
@@ -80,10 +84,35 @@ impl DeviceSpec {
             ..DeviceSpec::default()
         }
     }
+
+    /// With a friendly name.
+    #[must_use]
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_string());
+        self
+    }
+
+    /// With one more extension id.
+    #[must_use]
+    pub fn extension(mut self, id: &str) -> Self {
+        self.extensions.push(id.to_string());
+        self
+    }
+
+    /// With one more extension-defined top-level field.
+    #[must_use]
+    pub fn extra(mut self, key: &str, value: Value) -> Self {
+        self.extras.push((key.to_string(), value));
+        self
+    }
 }
 
 /// A node's own `$description` fields.
+///
+/// Built from [`NodeSpec::typed`] or `NodeSpec::default()` and the chained
+/// setters outside this crate.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct NodeSpec {
     /// Friendly name; the id when `None`.
     pub name: Option<String>,
@@ -99,10 +128,20 @@ impl NodeSpec {
             r#type: Some(r#type.to_string()),
         }
     }
+
+    /// With a friendly name.
+    #[must_use]
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_string());
+        self
+    }
 }
 
 /// A property's `$description` fields and publishing options.
+///
+/// Built from [`PropSpec::new`] and the chained setters outside this crate.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct PropSpec {
     /// Friendly name; the id when `None`.
     pub name: Option<String>,
@@ -231,8 +270,7 @@ impl fmt::Display for BuildError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for BuildError {}
+impl core::error::Error for BuildError {}
 
 /// What a slot's value compares by before it is encoded.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -809,6 +847,12 @@ impl Model {
 /// [`Tree::reconfigure`](super::Tree::reconfigure).
 pub struct Reconfigure<'a> {
     pub(super) m: &'a mut Model,
+}
+
+impl fmt::Debug for Reconfigure<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Reconfigure").finish_non_exhaustive()
+    }
 }
 
 impl Reconfigure<'_> {

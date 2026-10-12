@@ -13,7 +13,11 @@ use crate::txt::split_list;
 use crate::{BrokerMode, BrokerType, is_local_name, same_host, strip_dot};
 
 /// A broker to connect to, discovered or configured.
+///
+/// Built with [`from_instance`](Self::from_instance),
+/// [`configured`](Self::configured) or [`from_url`](Self::from_url).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct BrokerEndpoint {
     /// The transport.
     pub broker_type: BrokerType,
@@ -565,7 +569,7 @@ mod tests {
                 ),
                 ep(BrokerType::MqttWs, "d", "d.local.", &[], &[]),
             ],
-            &BROKER_TYPES,
+            BROKER_TYPES,
         );
         let got: Vec<String> = ranked.iter().map(BrokerEndpoint::url).collect();
         assert_eq!(
@@ -576,7 +580,7 @@ mod tests {
                 "mqtt://b.local:1883"
             ]
         );
-        let tcp = rank_brokers(ranked, &TCP_BROKER_TYPES);
+        let tcp = rank_brokers(ranked, TCP_BROKER_TYPES);
         assert_eq!(tcp.len(), 2);
     }
 
@@ -586,7 +590,7 @@ mod tests {
         a.port = 1884;
         a.host = "a.local".into();
         let b = ep(BrokerType::Mqtt, "b", "B.local.", &[], &[]);
-        let ranked = rank_brokers(vec![b, a], &BROKER_TYPES);
+        let ranked = rank_brokers(vec![b, a], BROKER_TYPES);
         assert_eq!(ranked[0].host, "a.local");
     }
 
@@ -696,7 +700,7 @@ mod tests {
             ]
         );
         assert_eq!(
-            urls(&TCP_BROKER_TYPES),
+            urls(TCP_BROKER_TYPES),
             [
                 "mqtts://a.local:8883",
                 "mqtts://b.local:8883",
