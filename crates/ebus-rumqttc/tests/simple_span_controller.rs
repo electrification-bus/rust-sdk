@@ -12,6 +12,7 @@ mod support;
 #[path = "../examples/common/span.rs"]
 mod span;
 
+use std::net::Ipv4Addr;
 use std::path::Path;
 use std::time::Duration;
 
@@ -359,18 +360,15 @@ async fn tls_verifies_the_panel_name_at_an_address() {
         support::skip(test, "no openssl binary that makes the test certificates");
         return;
     }
-    let port = std::net::TcpListener::bind("127.0.0.1:0")
-        .and_then(|l| l.local_addr())
-        .expect("free port")
-        .port();
     let file = |f: &str| dir.join(f).display().to_string();
-    let extra = format!(
-        "listener {port} 127.0.0.1\ncafile {}\ncertfile {}\nkeyfile {}\n",
-        file("panel-ca.pem"),
-        file("server.pem"),
-        file("server.key")
-    );
-    let Some(_broker) = Broker::start(test, &extra) else {
+    let Some((_broker, port)) = Broker::start_with(test, Ipv4Addr::LOCALHOST.into(), 0, |port| {
+        format!(
+            "listener {port} 127.0.0.1\ncafile {}\ncertfile {}\nkeyfile {}\n",
+            file("panel-ca.pem"),
+            file("server.pem"),
+            file("server.key")
+        )
+    }) else {
         let _ = std::fs::remove_dir_all(&dir);
         return;
     };
@@ -379,12 +377,6 @@ async fn tls_verifies_the_panel_name_at_an_address() {
     let config =
         |ca: Option<&[u8]>, name: &str| span::tls::client_config(ca, name).expect("config");
 
-    // The plain listener is up; give the TLS one the same chance.
-    let deadline = Instant::now() + Duration::from_secs(5);
-    while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
-        assert!(Instant::now() < deadline, "no TLS listener");
-        tokio::time::sleep(Duration::from_millis(25)).await;
-    }
     assert!(connects(port, config(Some(&panel_ca), &host)).await);
     assert!(!connects(port, config(Some(&panel_ca), "span-nt-0000-yyyyy.local")).await);
     assert!(!connects(port, config(Some(&panel_ca), "127.0.0.1")).await);

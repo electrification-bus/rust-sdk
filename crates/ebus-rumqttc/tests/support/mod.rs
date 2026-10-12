@@ -7,7 +7,7 @@
 
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Write};
-use std::net::{IpAddr, Ipv4Addr, TcpListener, TcpStream};
+use std::net::{IpAddr, Ipv4Addr, TcpListener};
 use std::path::PathBuf;
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -72,53 +72,74 @@ impl Broker {
 
     /// [`Broker::start`] listening on `ip` and `port`, a free one when 0.
     pub fn start_at(test: &str, ip: IpAddr, port: u16, extra: &str) -> Option<Broker> {
+        Broker::start_with(test, ip, port, |_| extra.to_owned()).map(|(b, _)| b)
+    }
+
+    /// [`Broker::start_at`] with `extra` built from a second free port, which
+    /// is returned with the broker, for a second listener.
+    pub fn start_with(
+        test: &str,
+        ip: IpAddr,
+        port: u16,
+        extra: impl Fn(u16) -> String,
+    ) -> Option<(Broker, u16)> {
         let Some(bin) = mosquitto() else {
             skip(test, "no mosquitto binary (set MOSQUITTO to name one)");
             return None;
         };
-        let port = match port {
-            0 => TcpListener::bind((ip, 0))
-                .and_then(|l| l.local_addr())
-                .expect("free port")
-                .port(),
-            p => p,
-        };
-        let conf = std::env::temp_dir().join(format!(
-            "ebus-rumqttc-{}-{ip}-{port}.conf",
-            std::process::id()
-        ));
-        std::fs::write(
-            &conf,
-            format!("listener {port} {ip}\nallow_anonymous true\npersistence false\n{extra}\n"),
-        )
-        .expect("write config");
-        let mut b = Broker {
-            bin,
-            child: None,
-            conf,
-            ip,
-            port,
-        };
-        b.spawn();
-        Some(b)
+        // A free port can be taken by another socket before mosquitto binds
+        // it; mosquitto then exits, and a fresh port is tried.
+        let mut failure = String::new();
+        for _ in 0..10 {
+            let port = match port {
+                0 => free_port(ip),
+                p => p,
+            };
+            let second = free_port(ip);
+            let conf = std::env::temp_dir().join(format!(
+                "ebus-rumqttc-{}-{ip}-{port}.conf",
+                std::process::id()
+            ));
+            std::fs::write(
+                &conf,
+                format!(
+                    "listener {port} {ip}\nallow_anonymous true\npersistence false\nlog_dest stderr\n{}\n",
+                    extra(second)
+                ),
+            )
+            .expect("write config");
+            let mut b = Broker {
+                bin: bin.clone(),
+                child: None,
+                conf,
+                ip,
+                port,
+            };
+            match b.spawn() {
+                Ok(()) => return Some((b, second)),
+                Err(e) => failure = e,
+            }
+        }
+        panic!("mosquitto did not start: {failure}");
     }
 
-    fn spawn(&mut self) {
-        let child = Command::new(&self.bin)
+    /// Starts mosquitto and waits for it to report that it is running, which
+    /// it does once every listener is bound; else returns its output.
+    fn spawn(&mut self) -> Result<(), String> {
+        let mut child = Command::new(&self.bin)
             .arg("-c")
             .arg(&self.conf)
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
+            .stderr(Stdio::piped())
             .spawn()
             .expect("start mosquitto");
+        let ready = mosquitto_running(child.stderr.take().expect("piped stderr"));
         self.child = Some(child);
-        for _ in 0..200 {
-            if TcpStream::connect((self.ip, self.port)).is_ok() {
-                return;
-            }
-            std::thread::sleep(Duration::from_millis(25));
+        if let Err(e) = &ready {
+            self.kill();
+            return Err(format!("port {}: {e}", self.port));
         }
-        panic!("mosquitto did not listen on {}", self.port);
+        ready
     }
 
     /// Kills the broker, losing every retained message and session.
@@ -132,7 +153,9 @@ impl Broker {
     /// Kills the broker and starts a fresh one on the same port.
     pub fn restart(&mut self) {
         self.kill();
-        self.spawn();
+        if let Err(e) = self.spawn() {
+            panic!("mosquitto did not restart: {e}");
+        }
     }
 }
 
@@ -140,6 +163,36 @@ impl Drop for Broker {
     fn drop(&mut self) {
         self.kill();
         let _ = std::fs::remove_file(&self.conf);
+    }
+}
+
+/// A port on `ip` that nothing listened on a moment ago.
+fn free_port(ip: IpAddr) -> u16 {
+    TcpListener::bind((ip, 0))
+        .and_then(|l| l.local_addr())
+        .expect("free port")
+        .port()
+}
+
+/// Reads mosquitto's log from `stderr` until its `running` line, within 10 s;
+/// else returns what it logged. The rest of the log is drained in the
+/// background.
+fn mosquitto_running(stderr: std::process::ChildStderr) -> Result<(), String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+            let _ = tx.send(line);
+        }
+    });
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    let mut log = Vec::new();
+    loop {
+        let left = deadline.saturating_duration_since(std::time::Instant::now());
+        match rx.recv_timeout(left) {
+            Ok(line) if line.ends_with(" running") => return Ok(()),
+            Ok(line) => log.push(line),
+            Err(_) => return Err(log.join("\n")),
+        }
     }
 }
 

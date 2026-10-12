@@ -3,9 +3,10 @@
 //! `Connection::iter`, and an executor task using the non-blocking `try_*`
 //! calls. Skipped when no `mosquitto` binary is found (`MOSQUITTO` names one).
 
-use std::net::{TcpListener, TcpStream};
+use std::io::{BufRead, BufReader};
+use std::net::TcpListener;
 use std::path::PathBuf;
-use std::process::{Child, Stdio};
+use std::process::{Child, ChildStderr, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -51,34 +52,62 @@ impl Broker {
             eprintln!("skipped {test}: no mosquitto binary (set MOSQUITTO to name one)");
             return None;
         };
-        let port = TcpListener::bind("127.0.0.1:0")
-            .and_then(|l| l.local_addr())
-            .expect("free port")
-            .port();
-        let conf = std::env::temp_dir().join(format!(
-            "ebus-homie-tokio-{}-{port}.conf",
-            std::process::id()
-        ));
-        std::fs::write(
-            &conf,
-            format!("listener {port} 127.0.0.1\nallow_anonymous true\npersistence false\n"),
-        )
-        .expect("write config");
-        let child = std::process::Command::new(bin)
-            .arg("-c")
-            .arg(&conf)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .expect("start mosquitto");
-        let broker = Broker { child, conf, port };
-        for _ in 0..200 {
-            if TcpStream::connect(("127.0.0.1", port)).is_ok() {
-                return Some(broker);
+        // A free port can be taken by another socket before mosquitto binds
+        // it; mosquitto then exits, and a fresh port is tried.
+        let mut failure = String::new();
+        for _ in 0..10 {
+            let port = TcpListener::bind("127.0.0.1:0")
+                .and_then(|l| l.local_addr())
+                .expect("free port")
+                .port();
+            let conf = std::env::temp_dir().join(format!(
+                "ebus-homie-tokio-{}-{port}.conf",
+                std::process::id()
+            ));
+            std::fs::write(
+                &conf,
+                format!(
+                    "listener {port} 127.0.0.1\nallow_anonymous true\npersistence false\nlog_dest stderr\n"
+                ),
+            )
+            .expect("write config");
+            let mut child = std::process::Command::new(&bin)
+                .arg("-c")
+                .arg(&conf)
+                .stdout(Stdio::null())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("start mosquitto");
+            let ready = mosquitto_running(child.stderr.take().expect("piped stderr"));
+            let broker = Broker { child, conf, port };
+            match ready {
+                Ok(()) => return Some(broker),
+                Err(e) => failure = format!("port {port}: {e}"),
             }
-            std::thread::sleep(Duration::from_millis(25));
         }
-        panic!("mosquitto did not listen on {port}");
+        panic!("mosquitto did not start: {failure}");
+    }
+}
+
+/// Reads mosquitto's log from `stderr` until its `running` line, which it
+/// logs once its listener is bound, within 10 s; else returns what it logged.
+/// The rest of the log is drained in the background.
+fn mosquitto_running(stderr: ChildStderr) -> Result<(), String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+            let _ = tx.send(line);
+        }
+    });
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    let mut log = Vec::new();
+    loop {
+        let left = deadline.saturating_duration_since(std::time::Instant::now());
+        match rx.recv_timeout(left) {
+            Ok(line) if line.ends_with(" running") => return Ok(()),
+            Ok(line) => log.push(line),
+            Err(_) => return Err(log.join("\n")),
+        }
     }
 }
 
