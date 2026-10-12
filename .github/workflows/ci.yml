@@ -31,6 +31,8 @@ jobs:
         with:
           components: clippy
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      # The TLS code and the simple-span-controller example need rustls.
+      - run: cargo clippy -p ebus-rumqttc --all-targets --locked --features rustls -- -D warnings
 
   # 1.85 is the declared rust-version.
   test:
@@ -51,6 +53,8 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y mosquitto
       - run: cargo test --workspace --locked
+      # The simple-span-controller TLS test, which uses openssl.
+      - run: cargo test -p ebus-rumqttc --locked --features rustls
       # The mdns-sd backend's tests, two daemons over loopback on port 5353.
       - run: cargo test -p ebus-discovery-tokio --locked --features mdns-sd
 
@@ -142,3 +146,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo doc --workspace --no-deps --locked
       - run: cargo doc -p ebus-discovery-tokio --no-deps --locked --all-features
+      - run: cargo doc -p ebus-rumqttc --no-deps --locked --features rustls

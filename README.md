@@ -38,7 +38,7 @@ A device and a controller can share one connection (`ebus_rumqttc::pair`).
 
 ### Broker discovery
 
-A site has one MQTT broker, and every eBus host at the site connects to it. A host finds it in one of three ways:
+A typical site has one MQTT broker, and every eBus host at the site connects to it. A host finds it in one of three ways:
 
 - discovers the brokers advertised over mDNS (DNS-SD) and picks one;
 - connects to a configured broker;
@@ -157,6 +157,14 @@ The `device` example adds a duration, an event and a clean shutdown on Ctrl-C, a
 ```sh
 cargo run -p ebus-rumqttc --example device -- my-device
 ```
+
+The `simple-span-controller` example, a port of python-sdk's [simple-span-controller](https://github.com/electrification-bus/python-sdk/blob/main/examples/simple-span-controller), reports whether a SPAN panel's home is islanded from the grid, watching the MID child's `grid` node and the enclosure's `power-flows` node. It finds the panel's broker over mDNS as the `_secure-mqtt._tcp` advertisement whose SRV target is `span-<serial-number>.local`, else connects to that host name after 5 s:
+
+```sh
+cargo run -p ebus-rumqttc --example simple-span-controller --features rustls -- <serial-number> [password]
+```
+
+Without a password argument it reads the panel's `ebus_broker_password` from `SPAN_AUTH_FILE`, else `~/.span-auth.json`, the credential file of `span_auth_utils` in [SPAN-API-Client-Docs](https://github.com/spanio/SPAN-API-Client-Docs). That file is optional, a convenience: its [`scripts/span-auth`](https://github.com/spanio/SPAN-API-Client-Docs/tree/main/scripts) writes it (`span-auth setup --wait` registers with a panel, `span-auth list` shows the panels, `span-auth default` picks one). It verifies the broker against the panel's CA certificate, cached as `<serial-number>.crt` in `SPAN_CA_CERT_DIR`, else `~/.span-ca-certs`, and downloaded from `http://<host>/api/v2/certificate/ca` when missing or expiring within a day; `--insecure` skips the check. Its source lists every option: [crates/ebus-rumqttc/examples/simple-span-controller.rs](crates/ebus-rumqttc/examples/simple-span-controller.rs).
 
 ### Inside a service that already has an MQTT connection
 
