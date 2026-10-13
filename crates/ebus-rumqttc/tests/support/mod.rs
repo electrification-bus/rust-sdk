@@ -197,7 +197,9 @@ fn mosquitto_running(stderr: std::process::ChildStderr) -> Result<(), String> {
 }
 
 /// A TCP proxy in front of a broker. A muted connection passes the client's
-/// bytes and only the broker's first four, its CONNACK.
+/// bytes and only the broker's first four, its CONNACK. A held connection
+/// keeps back the broker's retained PUBLISH packets on one topic until
+/// [`Proxy::release`].
 pub struct Proxy {
     /// The port clients connect to.
     pub port: u16,
@@ -216,6 +218,41 @@ struct ProxyState {
     connections: usize,
     /// UNSUBACK packets the broker sent, over every connection.
     unsubacks: Arc<AtomicUsize>,
+    /// The hold from [`Proxy::hold_retained`], and whether the next
+    /// connection accepted takes it.
+    hold: Option<Arc<Mutex<Hold>>>,
+    hold_armed: bool,
+}
+
+type Writer = Arc<tokio::sync::Mutex<tokio::net::tcp::OwnedWriteHalf>>;
+
+/// Retained PUBLISH packets on `topic` kept back from one connection.
+struct Hold {
+    topic: String,
+    packets: Vec<u8>,
+    count: usize,
+    released: bool,
+    writer: Option<Writer>,
+}
+
+impl Hold {
+    /// Keeps `packet` back when it is a retained PUBLISH on the held topic
+    /// and the hold is not released.
+    fn keep(&mut self, packet: &[u8], hdr: usize) -> bool {
+        if self.released || packet[0] >> 4 != 3 || packet[0] & 1 == 0 {
+            return false;
+        }
+        let Some(len) = packet.get(hdr..hdr + 2) else {
+            return false;
+        };
+        let len = usize::from(u16::from_be_bytes([len[0], len[1]]));
+        if packet.get(hdr + 2..hdr + 2 + len) != Some(self.topic.as_bytes()) {
+            return false;
+        }
+        self.packets.extend_from_slice(packet);
+        self.count += 1;
+        true
+    }
 }
 
 impl Proxy {
@@ -241,8 +278,14 @@ impl Proxy {
                 let unsubacks = Arc::clone(&s.unsubacks);
                 let (cr, cw) = client.into_split();
                 let (br, bw) = broker.into_split();
+                let cw: Writer = Arc::new(tokio::sync::Mutex::new(cw));
+                let hold = s.hold.clone().filter(|_| s.hold_armed);
+                s.hold_armed = false;
+                if let Some(h) = &hold {
+                    h.lock().expect("hold").writer = Some(Arc::clone(&cw));
+                }
                 let up = tokio::spawn(upstream(cr, bw, subs, pubs));
-                let down = tokio::spawn(downstream(br, cw, s.mute, unsubacks));
+                let down = tokio::spawn(downstream(br, cw, s.mute, unsubacks, hold));
                 s.tasks.push(up.abort_handle());
                 s.tasks.push(down.abort_handle());
             }
@@ -253,6 +296,59 @@ impl Proxy {
     /// Mutes the connections accepted from now on, or not.
     pub fn mute(&self, on: bool) {
         self.state.lock().expect("proxy state").mute = on;
+    }
+
+    /// Holds back, on the next connection accepted, the broker's retained
+    /// PUBLISH packets on `topic` until [`Proxy::release`].
+    pub fn hold_retained(&self, topic: &str) {
+        let mut s = self.state.lock().expect("proxy state");
+        s.hold = Some(Arc::new(Mutex::new(Hold {
+            topic: topic.into(),
+            packets: Vec::new(),
+            count: 0,
+            released: false,
+            writer: None,
+        })));
+        s.hold_armed = true;
+    }
+
+    /// Waits until the hold keeps `n` packets back, within `secs` seconds.
+    pub async fn wait_held(&self, n: usize, secs: u64) {
+        let deadline = Instant::now() + Duration::from_secs(secs);
+        loop {
+            let seen = self.hold().lock().expect("hold").count;
+            if seen >= n {
+                return;
+            }
+            assert!(Instant::now() < deadline, "{seen} of {n} packets held");
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }
+
+    /// Writes the packets held back to the client and ends the hold. The
+    /// broker's later packets reach the client after them.
+    pub async fn release(&self) {
+        use tokio::io::AsyncWriteExt;
+        let hold = self.hold();
+        let writer = hold
+            .lock()
+            .expect("hold")
+            .writer
+            .clone()
+            .expect("a held connection");
+        let mut to = writer.lock().await;
+        let packets = {
+            let mut h = hold.lock().expect("hold");
+            h.released = true;
+            core::mem::take(&mut h.packets)
+        };
+        to.write_all(&packets).await.expect("write held packets");
+    }
+
+    /// The hold from [`Proxy::hold_retained`].
+    fn hold(&self) -> Arc<Mutex<Hold>> {
+        let s = self.state.lock().expect("proxy state");
+        Arc::clone(s.hold.as_ref().expect("a hold"))
     }
 
     /// Closes every open connection.
@@ -373,13 +469,15 @@ async fn upstream(
     }
 }
 
-/// Broker to client, counting UNSUBACK packets; muted, only the first four
-/// bytes pass.
+/// Broker to client, counting UNSUBACK packets and forwarding whole
+/// packets, except those `hold` keeps back; muted, only the first four bytes
+/// pass.
 async fn downstream(
     mut from: tokio::net::tcp::OwnedReadHalf,
-    mut to: tokio::net::tcp::OwnedWriteHalf,
+    to: Writer,
     mute: bool,
     unsubacks: Arc<AtomicUsize>,
+    hold: Option<Arc<Mutex<Hold>>>,
 ) {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     let mut buf = vec![0u8; 8192];
@@ -391,14 +489,29 @@ async fn downstream(
             Ok(n) => n,
         };
         pending.extend_from_slice(&buf[..n]);
+        // Locked before the hold decides, so a release writes what it held
+        // ahead of the packets that follow.
+        let mut to = to.lock().await;
+        let mut out = Vec::new();
         while let Some((len, hdr)) = frame(&pending) {
-            if pending[0] >> 4 == 11 {
+            let packet: Vec<u8> = pending.drain(..hdr + len).collect();
+            if packet[0] >> 4 == 11 {
                 unsubacks.fetch_add(1, Ordering::AcqRel);
             }
-            pending.drain(..hdr + len);
+            if hold
+                .as_ref()
+                .is_some_and(|h| h.lock().expect("hold").keep(&packet, hdr))
+            {
+                continue;
+            }
+            out.extend_from_slice(&packet);
         }
-        let pass = if mute { n.min(4 - passed) } else { n };
-        if to.write_all(&buf[..pass]).await.is_err() {
+        let pass = if mute {
+            out.len().min(4 - passed)
+        } else {
+            out.len()
+        };
+        if to.write_all(&out[..pass]).await.is_err() {
             return;
         }
         passed += pass;
@@ -975,5 +1088,74 @@ impl Ctl {
             .expect("task ends after shutdown")
             .expect("task did not panic");
         assert!(res.is_ok(), "{res:?}");
+    }
+}
+
+/// A plain rumqttc session whose will publishes `lost` on `will_topic`,
+/// retained, as a device's does. Its event loop stops at the first
+/// connection error, so it never reconnects.
+pub struct Session {
+    client: AsyncClient,
+    acks: mpsc::UnboundedReceiver<()>,
+    task: JoinHandle<()>,
+}
+
+impl Session {
+    /// Connects as `id` to the broker on `port` and waits for the CONNACK.
+    pub async fn start(port: u16, id: &str, will_topic: &str) -> Session {
+        let mut mqtt = MqttOptions::new(id, "127.0.0.1", port);
+        mqtt.set_last_will(rumqttc::LastWill::new(
+            will_topic,
+            "lost",
+            QoS::ExactlyOnce,
+            true,
+        ));
+        let (client, mut el) = AsyncClient::new(mqtt, 16);
+        let (ack_tx, acks) = mpsc::unbounded_channel();
+        let (conn_tx, conn_rx) = tokio::sync::oneshot::channel();
+        let task = tokio::spawn(async move {
+            let mut conn_tx = Some(conn_tx);
+            loop {
+                match el.poll().await {
+                    Ok(rumqttc::Event::Incoming(Packet::ConnAck(_))) => {
+                        if let Some(t) = conn_tx.take() {
+                            let _ = t.send(());
+                        }
+                    }
+                    Ok(rumqttc::Event::Incoming(Packet::PubAck(_))) => {
+                        let _ = ack_tx.send(());
+                    }
+                    Ok(_) => {}
+                    Err(_) => return,
+                }
+            }
+        });
+        tokio::time::timeout(Duration::from_secs(5), conn_rx)
+            .await
+            .expect("session connected in time")
+            .expect("session running");
+        Session { client, acks, task }
+    }
+
+    /// Publishes `payload` on `topic`, retained at QoS 1, and waits for the
+    /// broker's PUBACK.
+    pub async fn publish(&mut self, topic: &str, payload: &[u8]) {
+        self.client
+            .publish(topic, QoS::AtLeastOnce, true, payload.to_vec())
+            .await
+            .expect("session publish");
+        tokio::time::timeout(Duration::from_secs(5), self.acks.recv())
+            .await
+            .expect("PUBACK in time")
+            .expect("session running");
+    }
+
+    /// Waits until the session's connection has ended, within `secs`
+    /// seconds.
+    pub async fn ended(self, secs: u64) {
+        tokio::time::timeout(Duration::from_secs(secs), self.task)
+            .await
+            .expect("session ended in time")
+            .expect("session did not panic");
     }
 }

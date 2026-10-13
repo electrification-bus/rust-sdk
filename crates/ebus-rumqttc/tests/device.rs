@@ -17,7 +17,7 @@ use ebus_rumqttc::ebus_homie_tokio::ebus_homie::state::DeviceState;
 use ebus_rumqttc::rumqttc::MqttOptions;
 use serde_json::Value;
 use support::{
-    Broker, Ctl, Proxy, PyController, Seeder, controller, observe, retained, until_message,
+    Broker, Ctl, Proxy, PyController, Seeder, Session, controller, observe, retained, until_message,
 };
 use tokio::task::JoinHandle;
 use tokio::time::{Instant, timeout};
@@ -77,8 +77,13 @@ impl Handles {
 /// and a `mode`, and the child `rs-child` with `METER` integers, every value
 /// set.
 fn tree() -> (TreeBuilder, Handles, DevIdx) {
+    tree_with(TreeConfig::default())
+}
+
+/// [`tree`] configured with `cfg`.
+fn tree_with(cfg: TreeConfig) -> (TreeBuilder, Handles, DevIdx) {
     let mut b = TreeBuilder::new(
-        TreeConfig::default(),
+        cfg,
         ROOT,
         DeviceSpec::typed("energy.ebus.device.test").name("Rust root"),
     )
@@ -195,7 +200,12 @@ impl Dev {
 
 /// The device on the broker (or proxy) at `port`, connected as its root id.
 fn start(port: u16) -> Dev {
-    let (b, h, _) = tree();
+    start_with(port, TreeConfig::default())
+}
+
+/// [`start`] with the tree configured with `cfg`.
+fn start_with(port: u16, cfg: TreeConfig) -> Dev {
+    let (b, h, _) = tree_with(cfg);
     let run = ebus_rumqttc::device(
         MqttOptions::new(ROOT, "127.0.0.1", port),
         b,
@@ -505,4 +515,196 @@ async fn pair_shares_one_connection_and_outlives_its_controller() {
         .await
         .expect("task ends after shutdown");
     assert!(res.is_ok(), "{res:?}");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_killed_socket_shows_lost_then_ready_after_the_reconnect() {
+    let Some(broker) = Broker::start(
+        "a_killed_socket_shows_lost_then_ready_after_the_reconnect",
+        "",
+    ) else {
+        return;
+    };
+    let proxy = Proxy::start(broker.port).await;
+    let mut obs = observe(broker.port, "reconnect-observer", &[ROOT_STATE]).await;
+    let dev = start(proxy.port);
+    until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    let before = retained(broker.port, "ebus/5/#").await;
+    assert_ready_tree(&before);
+
+    proxy.cut();
+    let early = until_message(&mut obs, 15, ROOT_STATE, b"lost").await;
+    assert!(early.is_empty(), "{early:?}");
+    // An unchanged description is not wrapped in `init` again.
+    let between = until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    assert!(between.is_empty(), "{between:?}");
+    assert_eq!(proxy.connections(), 2);
+    assert_eq!(retained(broker.port, "ebus/5/#").await, before);
+    dev.shutdown(Shutdown::Announce).await;
+}
+
+const WIDE: &str = "rs-wide";
+const WIDE_PROPS: usize = 200;
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_description_over_10_kib_reaches_the_controller_intact() {
+    let Some(broker) = Broker::start(
+        "a_description_over_10_kib_reaches_the_controller_intact",
+        "",
+    ) else {
+        return;
+    };
+    let mut b = TreeBuilder::new(
+        TreeConfig::default(),
+        WIDE,
+        DeviceSpec::typed("energy.ebus.device.test").name("Wide root"),
+    )
+    .expect("tree");
+    let node = b
+        .node(
+            b.root(),
+            "wide",
+            NodeSpec::typed("energy.ebus.capability.test"),
+        )
+        .expect("node");
+    let props: Vec<Property<i64>> = (0..WIDE_PROPS)
+        .map(|i| {
+            let spec = PropSpec::new()
+                .name(&format!("Wide property number {i:03}"))
+                .unit("W");
+            b.property::<i64>(node, &format!("p{i:03}"), spec)
+                .expect("property")
+        })
+        .collect();
+    for (i, p) in props.iter().enumerate() {
+        p.set(i as i64).expect("value");
+    }
+    let state = format!("ebus/5/{WIDE}/$state");
+    let mut obs = observe(broker.port, "wide-observer", &[&state]).await;
+    let run = ebus_rumqttc::device(
+        MqttOptions::new(WIDE, "127.0.0.1", broker.port),
+        b,
+        DeviceOptions::default(),
+    )
+    .expect("device");
+    let task = tokio::spawn(run.task.run());
+    until_message(&mut obs, 15, &state, b"ready").await;
+
+    let snap = retained(broker.port, "ebus/5/#").await;
+    let raw = &snap[&format!("ebus/5/{WIDE}/$description")];
+    assert!(raw.len() > 10 * 1024, "{} bytes", raw.len());
+    let mut ctl = controller(broker.port, Config::tree(WIDE).expect("valid root"));
+    ctl.synced(15, &[WIDE]).await;
+    let view = ctl.handle.device(WIDE).expect("device known");
+    let got = view.description.as_deref().expect("description applied");
+    assert_eq!(got.to_json().as_bytes(), &raw[..]);
+    for i in 0..WIDE_PROPS {
+        let want = i.to_string();
+        assert_eq!(
+            ctl.value(WIDE, "wide", &format!("p{i:03}")).as_deref(),
+            Some(want.as_str()),
+            "p{i:03}"
+        );
+    }
+    ctl.shutdown().await;
+    run.handle.shutdown(Shutdown::Announce).await;
+    let res = timeout(Duration::from_secs(10), task)
+        .await
+        .expect("task ends after shutdown")
+        .expect("task did not panic");
+    assert!(res.is_ok(), "{res:?}");
+}
+
+/// Sends `/set` `payload` to the root's `level` from `seed`, accepts it, and
+/// returns what `obs` saw before the value it republished: every message the
+/// device published after it handled the messages the broker sent it first.
+async fn level_marker(
+    seed: &mut Seeder,
+    dev: &mut Dev,
+    obs: &mut tokio::sync::mpsc::UnboundedReceiver<(String, Vec<u8>, bool)>,
+    payload: &str,
+) -> Vec<(String, Vec<u8>, bool)> {
+    seed.publish(&format!("{LEVEL}/set"), payload.as_bytes(), false)
+        .await;
+    seed.flush().await;
+    let req = next_set(&mut dev.h.level).await;
+    req.accept();
+    until_message(obs, 5, LEVEL, payload.as_bytes()).await
+}
+
+const LEVEL: &str = "ebus/5/rs-root/ctl/level";
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_session_takeover_replaces_the_stale_lost_and_reasserts_ready() {
+    let Some(broker) = Broker::start(
+        "a_session_takeover_replaces_the_stale_lost_and_reasserts_ready",
+        "",
+    ) else {
+        return;
+    };
+    let mut obs = observe(broker.port, "takeover-observer", &[ROOT_STATE, LEVEL]).await;
+    let mut seed = Seeder::new(broker.port, "seeder");
+
+    // An earlier session of the root, under its client id, left `ready`.
+    let mut old = Session::start(broker.port, ROOT, ROOT_STATE).await;
+    old.publish(ROOT_STATE, b"ready").await;
+    until_message(&mut obs, 5, ROOT_STATE, b"ready").await;
+    // Earlier sessions under other client ids, with the root's will, whose
+    // wills land once the device is ready.
+    let mut stale = Vec::new();
+    for i in 0..4 {
+        let proxy = Proxy::start(broker.port).await;
+        let s = Session::start(proxy.port, &format!("stale-{i}"), ROOT_STATE).await;
+        stale.push((proxy, s));
+    }
+
+    let mut cfg = TreeConfig::default();
+    cfg.watch_own_state = true;
+    let front = Proxy::start(broker.port).await;
+    front.hold_retained(ROOT_STATE);
+    let mut dev = start_with(front.port, cfg);
+    // mosquitto publishes the replaced session's will before the CONNACK,
+    // so the device receives it retained at its SUBSCRIBE.
+    let early = until_message(&mut obs, 15, ROOT_STATE, b"lost").await;
+    assert!(early.is_empty(), "{early:?}");
+    old.ended(5).await;
+    let refresh = until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    let states: Vec<&[u8]> = refresh
+        .iter()
+        .filter(|m| m.0 == ROOT_STATE)
+        .map(|m| &m.1[..])
+        .collect();
+    assert_eq!(states, [&b"init"[..]]);
+    assert_ready_tree(&retained(broker.port, "ebus/5/#").await);
+    // The retained `lost`, held at the proxy, reaches the device after its
+    // refresh, so only its retain flag keeps it from drawing a re-assert.
+    front.wait_held(1, 5).await;
+    front.release().await;
+    let after = level_marker(&mut seed, &mut dev, &mut obs, "35").await;
+    assert!(after.is_empty(), "{after:?}");
+
+    // A live `lost` once ready is answered with one `ready`, 3 times.
+    let mut stale = stale.into_iter();
+    for (i, (proxy, s)) in stale.by_ref().take(3).enumerate() {
+        proxy.cut();
+        s.ended(5).await;
+        let early = until_message(&mut obs, 5, ROOT_STATE, b"lost").await;
+        assert!(early.is_empty(), "will {i}: {early:?}");
+        let between = until_message(&mut obs, 5, ROOT_STATE, b"ready").await;
+        assert!(between.is_empty(), "will {i}: {between:?}");
+    }
+    assert_eq!(
+        retained(broker.port, ROOT_STATE).await[ROOT_STATE],
+        b"ready"
+    );
+
+    // The fourth is left standing.
+    let (proxy, s) = stale.next().expect("a fourth session");
+    proxy.cut();
+    s.ended(5).await;
+    until_message(&mut obs, 5, ROOT_STATE, b"lost").await;
+    let after = level_marker(&mut seed, &mut dev, &mut obs, "40").await;
+    assert!(after.is_empty(), "{after:?}");
+    assert_eq!(retained(broker.port, ROOT_STATE).await[ROOT_STATE], b"lost");
+    dev.shutdown(Shutdown::Announce).await;
 }
