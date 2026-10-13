@@ -1,8 +1,10 @@
 //! Bring-your-own connection against a local mosquitto, with rumqttc 0.10 as
 //! the host's client: a synchronous `Client`, a `std::thread` reader over
 //! `Connection::iter`, and an executor task using the non-blocking `try_*`
-//! calls. Skipped when no `mosquitto` binary is found (`MOSQUITTO` names one).
+//! calls, for the controller and for a device tree. Skipped when no
+//! `mosquitto` binary is found (`MOSQUITTO` names one).
 
+use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader};
 use std::net::TcpListener;
 use std::path::PathBuf;
@@ -11,13 +13,17 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use ebus_homie_tokio::device::{
+    DeviceHandle, DeviceOptions, DeviceSpec, NodeSpec, PropSpec, Property, Settable, TreeBuilder,
+    TreeConfig, attach_device,
+};
 use ebus_homie_tokio::ebus_homie::controller::{Config, Event};
 use ebus_homie_tokio::ebus_mqtt::{Command, QoS};
 use ebus_homie_tokio::{
     ControllerDriver, ControllerHandle, ControllerOptions, Delivered, DriverError, EventReceiver,
     attach_controller,
 };
-use rumqttc::{Client, Connection, MqttOptions, Packet, SubscribeFilter};
+use rumqttc::{AsyncClient, Client, Connection, MqttOptions, Packet, SubscribeFilter};
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 use tokio::time::{Instant, timeout_at};
@@ -41,7 +47,8 @@ fn mosquitto() -> Option<PathBuf> {
 
 /// A mosquitto on a free 127.0.0.1 port, without persistence; killed on drop.
 struct Broker {
-    child: Child,
+    child: Option<Child>,
+    bin: PathBuf,
     conf: PathBuf,
     port: u16,
 }
@@ -71,21 +78,39 @@ impl Broker {
                 ),
             )
             .expect("write config");
-            let mut child = std::process::Command::new(&bin)
-                .arg("-c")
-                .arg(&conf)
-                .stdout(Stdio::null())
-                .stderr(Stdio::piped())
-                .spawn()
-                .expect("start mosquitto");
-            let ready = mosquitto_running(child.stderr.take().expect("piped stderr"));
-            let broker = Broker { child, conf, port };
-            match ready {
+            let mut broker = Broker {
+                child: None,
+                bin: bin.clone(),
+                conf,
+                port,
+            };
+            match broker.spawn() {
                 Ok(()) => return Some(broker),
                 Err(e) => failure = format!("port {port}: {e}"),
             }
         }
         panic!("mosquitto did not start: {failure}");
+    }
+
+    /// Starts mosquitto on this broker's port, with nothing retained.
+    fn spawn(&mut self) -> Result<(), String> {
+        let mut child = std::process::Command::new(&self.bin)
+            .arg("-c")
+            .arg(&self.conf)
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("start mosquitto");
+        let ready = mosquitto_running(child.stderr.take().expect("piped stderr"));
+        self.child = Some(child);
+        ready
+    }
+
+    fn kill(&mut self) {
+        if let Some(mut child) = self.child.take() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
     }
 }
 
@@ -113,8 +138,7 @@ fn mosquitto_running(stderr: ChildStderr) -> Result<(), String> {
 
 impl Drop for Broker {
     fn drop(&mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
+        self.kill();
         let _ = std::fs::remove_file(&self.conf);
     }
 }
@@ -605,4 +629,381 @@ async fn inbox_overflow_drops_heal_by_resubscribing() {
         tokio::time::sleep(Duration::from_millis(50)).await;
     }
     host.shutdown().await;
+}
+
+const ROOT: &str = "byo-root";
+const CHILD: &str = "byo-child";
+const ROOT_STATE: &str = "ebus/5/byo-root/$state";
+const CHILD_STATE: &str = "ebus/5/byo-child/$state";
+const LEVEL: &str = "ebus/5/byo-root/ctl/level";
+
+/// A host service that owns a rumqttc 0.10 connection with a device tree
+/// attached: `byo-root` with a settable `level` and a `temp`, and the child
+/// `byo-child` with a `p0`.
+struct DevHost {
+    handle: DeviceHandle,
+    level: Settable<i64>,
+    temp: Property<f64>,
+    _p0: Property<i64>,
+    driver: JoinHandle<Result<(), DriverError>>,
+    executor: JoinHandle<()>,
+    client: Arc<Mutex<Client>>,
+    reader: std::thread::JoinHandle<()>,
+}
+
+fn start_device(port: u16) -> DevHost {
+    let mut b = TreeBuilder::new(
+        TreeConfig::default(),
+        ROOT,
+        DeviceSpec::typed("energy.ebus.device.test"),
+    )
+    .expect("tree");
+    let ctl = b
+        .node(
+            b.root(),
+            "ctl",
+            NodeSpec::typed("energy.ebus.capability.test"),
+        )
+        .expect("node");
+    let level = b
+        .settable::<i64>(ctl, "level", PropSpec::new().format("0:100"))
+        .expect("level");
+    let temp = b
+        .property::<f64>(ctl, "temp", PropSpec::new().unit("°C"))
+        .expect("temp");
+    let child = b
+        .child(
+            b.root(),
+            CHILD,
+            DeviceSpec::typed("energy.ebus.device.test"),
+        )
+        .expect("child");
+    let meter = b
+        .node(
+            child,
+            "meter",
+            NodeSpec::typed("energy.ebus.capability.meter"),
+        )
+        .expect("node");
+    let p0 = b.property::<i64>(meter, "p0", PropSpec::new()).expect("p0");
+    level.set(50).expect("level");
+    temp.set(21.5).expect("temp");
+    p0.set(100).expect("p0");
+    let dev = attach_device(b, DeviceOptions::default()).expect("valid tree");
+    let driver = tokio::spawn(dev.driver.run());
+
+    // The device's will, the root's client id, and the bundled path's
+    // inflight cap, since mosquitto discards QoS 2 publishes past its
+    // receive quota of 20.
+    let w = &dev.last_will;
+    let mut o = options(ROOT, port);
+    o.set_last_will(rumqttc::LastWill::new(
+        w.topic.clone(),
+        w.payload.clone(),
+        qos(w.qos),
+        w.retain,
+    ));
+    o.set_inflight(20);
+    let (client, mut conn): (Client, Connection) = Client::new(o, 256);
+    let client = Arc::new(Mutex::new(client));
+
+    // The reader forwards every CONNACK, every eBus message with its retain
+    // bit, and every connection error; the device subscribes and republishes.
+    let reader = {
+        let inbox = dev.inbox.clone();
+        std::thread::spawn(move || {
+            for ev in conn.iter() {
+                match ev {
+                    Ok(rumqttc::Event::Incoming(Packet::ConnAck(a))) => {
+                        inbox.connected(a.session_present);
+                    }
+                    Ok(rumqttc::Event::Incoming(Packet::Publish(p))) => {
+                        if p.topic.starts_with("ebus/5/") {
+                            inbox.message(p.topic, p.payload, Some(p.retain));
+                        }
+                    }
+                    Ok(_) => {}
+                    Err(_) => {
+                        inbox.disconnected();
+                        std::thread::sleep(Duration::from_millis(200));
+                    }
+                }
+            }
+        })
+    };
+
+    let executor = {
+        let mut commands = dev.commands;
+        let inbox = dev.inbox;
+        let client = Arc::clone(&client);
+        tokio::spawn(async move {
+            while let Some(cmd) = commands.recv().await {
+                let res = {
+                    let mut c = client.lock().unwrap_or_else(|p| p.into_inner());
+                    match &cmd {
+                        Command::Subscribe { filters, .. } => c.try_subscribe_many(
+                            filters
+                                .iter()
+                                .map(|(f, q)| SubscribeFilter::new(f.clone(), qos(*q))),
+                        ),
+                        Command::Unsubscribe { filters, .. } => filters
+                            .iter()
+                            .try_for_each(|f| c.try_unsubscribe(f.clone())),
+                        Command::Publish {
+                            topic,
+                            payload,
+                            qos: q,
+                            retain,
+                            ..
+                        } => c.try_publish(topic.clone(), qos(*q), *retain, payload.clone()),
+                        _ => Ok(()),
+                    }
+                };
+                if res.is_err() {
+                    inbox.command_failed(cmd);
+                }
+            }
+        })
+    };
+
+    DevHost {
+        handle: dev.handle,
+        level,
+        temp,
+        _p0: p0,
+        driver,
+        executor,
+        client,
+        reader,
+    }
+}
+
+impl DevHost {
+    /// The host goes away without shutting the device down: the driver and
+    /// executor stop, and the connection closes without DISCONNECT.
+    fn drop_without_shutdown(self) {
+        self.driver.abort();
+        self.executor.abort();
+        tokio::task::block_in_place(|| {
+            self.client
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+                .cancel()
+                .expect("cancel the connection");
+            self.reader.join().expect("reader did not panic");
+        });
+    }
+
+    /// Waits until the device reports `connected`.
+    async fn link(&self, connected: bool) {
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while self.handle.is_connected() != connected {
+            assert!(
+                Instant::now() < deadline,
+                "device never reported connected = {connected}"
+            );
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }
+}
+
+/// The value topics the tree retains once ready, with their payloads.
+fn device_values(level: &str) -> BTreeMap<String, String> {
+    [
+        (LEVEL.to_owned(), level),
+        (format!("ebus/5/{ROOT}/ctl/temp"), "21.5"),
+        (format!("ebus/5/{CHILD}/meter/p0"), "100"),
+    ]
+    .into_iter()
+    .map(|(t, p)| (t, p.to_owned()))
+    .collect()
+}
+
+/// Checks that `snap` is exactly the ready tree with `level`: a description
+/// of each device, both states `ready`, and every value.
+fn assert_ready_tree(snap: &BTreeMap<String, String>, level: &str) {
+    let mut want = device_values(level);
+    want.insert(ROOT_STATE.into(), "ready".into());
+    want.insert(CHILD_STATE.into(), "ready".into());
+    for d in [ROOT, CHILD] {
+        let topic = format!("ebus/5/{d}/$description");
+        let desc = snap.get(&topic).unwrap_or_else(|| panic!("no {topic}"));
+        assert!(desc.starts_with(r#"{"homie": "5.0""#), "{topic}: {desc}");
+        want.insert(topic, desc.clone());
+    }
+    assert_eq!(snap, &want);
+}
+
+type Received = tokio::sync::mpsc::UnboundedReceiver<(String, Vec<u8>, bool)>;
+
+/// A rumqttc 0.10 client subscribed to `filters`, once the broker has
+/// acknowledged every SUBSCRIBE; it yields each message with its retain bit.
+async fn observe(port: u16, id: &str, filters: &[&str]) -> Received {
+    observer(port, id, filters).await.1
+}
+
+/// [`observe`], with the client.
+async fn observer(port: u16, id: &str, filters: &[&str]) -> (AsyncClient, Received) {
+    let (client, mut el) = AsyncClient::new(options(id, port), 64);
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    let (sub_tx, sub_rx) = tokio::sync::oneshot::channel();
+    let n = filters.len();
+    let keep = client.clone();
+    tokio::spawn(async move {
+        let _keep = keep;
+        let mut sub_tx = Some(sub_tx);
+        let mut subacks = 0;
+        loop {
+            match el.poll().await {
+                Ok(rumqttc::Event::Incoming(Packet::Publish(p))) => {
+                    let _ = tx.send((p.topic, p.payload.to_vec(), p.retain));
+                }
+                Ok(rumqttc::Event::Incoming(Packet::SubAck(_))) => {
+                    subacks += 1;
+                    if subacks == n {
+                        if let Some(s) = sub_tx.take() {
+                            let _ = s.send(());
+                        }
+                    }
+                }
+                Ok(_) => {}
+                Err(_) => tokio::time::sleep(Duration::from_millis(100)).await,
+            }
+        }
+    });
+    for f in filters {
+        client
+            .subscribe(*f, rumqttc::QoS::AtLeastOnce)
+            .await
+            .expect("observer subscribe");
+    }
+    tokio::time::timeout(Duration::from_secs(5), sub_rx)
+        .await
+        .expect("observer subscribed in time")
+        .expect("observer running");
+    (client, rx)
+}
+
+/// Receives until `topic` = `payload` arrives within `secs`; returns what
+/// came before it.
+async fn until_message(
+    rx: &mut Received,
+    secs: u64,
+    topic: &str,
+    payload: &[u8],
+) -> Vec<(String, Vec<u8>, bool)> {
+    let deadline = Instant::now() + Duration::from_secs(secs);
+    let mut before = Vec::new();
+    loop {
+        let m = timeout_at(deadline, rx.recv())
+            .await
+            .unwrap_or_else(|_| {
+                panic!(
+                    "timed out waiting for {topic} = {:?}; got {before:?}",
+                    String::from_utf8_lossy(payload)
+                )
+            })
+            .expect("observer running");
+        if m.0 == topic && m.1 == payload {
+            return before;
+        }
+        before.push(m);
+    }
+}
+
+/// Every retained message under `ebus/5/#` the broker holds now: a fresh
+/// client subscribes, publishes a marker to itself, and collects until the
+/// marker arrives, which the broker queues after the retained messages.
+async fn retained(port: u16) -> BTreeMap<String, String> {
+    static N: AtomicUsize = AtomicUsize::new(0);
+    let id = format!("snapshot-{}", N.fetch_add(1, Ordering::AcqRel));
+    let marker = format!("ebus-test/{id}");
+    let (client, mut rx) = observer(port, &id, &["ebus/5/#", &marker]).await;
+    client
+        .publish(&marker, rumqttc::QoS::AtMostOnce, false, "end")
+        .await
+        .expect("snapshot marker");
+    let mut out = BTreeMap::new();
+    for (topic, payload, retain) in until_message(&mut rx, 15, &marker, b"end").await {
+        assert!(retain, "a live message during the snapshot: {topic}");
+        out.insert(topic, String::from_utf8(payload).expect("UTF-8 payload"));
+    }
+    out
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn device_on_a_host_connection_publishes_serves_set_and_republishes() {
+    let Some(mut broker) =
+        Broker::start("device_on_a_host_connection_publishes_serves_set_and_republishes")
+    else {
+        return;
+    };
+    let mut obs = observe(broker.port, "observer", &[ROOT_STATE, LEVEL]).await;
+    let mut dev = start_device(broker.port);
+    until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    assert_ready_tree(&retained(broker.port).await, "50");
+
+    // A /set from another client reaches the device; the accepted value is
+    // republished.
+    let mut setter = Seeder::new(broker.port);
+    setter.publish(&format!("{LEVEL}/set"), "35", false);
+    let req = timeout_at(
+        Instant::now() + Duration::from_secs(5),
+        dev.level.next_set(),
+    )
+    .await
+    .expect("a /set in time")
+    .expect("driver running");
+    assert_eq!(*req.value(), 35);
+    req.accept();
+    until_message(&mut obs, 5, LEVEL, b"35").await;
+    let before = retained(broker.port).await;
+    assert_ready_tree(&before, "35");
+
+    // The broker restarts without persistence: the host reports the lost
+    // connection and the new CONNACK, and the SDK republishes the whole tree.
+    broker.kill();
+    dev.link(false).await;
+    broker.spawn().expect("mosquitto restarts");
+    dev.link(true).await;
+    let mut obs = observe(broker.port, "restart-observer", &[ROOT_STATE]).await;
+    until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    assert_eq!(retained(broker.port).await, before);
+
+    // The SDK subscribes `/set` again on the new session.
+    let mut obs = observe(broker.port, "set-observer", &[LEVEL]).await;
+    setter.publish(&format!("{LEVEL}/set"), "60", false);
+    let req = timeout_at(
+        Instant::now() + Duration::from_secs(5),
+        dev.level.next_set(),
+    )
+    .await
+    .expect("a /set in time after the restart")
+    .expect("driver running");
+    assert_eq!(*req.value(), 60);
+    req.accept();
+    until_message(&mut obs, 5, LEVEL, b"60").await;
+
+    // Values set while connected after the reconnect still go out.
+    dev.temp.set(22.25).expect("temp");
+    let mut obs = observe(broker.port, "temp-observer", &["ebus/5/byo-root/ctl/temp"]).await;
+    until_message(&mut obs, 5, "ebus/5/byo-root/ctl/temp", b"22.25").await;
+    dev.drop_without_shutdown();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn device_on_a_host_connection_dropped_without_shutdown_leaves_the_will() {
+    let Some(broker) =
+        Broker::start("device_on_a_host_connection_dropped_without_shutdown_leaves_the_will")
+    else {
+        return;
+    };
+    let mut obs = observe(broker.port, "will-observer", &[ROOT_STATE]).await;
+    let dev = start_device(broker.port);
+    until_message(&mut obs, 15, ROOT_STATE, b"ready").await;
+    dev.drop_without_shutdown();
+    until_message(&mut obs, 15, ROOT_STATE, b"lost").await;
+    let snap = retained(broker.port).await;
+    assert_eq!(snap[ROOT_STATE], "lost");
+    assert_eq!(snap[CHILD_STATE], "ready");
 }

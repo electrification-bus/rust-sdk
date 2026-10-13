@@ -8,6 +8,8 @@ with one JSON line on stdout:
   {"ok": bool, "device": {"state", "description", "properties"}}.
 - ["value", device, node, property, payload, secs]: waits until the property
   holds `payload`; answers {"ok": bool, "value": current}.
+- ["target", device, node, property, payload, secs]: as "value", for the
+  property's $target; answers {"ok": bool, "target": current}.
 - ["set", device, node, property, payload]: sends a /set; answers {"ok": bool}.
 
 Prints "ready" once discovery has started; exits when stdin closes.
@@ -61,6 +63,10 @@ def main() -> None:
         device = ctl.get_device(device_id)
         return None if device is None else device.get_property(node, prop)
 
+    def target(device_id, node, prop):
+        device = ctl.get_device(device_id)
+        return None if device is None else device.get_property_target(node, prop)
+
     for line in sys.stdin:
         cmd = json.loads(line)
         if cmd[0] == "await":
@@ -71,6 +77,10 @@ def main() -> None:
             _, device_id, node, prop, payload, secs = cmd
             ok = wait(lambda: current(device_id, node, prop) == payload, secs)
             reply = {"ok": ok, "value": current(device_id, node, prop)}
+        elif cmd[0] == "target":
+            _, device_id, node, prop, payload, secs = cmd
+            ok = wait(lambda: target(device_id, node, prop) == payload, secs)
+            reply = {"ok": ok, "target": target(device_id, node, prop)}
         elif cmd[0] == "set":
             _, device_id, node, prop, payload = cmd
             reply = {"ok": ctl.set_property(device_id, node, prop, payload)}

@@ -708,3 +708,254 @@ async fn a_session_takeover_replaces_the_stale_lost_and_reasserts_ready() {
     assert_eq!(retained(broker.port, ROOT_STATE).await[ROOT_STATE], b"lost");
     dev.shutdown(Shutdown::Announce).await;
 }
+
+const BIG: &str = "rs-big";
+const BIG_CHILDREN: usize = 19;
+const BIG_PROPS: usize = 300;
+/// The bound on one refresh of the big tree, generous for a slow runner.
+const BIG_REFRESH_SECS: u64 = 60;
+
+/// The big tree's device ids, root first, in pre-order.
+fn big_ids() -> Vec<String> {
+    let mut ids = vec![BIG.to_owned()];
+    ids.extend((1..=BIG_CHILDREN).map(|c| format!("{BIG}-{c:02}")));
+    ids
+}
+
+/// The value topics of device `k` of [`big_ids`], with their payloads.
+fn big_values(k: usize, id: &str) -> BTreeMap<String, Vec<u8>> {
+    (0..BIG_PROPS)
+        .map(|i| {
+            (
+                format!("ebus/5/{id}/n/p{i:03}"),
+                (k * 1000 + i).to_string().into_bytes(),
+            )
+        })
+        .collect()
+}
+
+/// `rs-big` and its children, each with one node of `BIG_PROPS` integers,
+/// every value set.
+fn big_tree() -> (TreeBuilder, Vec<Property<i64>>) {
+    let mut b = TreeBuilder::new(
+        TreeConfig::default(),
+        BIG,
+        DeviceSpec::typed("energy.ebus.device.test"),
+    )
+    .expect("tree");
+    let mut props = Vec::new();
+    for (k, id) in big_ids().iter().enumerate() {
+        let dev = if k == 0 {
+            b.root()
+        } else {
+            b.child(b.root(), id, DeviceSpec::typed("energy.ebus.device.test"))
+                .expect("child")
+        };
+        let node = b
+            .node(dev, "n", NodeSpec::typed("energy.ebus.capability.test"))
+            .expect("node");
+        for i in 0..BIG_PROPS {
+            let p = b
+                .property::<i64>(node, &format!("p{i:03}"), PropSpec::new())
+                .expect("property");
+            p.set((k * 1000 + i) as i64).expect("value");
+            props.push(p);
+        }
+    }
+    (b, props)
+}
+
+/// Receives one refresh of the big tree from `obs`, up to the root's
+/// `ready`, and checks its order and content: per device in pre-order,
+/// `init` when `init`, `$description`, then every value once; then each
+/// child's `ready`, the root's last. Returns the descriptions.
+async fn big_refresh(
+    obs: &mut tokio::sync::mpsc::UnboundedReceiver<(String, Vec<u8>, bool)>,
+    init: bool,
+) -> BTreeMap<String, Vec<u8>> {
+    let root_state = format!("ebus/5/{BIG}/$state");
+    let msgs = until_message(obs, BIG_REFRESH_SECS, &root_state, b"ready").await;
+    let mut it = msgs.into_iter();
+    let mut descriptions = BTreeMap::new();
+    for (k, id) in big_ids().iter().enumerate() {
+        if init {
+            let m = it.next().expect("init");
+            assert_eq!(
+                (m.0.as_str(), &m.1[..]),
+                (&*format!("ebus/5/{id}/$state"), &b"init"[..])
+            );
+        }
+        let m = it.next().expect("$description");
+        let topic = format!("ebus/5/{id}/$description");
+        assert_eq!(m.0, topic);
+        descriptions.insert(topic, m.1);
+        let mut want = big_values(k, id);
+        for _ in 0..BIG_PROPS {
+            let m = it.next().expect("a value");
+            assert!(
+                want.remove(&m.0).is_some_and(|p| p == m.1),
+                "{} is not one of the {} values {id} still owes",
+                m.0,
+                want.len()
+            );
+        }
+    }
+    for id in &big_ids()[1..] {
+        let m = it.next().expect("a child's ready");
+        assert_eq!(
+            (m.0.as_str(), &m.1[..]),
+            (&*format!("ebus/5/{id}/$state"), &b"ready"[..])
+        );
+    }
+    let rest: Vec<_> = it.collect();
+    assert!(rest.is_empty(), "{rest:?}");
+    descriptions
+}
+
+/// The big tree as the broker retains it once ready.
+fn big_retained(descriptions: &BTreeMap<String, Vec<u8>>) -> BTreeMap<String, Vec<u8>> {
+    let mut want = descriptions.clone();
+    for (k, id) in big_ids().iter().enumerate() {
+        want.extend(big_values(k, id));
+        want.insert(format!("ebus/5/{id}/$state"), b"ready".to_vec());
+    }
+    want
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn a_qos_2_refresh_of_20_devices_by_300_properties_completes_in_order() {
+    // mosquitto drops (2.0.22 and later) or disconnects on (earlier 2.0.x) a
+    // 3.1.1 client's QoS 2 publishes past its receive quota of
+    // `max_inflight_messages`. The queue limit is lifted so the observers
+    // here lose nothing.
+    let Some(mut broker) = Broker::start(
+        "a_qos_2_refresh_of_20_devices_by_300_properties_completes_in_order",
+        "max_inflight_messages 20\nmax_queued_messages 0",
+    ) else {
+        return;
+    };
+    let proxy = Proxy::start(broker.port).await;
+    let mut obs = observe(broker.port, "big-observer", &["ebus/5/#"]).await;
+    let (b, _props) = big_tree();
+    let run = ebus_rumqttc::device(
+        MqttOptions::new(BIG, "127.0.0.1", proxy.port),
+        b,
+        DeviceOptions::default(),
+    )
+    .expect("device");
+    let started = Instant::now();
+    let task = tokio::spawn(run.task.run());
+    let descriptions = big_refresh(&mut obs, true).await;
+    eprintln!("first refresh: {:?}", started.elapsed());
+    for d in descriptions.values() {
+        let v: Value = serde_json::from_slice(d).expect("JSON description");
+        let props = v["nodes"]["n"]["properties"]
+            .as_object()
+            .expect("properties");
+        assert_eq!(props.len(), BIG_PROPS);
+    }
+    let want = big_retained(&descriptions);
+    assert_eq!(want.len(), (BIG_CHILDREN + 1) * (BIG_PROPS + 2));
+    assert_eq!(retained(broker.port, "ebus/5/#").await, want);
+
+    // The refresh after a reconnect republishes everything, without `init`.
+    let root_state = format!("ebus/5/{BIG}/$state");
+    proxy.cut();
+    let early = until_message(&mut obs, 15, &root_state, b"lost").await;
+    assert!(early.is_empty(), "{early:?}");
+    let cut = Instant::now();
+    assert_eq!(big_refresh(&mut obs, false).await, descriptions);
+    eprintln!("refresh after a cut: {:?}", cut.elapsed());
+    assert_eq!(retained(broker.port, "ebus/5/#").await, want);
+
+    // A broker that lost every retained message gets all of them back.
+    drop(obs);
+    let restart = Instant::now();
+    broker.restart();
+    let mut obs = observe(broker.port, "big-restart-observer", &[&root_state]).await;
+    until_message(&mut obs, BIG_REFRESH_SECS, &root_state, b"ready").await;
+    eprintln!("refresh after a broker restart: {:?}", restart.elapsed());
+    assert_eq!(retained(broker.port, "ebus/5/#").await, want);
+
+    run.handle.shutdown(Shutdown::Announce).await;
+    let res = timeout(Duration::from_secs(10), task)
+        .await
+        .expect("task ends after shutdown")
+        .expect("task did not panic");
+    assert!(res.is_ok(), "{res:?}");
+}
+
+const TGT: &str = "rs-target";
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn target_keeps_the_set_bytes_through_python_sdk() {
+    let test = "target_keeps_the_set_bytes_through_python_sdk";
+    let Some(broker) = Broker::start(test, "") else {
+        return;
+    };
+    let mut b = TreeBuilder::new(
+        TreeConfig::default(),
+        TGT,
+        DeviceSpec::typed("energy.ebus.device.test"),
+    )
+    .expect("tree");
+    let node = b
+        .node(
+            b.root(),
+            "ctl",
+            NodeSpec::typed("energy.ebus.capability.test"),
+        )
+        .expect("node");
+    let mut point = b
+        .settable::<f64>(node, "point", PropSpec::new().target(true))
+        .expect("point");
+    point.set(1.0).expect("point");
+    let value = format!("ebus/5/{TGT}/ctl/point");
+    let target = format!("{value}/$target");
+    let state = format!("ebus/5/{TGT}/$state");
+    let mut obs = observe(broker.port, "target-observer", &[&state, &value, &target]).await;
+    let run = ebus_rumqttc::device(
+        MqttOptions::new(TGT, "127.0.0.1", broker.port),
+        b,
+        DeviceOptions::default(),
+    )
+    .expect("device");
+    let task = tokio::spawn(run.task.run());
+    until_message(&mut obs, 15, &state, b"ready").await;
+    let Some(mut py) = PyController::start(test, broker.port, TGT) else {
+        return;
+    };
+    py.await_device(TGT, 1);
+    py.await_target(TGT, "ctl", "point", "1.0");
+
+    // "1.50" re-encodes as "1.5".
+    py.set(TGT, "ctl", "point", "1.50");
+    let req = next_set(&mut point).await;
+    assert_eq!(req.raw(), b"1.50");
+    assert_eq!(*req.value(), 1.5);
+    req.accept();
+    let before = until_message(&mut obs, 5, &target, b"1.50").await;
+    assert!(before.is_empty(), "{before:?}");
+    py.await_target(TGT, "ctl", "point", "1.50");
+    assert_eq!(py.value(TGT, "ctl", "point"), "1.0");
+
+    // The value reached closes the transition; `$target` already names it.
+    point.set(1.5).expect("point");
+    let before = until_message(&mut obs, 5, &value, b"1.5").await;
+    assert!(before.is_empty(), "{before:?}");
+    py.await_value(TGT, "ctl", "point", "1.5");
+    py.await_target(TGT, "ctl", "point", "1.50");
+    let snap = retained(broker.port, &format!("ebus/5/{TGT}/ctl/#")).await;
+    assert_eq!(
+        snap,
+        BTreeMap::from([(value, b"1.5".to_vec()), (target, b"1.50".to_vec())])
+    );
+
+    drop(py);
+    run.handle.shutdown(Shutdown::Announce).await;
+    let res = timeout(Duration::from_secs(10), task)
+        .await
+        .expect("task ends after shutdown")
+        .expect("task did not panic");
+    assert!(res.is_ok(), "{res:?}");
+}

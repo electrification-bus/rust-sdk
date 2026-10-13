@@ -691,6 +691,18 @@ impl PyController {
         );
     }
 
+    /// Waits until `device/node/property/$target` holds `payload`.
+    pub fn await_target(&mut self, device: &str, node: &str, property: &str, payload: &str) {
+        let r = self.call(
+            serde_json::json!(["target", device, node, property, payload, 10]),
+            15,
+        );
+        assert_eq!(
+            r["ok"], true,
+            "{device}/{node}/{property}/$target never {payload:?}: {r}"
+        );
+    }
+
     /// The current value of `device/node/property`, or JSON `null`.
     pub fn value(&mut self, device: &str, node: &str, property: &str) -> serde_json::Value {
         self.call(
@@ -823,7 +835,9 @@ pub async fn observe_at(
     id: &str,
     filters: &[&str],
 ) -> mpsc::UnboundedReceiver<(String, Vec<u8>, bool)> {
-    let (client, mut el) = AsyncClient::new(MqttOptions::new(id, ip.to_string(), port), 64);
+    let mut mqtt = MqttOptions::new(id, ip.to_string(), port);
+    mqtt.set_max_packet_size(1 << 20, 1 << 20);
+    let (client, mut el) = AsyncClient::new(mqtt, 64);
     let (tx, rx) = mpsc::unbounded_channel();
     let (sub_tx, sub_rx) = tokio::sync::oneshot::channel();
     let n = filters.len();
