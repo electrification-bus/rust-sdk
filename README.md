@@ -171,6 +171,18 @@ The `device` example adds a duration, an event and a clean shutdown on Ctrl-C, a
 cargo run -p ebus-rumqttc --example device -- my-device
 ```
 
+### Device tree and `/set` examples
+
+The `tree-device` example publishes a parent/child tree on one connection, as python-sdk's [simple-tree-device](https://github.com/electrification-bus/python-sdk/blob/main/examples/simple-tree-device) does: a distribution enclosure with three circuits and a battery as children and a microgrid interconnect under the battery, built in one `TreeBuilder` so the root goes `ready` once for the tree. It prints each `/set` it accepts on circuit-3's `switch/relay` and the battery's `control/reserve`.
+
+The `set` example pairs with it, as the `--set` option of python-sdk's [simple-controller](https://github.com/electrification-bus/python-sdk/blob/main/examples/simple-controller) does with simple-tree-device: it waits for the device to sync, sends one `/set` and waits until the device reports the value. The controller's own checks refuse an unknown or non-settable property and an invalid value before anything is sent; the exit code tells these outcomes apart. Both take the `watch` example's broker settings:
+
+```sh
+cargo run -p ebus-rumqttc --example tree-device
+cargo run -p ebus-rumqttc --example set -- circuit-3/switch/relay true
+cargo run -p ebus-rumqttc --example set -- --root rust-tree bess-1/control/reserve 50
+```
+
 ### SPAN panel example
 
 The `simple-span-controller` example, a port of python-sdk's [simple-span-controller](https://github.com/electrification-bus/python-sdk/blob/main/examples/simple-span-controller), reports whether a SPAN panel's home is islanded from the grid, watching the MID child's `grid` node and the enclosure's `power-flows` node. It finds the panel's broker over mDNS as the `_secure-mqtt._tcp` advertisement whose SRV target is `span-<serial-number>.local`, else connects to that host name after 5 s:

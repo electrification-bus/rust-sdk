@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-The [repository](https://github.com/electrification-bus/rust-sdk) has the `watch`, `device` and `simple-span-controller` examples.
+The [repository](https://github.com/electrification-bus/rust-sdk) has the `watch`, `device`, `tree-device`, `set` and `simple-span-controller` examples.
 
 ## Features
 

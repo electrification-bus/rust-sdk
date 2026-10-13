@@ -4,6 +4,10 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- The `tree-device` example, a parent/child device tree with a grandchild on one connection and settable properties on two children, and the `set` example, which sends one `/set` once the device has synced, waits until the device reports the value and exits with a code for each outcome.
+
 ## [0.1.0] - 2026-10-12
 
 ### Added
