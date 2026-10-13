@@ -213,7 +213,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "ebus-discovery"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ebus-mqtt",
  "log",
@@ -222,7 +222,7 @@ dependencies = [
 
 [[package]]
 name = "ebus-discovery-tokio"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ebus-discovery",
  "gethostname",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "ebus-homie"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ebus-mqtt",
  "log",
@@ -249,7 +249,7 @@ dependencies = [
 
 [[package]]
 name = "ebus-homie-tokio"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bytes",
  "ebus-homie",
@@ -262,11 +262,11 @@ dependencies = [
 
 [[package]]
 name = "ebus-mqtt"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "ebus-rumqttc"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ebus-discovery-tokio",
  "ebus-homie-tokio",
@@ -508,7 +508,7 @@ dependencies = [
 
 [[package]]
 name = "guide-doctest"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ebus-discovery-tokio",
  "ebus-rumqttc",

@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/*", "tools/guide-doctest"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT"
@@ -12,9 +12,9 @@ homepage = "https://ebus.energy"
 authors = ["Clark Communications Corporation"]
 
 [workspace.dependencies]
-ebus-homie = { path = "crates/ebus-homie", version = "0.1.0", default-features = false }
-ebus-mqtt = { path = "crates/ebus-mqtt", version = "0.1.0", default-features = false }
-ebus-discovery = { path = "crates/ebus-discovery", version = "0.1.0", default-features = false }
+ebus-homie = { path = "crates/ebus-homie", version = "0.1.1", default-features = false }
+ebus-mqtt = { path = "crates/ebus-mqtt", version = "0.1.1", default-features = false }
+ebus-discovery = { path = "crates/ebus-discovery", version = "0.1.1", default-features = false }
 rpds = { version = "1.2", default-features = false }
 
 [workspace.lints.rust]

@@ -9,8 +9,8 @@ repository.workspace = true
 publish = false
 
 [dependencies]
-ebus-discovery-tokio = { path = "../../crates/ebus-discovery-tokio", version = "0.1.0", features = ["mdns-sd"] }
-ebus-rumqttc = { path = "../../crates/ebus-rumqttc", version = "0.1.0" }
+ebus-discovery-tokio = { path = "../../crates/ebus-discovery-tokio", version = "0.1.1", features = ["mdns-sd"] }
+ebus-rumqttc = { path = "../../crates/ebus-rumqttc", version = "0.1.1" }
 rumqttc = { version = "0.25", default-features = false }
 tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros", "rt", "rt-multi-thread"] }
 

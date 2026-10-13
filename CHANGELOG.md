@@ -4,6 +4,8 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-12
+
 ### Added
 
 - The `tree-device` example, a parent/child device tree with a grandchild on one connection and settable properties on two children, and the `set` example, which sends one `/set` once the device has synced, waits until the device reports the value and exits with a code for each outcome.
@@ -35,5 +37,6 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 - `ebus_homie::serde_json` and `ebus_homie_tokio::bytes` re-export the crates those types come from; `Debug` for `MdnsBrowse`, `MdnsGroup` and `Reconfigure`; docs.rs builds every crate with all features and marks feature-gated items.
 - Each crate has a README, crates.io keywords and categories, and ships its LICENSE; a `v*` tag publishes the six crates to crates.io and creates the GitHub release through `.github/workflows/release.yml`.
 
-[Unreleased]: https://github.com/electrification-bus/rust-sdk/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/electrification-bus/rust-sdk/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/electrification-bus/rust-sdk/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/electrification-bus/rust-sdk/releases/tag/v0.1.0

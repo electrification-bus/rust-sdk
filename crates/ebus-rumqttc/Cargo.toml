@@ -22,7 +22,7 @@ rustls = ["rumqttc/use-rustls"]
 native-tls = ["rumqttc/use-native-tls"]
 
 [dependencies]
-ebus-homie-tokio = { path = "../ebus-homie-tokio", version = "0.1.0" }
+ebus-homie-tokio = { path = "../ebus-homie-tokio", version = "0.1.1" }
 log = { version = "0.4", default-features = false }
 rumqttc = { version = "0.25", default-features = false }
 tokio = { version = "1.36", default-features = false, features = ["sync", "time", "macros"] }
