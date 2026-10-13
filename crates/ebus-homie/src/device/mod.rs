@@ -70,7 +70,9 @@ pub struct TreeConfig {
     /// A larger `$description` is refused; 256 KiB by default.
     pub max_description_bytes: usize,
     /// Subscribe to the root's `$state` and re-assert it over a stale `lost`;
-    /// off by default.
+    /// off by default. Turn it on for a broker that publishes a replaced
+    /// session's will after the new session's CONNACK; mosquitto publishes it
+    /// before, so the device's own refresh already overwrites it.
     pub watch_own_state: bool,
     /// The host reports SUBACKs, `$description` writes and acknowledgments of
     /// zero-length publishes through [`Tree::handle_receipt`]; off by default.
