@@ -6,7 +6,7 @@
 //! drains the daemon's channel and fans sightings out to every [`MdnsSdBrowse`]
 //! of that type, replaying the instances already seen to a new one.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -16,8 +16,8 @@ use ebus_discovery::{
     InstanceKey, ScopedAddr, ServiceRecord, Sighting, Slot, TxtRecord, is_local_name, strip_dot,
 };
 use mdns_sd::{
-    DaemonEvent, IfKind, IfPredicate, RRType, ResolvedService, ScopedIp, ServiceDaemon,
-    ServiceEvent, ServiceInfo, TxtProperty,
+    DaemonEvent, HostnameResolutionEvent, IfKind, IfPredicate, RRType, ResolvedService, ScopedIp,
+    ServiceDaemon, ServiceEvent, ServiceInfo, TxtProperty,
 };
 use tokio::sync::mpsc;
 
@@ -26,6 +26,9 @@ use crate::{Error, GroupReport, HostName, lock};
 
 /// How long a withdrawal waits for the daemon to confirm each record.
 const UNREGISTER_WAIT: Duration = Duration::from_secs(2);
+
+/// How long a query for a host's addresses runs, in milliseconds.
+const ADDRESS_QUERY_MS: u64 = 5_000;
 
 /// The sockets of avahi-daemon; one exists while it runs (_mdns_core.py:871).
 const AVAHI_SOCKETS: [&str; 2] = ["/run/avahi-daemon/socket", "/var/run/avahi-daemon/socket"];
@@ -61,6 +64,8 @@ struct State {
     /// Host names the daemon renamed after a collision, lowercased, to the
     /// new name.
     renamed: HashMap<String, String>,
+    /// Hosts whose addresses are being queried, lowercased.
+    asking: HashSet<String>,
 }
 
 struct Hub {
@@ -154,9 +159,13 @@ impl MdnsSd {
                         seen: BTreeMap::new(),
                     },
                 );
-                self.shared
-                    .rt
-                    .spawn(pump(self.shared.state.clone(), ty.clone(), id, events));
+                self.shared.rt.spawn(pump(
+                    self.shared.state.clone(),
+                    self.shared.daemon.clone(),
+                    ty.clone(),
+                    id,
+                    events,
+                ));
             }
         }
         drop(st);
@@ -293,6 +302,7 @@ fn service_info(
 /// Drain one daemon browse into its hub until the daemon stops it.
 async fn pump(
     state: Arc<Mutex<State>>,
+    daemon: ServiceDaemon,
     ty: String,
     generation: u64,
     events: mdns_sd::Receiver<ServiceEvent>,
@@ -300,7 +310,12 @@ async fn pump(
     while let Ok(ev) = events.recv_async().await {
         let (fullname, sighting) = match ev {
             ServiceEvent::ServiceResolved(r) => match seen(&r) {
-                Some(s) => (r.fullname.to_lowercase(), s),
+                Some(s) => {
+                    if !r.addresses.iter().any(|a| matches!(a, ScopedIp::V4(_))) {
+                        ask_addresses(&state, &daemon, &r.host);
+                    }
+                    (r.fullname.to_lowercase(), s)
+                }
                 None => continue,
             },
             ServiceEvent::ServiceRemoved(t, fullname) => match key_of(&t, &fullname) {
@@ -328,6 +343,40 @@ async fn pump(
     if st.hubs.get(&ty).is_some_and(|h| h.generation == generation) {
         st.hubs.remove(&ty);
     }
+}
+
+/// Query `host`'s addresses, one query per host at a time. A host can answer
+/// over IPv6 with its AAAA records alone and its IPv4 answer come seconds
+/// later, and the daemon re-queries only services it has not resolved
+/// (service_daemon.rs:2873-2889). An A record the query draws re-resolves
+/// the service, and the query stops at the first IPv4 address. The daemon
+/// blocks on a full event channel (service_daemon.rs:505, 4822), so the
+/// events are drained.
+fn ask_addresses(state: &Arc<Mutex<State>>, daemon: &ServiceDaemon, host: &str) {
+    let host = host.to_lowercase();
+    if !lock(state).asking.insert(host.clone()) {
+        return;
+    }
+    let Ok(events) = daemon.resolve_hostname(&host, Some(ADDRESS_QUERY_MS)) else {
+        lock(state).asking.remove(&host);
+        return;
+    };
+    let (state, daemon) = (state.clone(), daemon.clone());
+    tokio::spawn(async move {
+        while let Ok(ev) = events.recv_async().await {
+            match ev {
+                HostnameResolutionEvent::AddressesFound(_, found)
+                    if found.iter().any(|a| matches!(a, ScopedIp::V4(_))) =>
+                {
+                    let _ = daemon.stop_resolve_hostname(&host);
+                }
+                HostnameResolutionEvent::SearchTimeout(_)
+                | HostnameResolutionEvent::SearchStopped(_) => break,
+                _ => {}
+            }
+        }
+        lock(&state).asking.remove(&host);
+    });
 }
 
 /// Route the daemon's name changes to the groups they concern.
@@ -471,6 +520,7 @@ impl MdnsSdBrowse {
         hub.generation = generation;
         shared.rt.spawn(pump(
             shared.state.clone(),
+            shared.daemon.clone(),
             self.ty.clone(),
             generation,
             events,

@@ -461,3 +461,66 @@ async fn reresolve_after_an_address_change() {
     assert_eq!(again.instance, found.instance);
     let _ = broker_host.shutdown();
 }
+
+/// A broker whose own answers carry only its IPv6 address, while another
+/// responder answers for its IPv4 address only when asked, as a host's
+/// IPv4 answer can come seconds after its IPv6 one: the backend asks for
+/// the host's addresses, and the IPv4 address follows.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_ipv6_only_resolution_asks_for_the_ipv4_address() {
+    let _serial = SERIAL.lock().await;
+    if !loopback_multicast() {
+        return;
+    }
+    let id = run_id();
+    let name = format!("v4-{id}");
+    let host = format!("ebus-test-v4-{id}.local.");
+    let a_only = raw_daemon();
+    a_only
+        .register(
+            ServiceInfo::new("_ebus-addr._tcp.local.", &name, &host, "127.0.0.1", 9, None).unwrap(),
+        )
+        .unwrap();
+    // Past its announcements, so the client hears the A record only by
+    // asking.
+    tokio::time::sleep(Duration::from_secs(3)).await;
+
+    let client = mdns();
+    let mut browse = client.browse(BrokerType::Mqtt.as_str()).await.unwrap();
+    let broker_host = raw_daemon();
+    let mut info = ServiceInfo::new("_mqtt._tcp.local.", &name, &host, "::1", 18838, None).unwrap();
+    // A probe of the host name would draw the A record unasked.
+    info.set_requires_probe(false);
+    broker_host.register(info).unwrap();
+    let has_v4 = |s: &Sighting| match s {
+        Sighting::Seen { addrs, .. } => addrs.iter().any(|a| a.ip.is_ipv4()),
+        Sighting::Gone { .. } => false,
+    };
+    // Linux loopback carries no IPv6 multicast for mdns-sd.
+    let Ok(first) = timeout(Duration::from_secs(10), async {
+        loop {
+            let s = browse.next().await.expect("browse running");
+            if matches!(&s, Sighting::Seen { key, .. } if key.name == name) {
+                return s;
+            }
+        }
+    })
+    .await
+    else {
+        eprintln!("skipping: no IPv6 resolution over loopback");
+        let _ = broker_host.shutdown();
+        let _ = a_only.shutdown();
+        return;
+    };
+    assert!(!has_v4(&first), "{first:?}");
+    let Sighting::Seen { addrs, .. } = sighting(&mut browse, &name, has_v4).await else {
+        unreachable!()
+    };
+    let ips: Vec<IpAddr> = addrs.iter().map(|a| a.ip).collect();
+    assert_eq!(
+        ips,
+        ["127.0.0.1", "::1"].map(|s| s.parse::<IpAddr>().unwrap())
+    );
+    let _ = broker_host.shutdown();
+    let _ = a_only.shutdown();
+}

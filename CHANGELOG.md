@@ -8,6 +8,10 @@ All notable changes to `rust-sdk` are recorded here. Format follows [Keep a Chan
 
 - The `tree-device` example, a parent/child device tree with a grandchild on one connection and settable properties on two children, and the `set` example, which sends one `/set` once the device has synced, waits until the device reports the value and exits with a code for each outcome.
 
+### Fixed
+
+- The mdns-sd backend asks for a host's addresses when a service resolves without an IPv4 address, so a broker whose IPv4 answer comes in a later packet gains its IPv4 address within seconds.
+
 ## [0.1.0] - 2026-10-12
 
 ### Added
